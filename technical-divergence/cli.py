@@ -63,24 +63,24 @@ def cmd_scan(args):
     bearish = [s for s in signals if not s.is_bullish]
     
     if bullish:
-        print("  🟢 BULLISH DIVERGENCES")
-        print(f"  {'─'*66}")
+        print("  [+] BULLISH DIVERGENCES")
+        print(f"  {'-'*66}")
         for s in bullish:
-            strength_icon = "⚡" if s.strength == Strength.STRONG else "○" if s.strength == Strength.WEAK else "●"
-            conf_bar = "█" * int(s.confidence * 5) + "░" * (5 - int(s.confidence * 5))
+            strength_icon = "*" if s.strength == Strength.STRONG else "o" if s.strength == Strength.WEAK else "-"
+            conf_bar = "#" * int(s.confidence * 5) + "." * (5 - int(s.confidence * 5))
             print(f"  {strength_icon} {s.ticker:<6} {s.indicator.value:<6} {s.divergence_type.value:<15}")
-            print(f"    Price: ${s.price_start:.2f} → ${s.price_end:.2f} ({s.price_change_pct:+.1f}%)")
+            print(f"    Price: ${s.price_start:.2f} -> ${s.price_end:.2f} ({s.price_change_pct:+.1f}%)")
             print(f"    Confidence: [{conf_bar}] {s.confidence:.0%} | Bars: {s.lookback_bars}")
             print()
     
     if bearish:
-        print("  🔴 BEARISH DIVERGENCES")
-        print(f"  {'─'*66}")
+        print("  [-] BEARISH DIVERGENCES")
+        print(f"  {'-'*66}")
         for s in bearish:
-            strength_icon = "⚡" if s.strength == Strength.STRONG else "○" if s.strength == Strength.WEAK else "●"
-            conf_bar = "█" * int(s.confidence * 5) + "░" * (5 - int(s.confidence * 5))
+            strength_icon = "*" if s.strength == Strength.STRONG else "o" if s.strength == Strength.WEAK else "-"
+            conf_bar = "#" * int(s.confidence * 5) + "." * (5 - int(s.confidence * 5))
             print(f"  {strength_icon} {s.ticker:<6} {s.indicator.value:<6} {s.divergence_type.value:<15}")
-            print(f"    Price: ${s.price_start:.2f} → ${s.price_end:.2f} ({s.price_change_pct:+.1f}%)")
+            print(f"    Price: ${s.price_start:.2f} -> ${s.price_end:.2f} ({s.price_change_pct:+.1f}%)")
             print(f"    Confidence: [{conf_bar}] {s.confidence:.0%} | Bars: {s.lookback_bars}")
             print()
 
@@ -111,8 +111,8 @@ def cmd_alerts(args):
         return
     
     for s in signals[:args.limit]:
-        emoji = "📈" if s.is_bullish else "📉"
-        strength_emoji = "⚡" if s.strength == Strength.STRONG else "●"
+        emoji = "[UP]" if s.is_bullish else "[DN]"
+        strength_emoji = "*" if s.strength == Strength.STRONG else "-"
         time_str = s.detected_at.strftime("%H:%M")
         
         print(f"  {emoji} {strength_emoji} {s.ticker} - {s.divergence_type.value} {s.indicator.value}")
@@ -145,26 +145,26 @@ def cmd_accuracy(args):
         print(f"  {stats['message']}\n")
         return
     
-    print(f"  📊 Total Signals Tracked: {stats['total_signals']}")
-    print(f"  ✅ Successful:           {stats['successful']}")
-    print(f"  🎯 Overall Accuracy:     {stats['accuracy']:.1f}%")
+    print(f"  Total Signals Tracked: {stats['total_signals']}")
+    print(f"  Successful:           {stats['successful']}")
+    print(f"  Overall Accuracy:     {stats['accuracy']:.1f}%")
     print()
-    print(f"  {'─'*56}")
+    print(f"  {'-'*56}")
     print(f"  BY DIRECTION")
-    print(f"  {'─'*56}")
-    print(f"  📈 Bullish Accuracy:     {stats['bullish_accuracy']:.1f}%")
-    print(f"  📉 Bearish Accuracy:     {stats['bearish_accuracy']:.1f}%")
+    print(f"  {'-'*56}")
+    print(f"  Bullish Accuracy:     {stats['bullish_accuracy']:.1f}%")
+    print(f"  Bearish Accuracy:     {stats['bearish_accuracy']:.1f}%")
     print()
-    print(f"  {'─'*56}")
+    print(f"  {'-'*56}")
     print(f"  RETURNS")
-    print(f"  {'─'*56}")
-    print(f"  📈 Avg Return:           {format_pct(stats['avg_return'])}")
-    print(f"  ✅ Avg Winning Return:   {format_pct(stats['avg_winning_return'])}")
+    print(f"  {'-'*56}")
+    print(f"  Avg Return:           {format_pct(stats['avg_return'])}")
+    print(f"  Avg Winning Return:   {format_pct(stats['avg_winning_return'])}")
     
     if stats['by_indicator']:
-        print(f"\n  {'─'*56}")
+        print(f"\n  {'-'*56}")
         print(f"  BY INDICATOR")
-        print(f"  {'─'*56}")
+        print(f"  {'-'*56}")
         for ind, data in stats['by_indicator'].items():
             print(f"  {ind:<12} {data['count']:>3} signals | {data['accuracy']:.1f}% accuracy")
     
@@ -184,22 +184,22 @@ def cmd_summary(args):
     print(f"  DIVERGENCE SUMMARY")
     print(f"{'='*60}\n")
     
-    print(f"  📊 Total Signals (48h):  {summary['total_signals']}")
-    print(f"  📈 Bullish:              {summary['bullish']}")
-    print(f"  📉 Bearish:              {summary['bearish']}")
-    print(f"  ⚡ Strong Signals:       {summary['strong_signals']}")
-    print(f"  🎯 High Confidence:      {summary['high_confidence']}")
+    print(f"  Total Signals (48h):  {summary['total_signals']}")
+    print(f"  Bullish:              {summary['bullish']}")
+    print(f"  Bearish:              {summary['bearish']}")
+    print(f"  Strong Signals:       {summary['strong_signals']}")
+    print(f"  High Confidence:      {summary['high_confidence']}")
     
     if summary['by_indicator']:
-        print(f"\n  {'─'*56}")
+        print(f"\n  {'-'*56}")
         print(f"  BY INDICATOR")
-        print(f"  {'─'*56}")
+        print(f"  {'-'*56}")
         for ind, count in summary['by_indicator'].items():
-            bar = "█" * count + "░" * (10 - count)
+            bar = "#" * count + "." * (10 - count)
             print(f"  {ind:<12} [{bar}] {count}")
     
     if summary['tickers_with_signals']:
-        print(f"\n  📍 Active Tickers: {', '.join(summary['tickers_with_signals'][:10])}")
+        print(f"\n  Active Tickers: {', '.join(summary['tickers_with_signals'][:10])}")
     
     print()
 
@@ -213,9 +213,9 @@ def cmd_watch(args):
             print(json.dumps(scanner.watchlist))
             return
         print(f"\n  WATCHLIST ({len(scanner.watchlist)} tickers)")
-        print(f"  {'─'*40}")
+        print(f"  {'-'*40}")
         for ticker in scanner.watchlist:
-            print(f"  • {ticker}")
+            print(f"  - {ticker}")
         print()
     
     elif args.action == "add":

@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Revenue Segment & Geographic Decomposition</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg: #0d1117;
+            --surface: #161b22;
+            --surface-elevated: #1c2128;
+            --border: #30363d;
+            --text: #e6edf3;
+            --text-secondary: #8b949e;
+            --accent: #58a6ff;
+            --success: #3fb950;
+            --warning: #f0c020;
+            --error: #f85149;
+            --purple: #a371f7;
+            --orange: #f0883e;
+            --cyan: #39d4ba;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        header {
+            padding: 16px 24px;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .logo { font-size: 28px; }
+        header h1 { font-size: 20px; font-weight: 600; }
+
+        .ticker-input {
+            display: flex;
+            gap: 8px;
+            margin-left: auto;
+        }
+
+        .ticker-input input {
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: var(--bg);
+            color: var(--text);
+            width: 120px;
+            font-size: 14px;
+        }
+
+        .ticker-input button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            background: var(--accent);
+            color: var(--bg);
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .ticker-input button:hover { opacity: 0.9; }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            padding: 20px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 1200px) {
+            .main-grid { grid-template-columns: 1fr; }
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .card-header h2 {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .timeframe-selector {
+            display: flex;
+            gap: 4px;
+        }
+
+        .timeframe-btn {
+            padding: 4px 10px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .timeframe-btn.active {
+            background: var(--accent);
+            color: var(--bg);
+            border-color: var(--accent);
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        @media (max-width: 768px) {
+            .stats-row { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        .stat-card {
+            background: var(--surface-elevated);
+            padding: 14px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            font-size: 22px;
+            font-weight: 600;
+        }
+
+        .stat-change {
+            font-size: 12px;
+            margin-top: 2px;
+        }
+
+        .positive { color: var(--success); }
+        .negative { color: var(--error); }
+        .neutral { color: var(--text-secondary); }
+
+        .chart-container {
+            position: relative;
+            height: 280px;
+        }
+
+        .full-width { grid-column: 1 / -1; }
+
+        .segment-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .segment-table th,
+        .segment-table td {
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .segment-table th {
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+
+        .segment-table tr:hover {
+            background: var(--surface-elevated);
+        }
+
+        .segment-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .segment-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+
+        .growth-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .growth-badge.positive {
+            background: rgba(63, 185, 80, 0.15);
+        }
+
+        .growth-badge.negative {
+            background: rgba(248, 81, 73, 0.15);
+        }
+
+        .alert-panel {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .alert-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px;
+            background: var(--surface-elevated);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border-left: 3px solid;
+        }
+
+        .alert-item.decel { border-color: var(--error); }
+        .alert-item.accel { border-color: var(--success); }
+        .alert-item.warning { border-color: var(--warning); }
+
+        .alert-icon { font-size: 18px; }
+        .alert-content { flex: 1; }
+        .alert-title { font-weight: 500; margin-bottom: 2px; }
+        .alert-desc { font-size: 13px; color: var(--text-secondary); }
+
+        .geo-bar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .geo-label {
+            width: 100px;
+            font-size: 13px;
+        }
+
+        .geo-bar-track {
+            flex: 1;
+            height: 24px;
+            background: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .geo-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 8px;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--bg);
+            min-width: 40px;
+        }
+
+        .geo-value {
+            width: 80px;
+            text-align: right;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .export-btn {
+            padding: 8px 16px;
+            border: 1px solid var(--accent);
+            border-radius: 6px;
+            background: transparent;
+            color: var(--accent);
+            cursor: pointer;
+            font-size: 13px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .export-btn:hover {
+            background: rgba(88, 166, 255, 0.1);
+        }
+
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .company-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px 24px;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .company-name {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .company-ticker {
+            font-size: 14px;
+            color: var(--text-secondary);
+            background: var(--surface-elevated);
+            padding: 4px 10px;
+            border-radius: 4px;
+        }
+
+        .mix-change {
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        .trend-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <span class="logo">📊</span>
+        <h1>Revenue Segment & Geographic Decomposition</h1>
+        <div class="ticker-input">
+            <input type="text" id="tickerInput" placeholder="Enter ticker..." value="AAPL">
+            <button onclick="loadCompany()">Analyze</button>
+        </div>
+    </header>
+
+    <div class="company-header" id="companyHeader">
+        <span class="company-name" id="companyName">Apple Inc.</span>
+        <span class="company-ticker" id="companyTicker">AAPL</span>
+        <button class="export-btn" onclick="exportToExcel()">📥 Export to Excel</button>
+    </div>
+
+    <div class="stats-row" style="padding: 20px 20px 0; max-width: 1600px; margin: 0 auto;">
+        <div class="stat-card">
+            <div class="stat-label">Total Revenue (TTM)</div>
+            <div class="stat-value" id="totalRevenue">$383.3B</div>
+            <div class="stat-change positive" id="revenueChange">↑ +2.8% YoY</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Segment Count</div>
+            <div class="stat-value" id="segmentCount">5</div>
+            <div class="stat-change neutral">Business Segments</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Geographic Regions</div>
+            <div class="stat-value" id="geoCount">5</div>
+            <div class="stat-change neutral">Reporting Regions</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Deceleration Alerts</div>
+            <div class="stat-value" id="alertCount">2</div>
+            <div class="stat-change negative">Segments Slowing</div>
+        </div>
+    </div>
+
+    <div class="main-grid">
+        <!-- Revenue by Segment -->
+        <div class="card">
+            <div class="card-header">
+                <h2>📈 Revenue by Business Segment</h2>
+                <div class="timeframe-selector">
+                    <button class="timeframe-btn active" data-period="q">Q4 2025</button>
+                    <button class="timeframe-btn" data-period="ttm">TTM</button>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="segmentChart"></canvas>
+            </div>
+            <div class="legend" id="segmentLegend"></div>
+        </div>
+
+        <!-- Revenue by Geography -->
+        <div class="card">
+            <div class="card-header">
+                <h2>🌍 Revenue by Geography</h2>
+                <div class="timeframe-selector">
+                    <button class="timeframe-btn active">Q4 2025</button>
+                    <button class="timeframe-btn">TTM</button>
+                </div>
+            </div>
+            <div id="geoChart" style="padding: 10px 0;"></div>
+        </div>
+
+        <!-- Segment Growth Rates -->
+        <div class="card full-width">
+            <div class="card-header">
+                <h2>📊 Segment Performance & Growth</h2>
+            </div>
+            <table class="segment-table">
+                <thead>
+                    <tr>
+                        <th>Segment</th>
+                        <th>Q4 2025</th>
+                        <th>% of Total</th>
+                        <th>Mix</th>
+                        <th>QoQ Growth</th>
+                        <th>YoY Growth</th>
+                        <th>Trend</th>
+                    </tr>
+                </thead>
+                <tbody id="segmentTableBody"></tbody>
+            </table>
+        </div>
+
+        <!-- Historical Trends -->
+        <div class="card">
+            <div class="card-header">
+                <h2>📉 Segment Revenue Trends</h2>
+                <div class="timeframe-selector">
+                    <button class="timeframe-btn" data-quarters="4">4Q</button>
+                    <button class="timeframe-btn active" data-quarters="8">8Q</button>
+                    <button class="timeframe-btn" data-quarters="12">12Q</button>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="trendChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Geographic Trends -->
+        <div class="card">
+            <div class="card-header">
+                <h2>🗺️ Geographic Mix Over Time</h2>
+            </div>
+            <div class="chart-container">
+                <canvas id="geoTrendChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Deceleration Alerts -->
+        <div class="card full-width">
+            <div class="card-header">
+                <h2>⚠️ Segment Alerts</h2>
+            </div>
+            <div class="alert-panel" id="alertPanel"></div>
+        </div>
+    </div>
+
+    <script>
+        // Sample data - In production, this would come from SEC filings API
+        const companyData = {
+            AAPL: {
+                name: 'Apple Inc.',
+                totalRevenue: 383.3,
+                revenueChange: 2.8,
+                segments: [
+                    { name: 'iPhone', revenue: 200.6, pctTotal: 52.3, qoqGrowth: -0.8, yoyGrowth: -2.4, color: '#58a6ff' },
+                    { name: 'Services', revenue: 96.2, pctTotal: 25.1, qoqGrowth: 4.2, yoyGrowth: 14.2, color: '#3fb950' },
+                    { name: 'Mac', revenue: 29.4, pctTotal: 7.7, qoqGrowth: 1.8, yoyGrowth: 3.5, color: '#a371f7' },
+                    { name: 'iPad', revenue: 28.3, pctTotal: 7.4, qoqGrowth: 2.1, yoyGrowth: -1.2, color: '#f0c020' },
+                    { name: 'Wearables', revenue: 28.8, pctTotal: 7.5, qoqGrowth: -3.4, yoyGrowth: -8.1, color: '#f85149' }
+                ],
+                geography: [
+                    { name: 'Americas', revenue: 161.8, pctTotal: 42.2, growth: 3.1, color: '#58a6ff' },
+                    { name: 'Europe', revenue: 95.3, pctTotal: 24.9, growth: 1.8, color: '#3fb950' },
+                    { name: 'Greater China', revenue: 66.8, pctTotal: 17.4, growth: -2.3, color: '#f85149' },
+                    { name: 'Japan', revenue: 25.1, pctTotal: 6.5, growth: 4.2, color: '#a371f7' },
+                    { name: 'Rest of Asia Pacific', revenue: 34.3, pctTotal: 9.0, growth: 6.1, color: '#39d4ba' }
+                ],
+                quarterlyData: {
+                    quarters: ['Q1 24', 'Q2 24', 'Q3 24', 'Q4 24', 'Q1 25', 'Q2 25', 'Q3 25', 'Q4 25'],
+                    iPhone: [69.7, 45.9, 42.1, 43.8, 71.2, 46.3, 43.8, 46.2],
+                    Services: [23.1, 23.9, 24.2, 25.0, 25.8, 26.4, 27.1, 27.8],
+                    Mac: [7.8, 7.5, 7.4, 6.8, 8.0, 7.9, 8.2, 7.8],
+                    iPad: [7.0, 5.6, 7.0, 7.1, 7.1, 6.4, 6.9, 7.2],
+                    Wearables: [11.9, 7.9, 8.1, 7.3, 11.0, 8.1, 7.8, 7.4]
+                },
+                alerts: [
+                    { type: 'decel', title: 'iPhone Deceleration', desc: 'YoY growth declined from +3.1% to -2.4% over 3 quarters. Watch for share loss in key markets.' },
+                    { type: 'decel', title: 'Wearables Weakness', desc: 'Segment down 8.1% YoY - largest decline. Consider market saturation thesis.' },
+                    { type: 'warning', title: 'China Exposure Risk', desc: '17.4% of revenue from Greater China. Monitor tariff and regulatory developments.' },
+                    { type: 'accel', title: 'Services Acceleration', desc: 'Services grew 14.2% YoY - 3rd consecutive quarter of acceleration. Gross margin expansion driver.' }
+                ]
+            },
+            MSFT: {
+                name: 'Microsoft Corporation',
+                totalRevenue: 245.1,
+                revenueChange: 15.2,
+                segments: [
+                    { name: 'Intelligent Cloud', revenue: 96.8, pctTotal: 39.5, qoqGrowth: 4.8, yoyGrowth: 20.1, color: '#58a6ff' },
+                    { name: 'Productivity & Business', revenue: 77.4, pctTotal: 31.6, qoqGrowth: 2.1, yoyGrowth: 11.8, color: '#3fb950' },
+                    { name: 'More Personal Computing', revenue: 70.9, pctTotal: 28.9, qoqGrowth: 1.2, yoyGrowth: 12.3, color: '#a371f7' }
+                ],
+                geography: [
+                    { name: 'United States', revenue: 122.6, pctTotal: 50.0, growth: 14.8, color: '#58a6ff' },
+                    { name: 'Other Americas', revenue: 19.6, pctTotal: 8.0, growth: 12.1, color: '#3fb950' },
+                    { name: 'EMEA', revenue: 68.6, pctTotal: 28.0, growth: 15.2, color: '#a371f7' },
+                    { name: 'Asia Pacific', revenue: 34.3, pctTotal: 14.0, growth: 18.4, color: '#39d4ba' }
+                ],
+                quarterlyData: {
+                    quarters: ['Q1 24', 'Q2 24', 'Q3 24', 'Q4 24', 'Q1 25', 'Q2 25', 'Q3 25', 'Q4 25'],
+                    'Intelligent Cloud': [24.3, 26.7, 28.5, 30.2, 28.7, 31.8, 33.2, 35.4],
+                    'Productivity & Business': [18.6, 19.2, 19.8, 20.1, 19.4, 20.2, 21.0, 21.8],
+                    'More Personal Computing': [14.7, 15.6, 15.9, 16.4, 15.8, 16.9, 17.2, 18.1]
+                },
+                alerts: [
+                    { type: 'accel', title: 'Cloud Growth Strong', desc: 'Intelligent Cloud up 20.1% YoY driven by Azure. AI tailwinds accelerating.' },
+                    { type: 'accel', title: 'Asia Pacific Outperformance', desc: 'APAC growing 18.4% - fastest region. Japan enterprise adoption driving growth.' }
+                ]
+            },
+            GOOGL: {
+                name: 'Alphabet Inc.',
+                totalRevenue: 339.8,
+                revenueChange: 12.4,
+                segments: [
+                    { name: 'Google Search', revenue: 191.4, pctTotal: 56.3, qoqGrowth: 2.8, yoyGrowth: 11.2, color: '#58a6ff' },
+                    { name: 'YouTube Ads', revenue: 36.1, pctTotal: 10.6, qoqGrowth: 3.1, yoyGrowth: 15.8, color: '#f85149' },
+                    { name: 'Google Cloud', revenue: 37.2, pctTotal: 10.9, qoqGrowth: 6.2, yoyGrowth: 28.4, color: '#3fb950' },
+                    { name: 'Google Network', revenue: 30.8, pctTotal: 9.1, qoqGrowth: -1.2, yoyGrowth: -4.1, color: '#f0c020' },
+                    { name: 'Other Bets', revenue: 1.5, pctTotal: 0.4, qoqGrowth: 8.1, yoyGrowth: 12.3, color: '#a371f7' },
+                    { name: 'Google Services Other', revenue: 42.8, pctTotal: 12.6, qoqGrowth: 2.4, yoyGrowth: 9.8, color: '#39d4ba' }
+                ],
+                geography: [
+                    { name: 'United States', revenue: 163.1, pctTotal: 48.0, growth: 10.8, color: '#58a6ff' },
+                    { name: 'EMEA', revenue: 105.3, pctTotal: 31.0, growth: 12.1, color: '#3fb950' },
+                    { name: 'APAC', revenue: 54.4, pctTotal: 16.0, growth: 16.4, color: '#a371f7' },
+                    { name: 'Other Americas', revenue: 17.0, pctTotal: 5.0, growth: 14.2, color: '#39d4ba' }
+                ],
+                quarterlyData: {
+                    quarters: ['Q1 24', 'Q2 24', 'Q3 24', 'Q4 24', 'Q1 25', 'Q2 25', 'Q3 25', 'Q4 25'],
+                    'Google Search': [46.2, 48.5, 49.4, 51.3, 48.8, 51.2, 53.1, 55.2],
+                    'YouTube Ads': [8.1, 8.7, 8.9, 9.2, 8.6, 9.2, 9.5, 9.9],
+                    'Google Cloud': [7.5, 8.2, 8.8, 9.2, 8.4, 9.1, 10.2, 10.8],
+                    'Google Network': [7.4, 7.6, 7.5, 7.3, 7.2, 7.4, 7.2, 7.1],
+                    'Other Bets': [0.5, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4],
+                    'Google Services Other': [10.1, 10.4, 10.6, 10.8, 10.5, 10.8, 11.2, 11.6]
+                },
+                alerts: [
+                    { type: 'accel', title: 'Cloud Acceleration', desc: 'Google Cloud up 28.4% YoY - fastest growing segment. Approaching profitability inflection.' },
+                    { type: 'decel', title: 'Network Ads Decline', desc: 'Google Network down 4.1% YoY - 4th consecutive quarter of decline. Structural headwind from privacy changes.' },
+                    { type: 'warning', title: 'Search Concentration', desc: '56.3% of revenue from Search. Monitor for antitrust and AI disruption risks.' }
+                ]
+            }
+        };
+
+        let currentTicker = 'AAPL';
+        let segmentChart, trendChart, geoTrendChart;
+
+        function loadCompany() {
+            const ticker = document.getElementById('tickerInput').value.toUpperCase();
+            if (companyData[ticker]) {
+                currentTicker = ticker;
+                renderDashboard();
+            } else {
+                alert(`Data not available for ${ticker}. Try AAPL, MSFT, or GOOGL.`);
+            }
+        }
+
+        function renderDashboard() {
+            const data = companyData[currentTicker];
+            
+            // Update header
+            document.getElementById('companyName').textContent = data.name;
+            document.getElementById('companyTicker').textContent = currentTicker;
+            
+            // Update stats
+            document.getElementById('totalRevenue').textContent = `$${data.totalRevenue}B`;
+            document.getElementById('revenueChange').textContent = `${data.revenueChange >= 0 ? '↑' : '↓'} ${data.revenueChange >= 0 ? '+' : ''}${data.revenueChange}% YoY`;
+            document.getElementById('revenueChange').className = `stat-change ${data.revenueChange >= 0 ? 'positive' : 'negative'}`;
+            document.getElementById('segmentCount').textContent = data.segments.length;
+            document.getElementById('geoCount').textContent = data.geography.length;
+            document.getElementById('alertCount').textContent = data.alerts.filter(a => a.type === 'decel').length;
+
+            renderSegmentChart(data);
+            renderGeoChart(data);
+            renderSegmentTable(data);
+            renderTrendChart(data);
+            renderGeoTrendChart(data);
+            renderAlerts(data);
+        }
+
+        function renderSegmentChart(data) {
+            const ctx = document.getElementById('segmentChart').getContext('2d');
+            
+            if (segmentChart) segmentChart.destroy();
+            
+            segmentChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: data.segments.map(s => s.name),
+                    datasets: [{
+                        data: data.segments.map(s => s.revenue),
+                        backgroundColor: data.segments.map(s => s.color),
+                        borderWidth: 0,
+                        hoverOffset: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '65%',
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const segment = data.segments[context.dataIndex];
+                                    return `${segment.name}: $${segment.revenue}B (${segment.pctTotal}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Render legend
+            const legend = document.getElementById('segmentLegend');
+            legend.innerHTML = data.segments.map(s => `
+                <div class="legend-item">
+                    <span class="legend-dot" style="background: ${s.color}"></span>
+                    <span>${s.name} (${s.pctTotal}%)</span>
+                </div>
+            `).join('');
+        }
+
+        function renderGeoChart(data) {
+            const container = document.getElementById('geoChart');
+            container.innerHTML = data.geography.map(g => `
+                <div class="geo-bar">
+                    <span class="geo-label">${g.name}</span>
+                    <div class="geo-bar-track">
+                        <div class="geo-bar-fill" style="width: ${g.pctTotal}%; background: ${g.color}">
+                            ${g.pctTotal}%
+                        </div>
+                    </div>
+                    <span class="geo-value ${g.growth >= 0 ? 'positive' : 'negative'}">${g.growth >= 0 ? '+' : ''}${g.growth}%</span>
+                </div>
+            `).join('');
+        }
+
+        function renderSegmentTable(data) {
+            const tbody = document.getElementById('segmentTableBody');
+            tbody.innerHTML = data.segments.map(s => {
+                const trend = getTrend(s);
+                return `
+                    <tr>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span style="width: 12px; height: 12px; border-radius: 3px; background: ${s.color}"></span>
+                                ${s.name}
+                            </div>
+                        </td>
+                        <td>$${s.revenue}B</td>
+                        <td>${s.pctTotal}%</td>
+                        <td>
+                            <div class="segment-bar">
+                                <div class="segment-bar-fill" style="width: ${s.pctTotal}%; background: ${s.color}"></div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="growth-badge ${s.qoqGrowth >= 0 ? 'positive' : 'negative'}">
+                                ${s.qoqGrowth >= 0 ? '↑' : '↓'} ${Math.abs(s.qoqGrowth)}%
+                            </span>
+                        </td>
+                        <td>
+                            <span class="growth-badge ${s.yoyGrowth >= 0 ? 'positive' : 'negative'}">
+                                ${s.yoyGrowth >= 0 ? '↑' : '↓'} ${Math.abs(s.yoyGrowth)}%
+                            </span>
+                        </td>
+                        <td>
+                            <span class="trend-indicator ${trend.class}">${trend.icon} ${trend.label}</span>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function getTrend(segment) {
+            if (segment.yoyGrowth > 10) return { icon: '🚀', label: 'Accelerating', class: 'positive' };
+            if (segment.yoyGrowth > 0) return { icon: '📈', label: 'Growing', class: 'positive' };
+            if (segment.yoyGrowth > -5) return { icon: '➡️', label: 'Flat', class: 'neutral' };
+            return { icon: '📉', label: 'Declining', class: 'negative' };
+        }
+
+        function renderTrendChart(data) {
+            const ctx = document.getElementById('trendChart').getContext('2d');
+            
+            if (trendChart) trendChart.destroy();
+
+            const datasets = data.segments.map(s => ({
+                label: s.name,
+                data: data.quarterlyData[s.name] || [],
+                borderColor: s.color,
+                backgroundColor: s.color + '20',
+                fill: false,
+                tension: 0.3,
+                borderWidth: 2,
+                pointRadius: 3
+            }));
+
+            trendChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.quarterlyData.quarters,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { intersect: false, mode: 'index' },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'bottom',
+                            labels: { color: '#8b949e', boxWidth: 12, padding: 15 }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: '#30363d' },
+                            ticks: { color: '#8b949e' }
+                        },
+                        y: {
+                            grid: { color: '#30363d' },
+                            ticks: {
+                                color: '#8b949e',
+                                callback: value => `$${value}B`
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderGeoTrendChart(data) {
+            const ctx = document.getElementById('geoTrendChart').getContext('2d');
+            
+            if (geoTrendChart) geoTrendChart.destroy();
+
+            // Generate mock quarterly geo data
+            const geoQuarterlyData = generateGeoQuarterlyData(data);
+
+            geoTrendChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.quarterlyData.quarters,
+                    datasets: data.geography.map((g, i) => ({
+                        label: g.name,
+                        data: geoQuarterlyData[i],
+                        backgroundColor: g.color,
+                        stack: 'stack1'
+                    }))
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'bottom',
+                            labels: { color: '#8b949e', boxWidth: 12, padding: 15 }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            stacked: true,
+                            grid: { color: '#30363d' },
+                            ticks: { color: '#8b949e' }
+                        },
+                        y: {
+                            stacked: true,
+                            grid: { color: '#30363d' },
+                            ticks: {
+                                color: '#8b949e',
+                                callback: value => `$${value}B`
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function generateGeoQuarterlyData(data) {
+            const quarters = data.quarterlyData.quarters.length;
+            return data.geography.map(g => {
+                const base = g.revenue / 4;
+                return Array(quarters).fill(0).map((_, i) => {
+                    const variation = (Math.random() - 0.5) * base * 0.15;
+                    const trend = (i / quarters) * (g.growth / 100) * base;
+                    return Math.round((base + variation + trend) * 10) / 10;
+                });
+            });
+        }
+
+        function renderAlerts(data) {
+            const panel = document.getElementById('alertPanel');
+            panel.innerHTML = data.alerts.map(a => `
+                <div class="alert-item ${a.type}">
+                    <span class="alert-icon">${a.type === 'decel' ? '📉' : a.type === 'accel' ? '🚀' : '⚠️'}</span>
+                    <div class="alert-content">
+                        <div class="alert-title">${a.title}</div>
+                        <div class="alert-desc">${a.desc}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function exportToExcel() {
+            const data = companyData[currentTicker];
+            
+            // Create CSV content
+            let csv = `Revenue Segment Analysis - ${data.name} (${currentTicker})\n\n`;
+            csv += `Total Revenue (TTM),$${data.totalRevenue}B\n`;
+            csv += `YoY Change,${data.revenueChange}%\n\n`;
+            
+            csv += `BUSINESS SEGMENTS\n`;
+            csv += `Segment,Revenue ($B),% of Total,QoQ Growth,YoY Growth\n`;
+            data.segments.forEach(s => {
+                csv += `${s.name},${s.revenue},${s.pctTotal}%,${s.qoqGrowth}%,${s.yoyGrowth}%\n`;
+            });
+            
+            csv += `\nGEOGRAPHIC BREAKDOWN\n`;
+            csv += `Region,Revenue ($B),% of Total,YoY Growth\n`;
+            data.geography.forEach(g => {
+                csv += `${g.name},${g.revenue},${g.pctTotal}%,${g.growth}%\n`;
+            });
+
+            csv += `\nQUARTERLY SEGMENT DATA\n`;
+            csv += `Quarter,${data.segments.map(s => s.name).join(',')}\n`;
+            data.quarterlyData.quarters.forEach((q, i) => {
+                const values = data.segments.map(s => data.quarterlyData[s.name]?.[i] || '');
+                csv += `${q},${values.join(',')}\n`;
+            });
+
+            // Download
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${currentTicker}_revenue_segments_${new Date().toISOString().slice(0,10)}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', renderDashboard);
+
+        // Enter key support
+        document.getElementById('tickerInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') loadCompany();
+        });
+    </script>
+</body>
+</html>

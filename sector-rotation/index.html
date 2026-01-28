@@ -3,633 +3,966 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sector Rotation | Guide Bot - AI Equity Research</title>
-    <meta name="description" content="Visualize sector rotation, relative strength, and money flow across market sectors.">
-    
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0"></script>
-    
+    <title>Sector Rotation Dashboard | Market Analytics</title>
     <style>
-        :root {
-            --bg-primary: #0a0e17;
-            --bg-secondary: #111827;
-            --bg-card: #1a2234;
-            --bg-card-hover: #1f2942;
-            --text-primary: #f3f4f6;
-            --text-secondary: #9ca3af;
-            --text-muted: #6b7280;
-            --accent-green: #10b981;
-            --accent-red: #ef4444;
-            --accent-blue: #3b82f6;
-            --accent-yellow: #f59e0b;
-            --accent-purple: #8b5cf6;
-            --accent-orange: #f97316;
-            --accent-cyan: #06b6d4;
-            --border-color: #374151;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
+
+        :root {
+            --bg-primary: #0a0e14;
+            --bg-secondary: #131a24;
+            --bg-tertiary: #1c2632;
+            --border-color: #2a3544;
+            --text-primary: #e6edf3;
+            --text-secondary: #7d8590;
+            --accent-blue: #2f81f7;
+            --accent-green: #3fb950;
+            --accent-red: #f85149;
+            --accent-yellow: #d29922;
+            --accent-purple: #a371f7;
+            --accent-cyan: #39c5cf;
+            --accent-orange: #f0883e;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: var(--bg-primary);
             color: var(--text-primary);
-            line-height: 1.6;
             min-height: 100vh;
         }
-        
-        .container { max-width: 1800px; margin: 0 auto; padding: 20px; }
-        
-        header {
-            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-card) 100%);
-            border-bottom: 1px solid var(--border-color);
-            padding: 20px 0;
-            margin-bottom: 24px;
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 20px;
         }
-        
-        .header-content {
+
+        /* Header */
+        .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
-            gap: 16px;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
         }
-        
-        .header-left { display: flex; align-items: center; gap: 16px; }
-        
-        .back-link {
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-size: 0.9rem;
-            transition: color 0.2s;
+
+        .header h1 {
+            font-size: 22px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
-        
-        .back-link:hover { color: var(--accent-green); }
-        
-        .header-title h1 {
-            font-size: 1.8rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #fff 0%, var(--accent-cyan) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        
-        .header-title p { color: var(--text-secondary); font-size: 0.9rem; }
-        
-        /* Grid Layout */
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(12, 1fr);
+
+        .header-meta {
+            display: flex;
+            align-items: center;
             gap: 20px;
         }
-        
-        .card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            overflow: hidden;
-        }
-        
-        .card-header {
-            padding: 16px 20px;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .card-header h2 { font-size: 1rem; font-weight: 600; }
-        
-        .card-body { padding: 20px; }
-        
-        /* Sector Ranking */
-        .ranking-card { grid-column: span 4; }
-        
-        .sector-item {
-            display: flex;
-            align-items: center;
-            padding: 12px 0;
-            border-bottom: 1px solid var(--border-color);
-        }
-        
-        .sector-item:last-child { border-bottom: none; }
-        
-        .sector-rank {
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 0.9rem;
-            margin-right: 12px;
-        }
-        
-        .rank-1 { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #000; }
-        .rank-2 { background: linear-gradient(135deg, #d1d5db, #9ca3af); color: #000; }
-        .rank-3 { background: linear-gradient(135deg, #d97706, #b45309); color: #fff; }
-        .rank-other { background: var(--bg-secondary); color: var(--text-secondary); }
-        
-        .sector-info { flex: 1; }
-        .sector-name { font-weight: 600; font-size: 0.95rem; }
-        .sector-ticker { color: var(--text-muted); font-size: 0.8rem; }
-        
-        .sector-perf {
-            text-align: right;
-        }
-        
-        .perf-value {
-            font-weight: 700;
-            font-size: 1.1rem;
-        }
-        
-        .perf-positive { color: var(--accent-green); }
-        .perf-negative { color: var(--accent-red); }
-        
-        .perf-label { color: var(--text-muted); font-size: 0.75rem; }
-        
-        /* Momentum Heatmap */
-        .heatmap-card { grid-column: span 8; }
-        
-        .heatmap-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        
-        .heatmap-table th,
-        .heatmap-table td {
-            padding: 12px 16px;
-            text-align: center;
-            border-bottom: 1px solid var(--border-color);
-        }
-        
-        .heatmap-table th {
-            background: var(--bg-secondary);
+
+        .last-update {
             color: var(--text-secondary);
-            font-weight: 600;
-            font-size: 0.75rem;
-            text-transform: uppercase;
+            font-size: 13px;
         }
-        
-        .heatmap-table th:first-child,
-        .heatmap-table td:first-child {
-            text-align: left;
-            font-weight: 600;
-        }
-        
-        .heat-cell {
-            border-radius: 6px;
-            padding: 6px 10px;
-            font-weight: 600;
-            font-size: 0.85rem;
-        }
-        
-        .heat-strong-pos { background: rgba(16, 185, 129, 0.3); color: var(--accent-green); }
-        .heat-pos { background: rgba(16, 185, 129, 0.15); color: var(--accent-green); }
-        .heat-neutral { background: var(--bg-secondary); color: var(--text-secondary); }
-        .heat-neg { background: rgba(239, 68, 68, 0.15); color: var(--accent-red); }
-        .heat-strong-neg { background: rgba(239, 68, 68, 0.3); color: var(--accent-red); }
-        
-        /* Economic Cycle */
-        .cycle-card { grid-column: span 6; }
-        
-        .cycle-diagram {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            grid-template-rows: repeat(2, 1fr);
-            gap: 16px;
-            padding: 20px;
-        }
-        
-        .cycle-quadrant {
-            background: var(--bg-secondary);
-            border-radius: 12px;
-            padding: 20px;
-            position: relative;
-        }
-        
-        .cycle-quadrant.active {
-            border: 2px solid var(--accent-cyan);
-            background: rgba(6, 182, 212, 0.1);
-        }
-        
-        .cycle-phase {
-            font-weight: 700;
-            font-size: 1rem;
-            margin-bottom: 8px;
+
+        .market-status {
             display: flex;
             align-items: center;
             gap: 8px;
+            font-size: 13px;
         }
-        
-        .cycle-sectors {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-        }
-        
-        .cycle-indicator {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            width: 12px;
-            height: 12px;
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
-            background: var(--accent-cyan);
+            background: var(--accent-green);
             animation: pulse 2s infinite;
         }
-        
+
         @keyframes pulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.5; }
         }
-        
-        /* Pair Trades */
-        .pairs-card { grid-column: span 6; }
-        
-        .pair-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 14px 0;
-            border-bottom: 1px solid var(--border-color);
-        }
-        
-        .pair-item:last-child { border-bottom: none; }
-        
-        .pair-trade {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        
-        .pair-side {
-            padding: 6px 12px;
+
+        .btn {
+            padding: 8px 16px;
             border-radius: 6px;
-            font-weight: 600;
-            font-size: 0.85rem;
-        }
-        
-        .pair-long { background: rgba(16, 185, 129, 0.2); color: var(--accent-green); }
-        .pair-short { background: rgba(239, 68, 68, 0.2); color: var(--accent-red); }
-        
-        .pair-vs { color: var(--text-muted); font-size: 0.8rem; }
-        
-        .pair-stats { text-align: right; }
-        .pair-spread { font-weight: 700; color: var(--accent-green); }
-        .pair-zscore { font-size: 0.8rem; color: var(--text-muted); }
-        
-        /* Chart Card */
-        .chart-card { grid-column: span 12; }
-        .chart-container { height: 350px; padding: 20px; }
-        
-        /* Time Toggle */
-        .time-toggle {
-            display: flex;
-            gap: 6px;
-            background: var(--bg-secondary);
-            padding: 4px;
-            border-radius: 8px;
-        }
-        
-        .time-btn {
-            background: transparent;
-            border: none;
-            color: var(--text-muted);
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 0.8rem;
+            border: 1px solid var(--border-color);
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
             cursor: pointer;
+            font-size: 13px;
             transition: all 0.2s;
         }
-        
-        .time-btn:hover { color: var(--text-primary); }
-        .time-btn.active { background: var(--accent-blue); color: white; }
-        
-        /* Responsive */
-        @media (max-width: 1200px) {
-            .ranking-card { grid-column: span 6; }
-            .heatmap-card { grid-column: span 6; }
-            .cycle-card { grid-column: span 12; }
-            .pairs-card { grid-column: span 12; }
+
+        .btn:hover {
+            background: var(--bg-secondary);
+            border-color: var(--text-secondary);
         }
-        
-        @media (max-width: 768px) {
-            .ranking-card, .heatmap-card, .cycle-card, .pairs-card {
-                grid-column: span 12;
-            }
-            .cycle-diagram {
+
+        /* Main Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 20px;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-header h2 {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .card-body {
+            padding: 16px;
+        }
+
+        /* Timeframe Tabs */
+        .timeframe-tabs {
+            display: flex;
+            gap: 4px;
+            background: var(--bg-tertiary);
+            padding: 4px;
+            border-radius: 6px;
+        }
+
+        .timeframe-tab {
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            color: var(--text-secondary);
+            border: none;
+            background: transparent;
+        }
+
+        .timeframe-tab.active {
+            background: var(--accent-blue);
+            color: white;
+        }
+
+        /* Sector Grid */
+        .sector-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .sector-card {
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+
+        .sector-card:hover {
+            border-color: var(--accent-blue);
+        }
+
+        .sector-card.selected {
+            border-color: var(--accent-blue);
+            background: rgba(47, 129, 247, 0.1);
+        }
+
+        .sector-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .sector-name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .sector-ticker {
+            font-size: 11px;
+            color: var(--text-secondary);
+            background: var(--bg-secondary);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .sector-metrics {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        .sector-metric {
+            text-align: center;
+        }
+
+        .sector-metric-value {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .sector-metric-value.positive { color: var(--accent-green); }
+        .sector-metric-value.negative { color: var(--accent-red); }
+
+        .sector-metric-label {
+            font-size: 10px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        /* Relative Strength Bar */
+        .rs-bar-container {
+            margin-top: 10px;
+        }
+
+        .rs-bar {
+            height: 4px;
+            background: var(--bg-secondary);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .rs-bar-fill {
+            height: 100%;
+            border-radius: 2px;
+            transition: width 0.3s;
+        }
+
+        .rs-bar-fill.leading { background: linear-gradient(90deg, var(--accent-green), var(--accent-cyan)); }
+        .rs-bar-fill.improving { background: linear-gradient(90deg, var(--accent-yellow), var(--accent-green)); }
+        .rs-bar-fill.weakening { background: linear-gradient(90deg, var(--accent-orange), var(--accent-yellow)); }
+        .rs-bar-fill.lagging { background: linear-gradient(90deg, var(--accent-red), var(--accent-orange)); }
+
+        /* Rotation Quadrant Chart */
+        .quadrant-container {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .quadrant-grid {
+            position: absolute;
+            inset: 0;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+        }
+
+        .quadrant {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+        }
+
+        .quadrant-label {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .quadrant.leading { background: rgba(63, 185, 80, 0.08); }
+        .quadrant.improving { background: rgba(57, 197, 207, 0.08); }
+        .quadrant.weakening { background: rgba(240, 136, 62, 0.08); }
+        .quadrant.lagging { background: rgba(248, 81, 73, 0.08); }
+
+        .quadrant-tickers {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            justify-content: center;
+        }
+
+        .quadrant-ticker {
+            padding: 4px 8px;
+            background: var(--bg-secondary);
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .quadrant.leading .quadrant-ticker { color: var(--accent-green); border: 1px solid var(--accent-green); }
+        .quadrant.improving .quadrant-ticker { color: var(--accent-cyan); border: 1px solid var(--accent-cyan); }
+        .quadrant.weakening .quadrant-ticker { color: var(--accent-orange); border: 1px solid var(--accent-orange); }
+        .quadrant.lagging .quadrant-ticker { color: var(--accent-red); border: 1px solid var(--accent-red); }
+
+        .quadrant-axis {
+            position: absolute;
+            background: var(--border-color);
+        }
+
+        .quadrant-axis.horizontal {
+            width: 100%;
+            height: 2px;
+            top: 50%;
+            left: 0;
+        }
+
+        .quadrant-axis.vertical {
+            width: 2px;
+            height: 100%;
+            left: 50%;
+            top: 0;
+        }
+
+        .axis-label {
+            position: absolute;
+            font-size: 10px;
+            color: var(--text-secondary);
+        }
+
+        .axis-label.left { left: 10px; top: 50%; transform: translateY(-50%); }
+        .axis-label.right { right: 10px; top: 50%; transform: translateY(-50%); }
+        .axis-label.top { top: 10px; left: 50%; transform: translateX(-50%); }
+        .axis-label.bottom { bottom: 10px; left: 50%; transform: translateX(-50%); }
+
+        /* Performance Table */
+        .performance-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .performance-table th,
+        .performance-table td {
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 13px;
+        }
+
+        .performance-table th {
+            background: var(--bg-tertiary);
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 11px;
+            text-transform: uppercase;
+        }
+
+        .performance-table tr:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .rank-badge {
+            width: 24px;
+            height: 24px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .rank-badge.top3 { background: rgba(63, 185, 80, 0.2); color: var(--accent-green); }
+        .rank-badge.bottom3 { background: rgba(248, 81, 73, 0.2); color: var(--accent-red); }
+
+        /* Flow Indicator */
+        .flow-indicator {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .flow-arrow {
+            font-size: 14px;
+        }
+
+        .flow-arrow.inflow { color: var(--accent-green); }
+        .flow-arrow.outflow { color: var(--accent-red); }
+
+        /* Alerts */
+        .alert-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .alert-item {
+            display: flex;
+            gap: 12px;
+            padding: 12px;
+            border-bottom: 1px solid var(--border-color);
+            transition: background 0.2s;
+        }
+
+        .alert-item:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .alert-item:last-child {
+            border-bottom: none;
+        }
+
+        .alert-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .alert-icon.breakout { background: rgba(63, 185, 80, 0.2); }
+        .alert-icon.breakdown { background: rgba(248, 81, 73, 0.2); }
+        .alert-icon.rotation { background: rgba(47, 129, 247, 0.2); }
+
+        .alert-content {
+            flex: 1;
+        }
+
+        .alert-title {
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .alert-meta {
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        /* Heatmap */
+        .heatmap-grid {
+            display: grid;
+            grid-template-columns: repeat(11, 1fr);
+            gap: 3px;
+        }
+
+        .heatmap-cell {
+            aspect-ratio: 1;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .heatmap-cell:hover {
+            transform: scale(1.1);
+            z-index: 1;
+        }
+
+        .heatmap-row-label {
+            font-size: 10px;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            padding-right: 6px;
+        }
+
+        /* Sidebar sections */
+        .sidebar-section {
+            margin-bottom: 20px;
+        }
+
+        .sidebar-section:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Money Flow Chart */
+        .flow-bars {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .flow-bar-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .flow-bar-label {
+            width: 50px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .flow-bar-track {
+            flex: 1;
+            height: 20px;
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .flow-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            position: absolute;
+        }
+
+        .flow-bar-fill.inflow {
+            background: linear-gradient(90deg, var(--accent-green), rgba(63, 185, 80, 0.5));
+            left: 50%;
+        }
+
+        .flow-bar-fill.outflow {
+            background: linear-gradient(270deg, var(--accent-red), rgba(248, 81, 73, 0.5));
+            right: 50%;
+        }
+
+        .flow-bar-center {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--border-color);
+        }
+
+        .flow-bar-value {
+            width: 60px;
+            text-align: right;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .flow-bar-value.positive { color: var(--accent-green); }
+        .flow-bar-value.negative { color: var(--accent-red); }
+
+        /* Responsive */
+        @media (max-width: 1400px) {
+            .dashboard-grid {
                 grid-template-columns: 1fr;
             }
+
+            .sector-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
         }
-        
-        .last-updated { color: var(--text-muted); font-size: 0.8rem; }
+
+        @media (max-width: 900px) {
+            .sector-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--bg-tertiary);
+            border-radius: 3px;
+        }
     </style>
 </head>
 <body>
-    <header>
-        <div class="container header-content">
-            <div class="header-left">
-                <a href="../index.html" class="back-link">← Back to Guide Bot</a>
-                <div class="header-title">
-                    <h1>🔄 Sector Rotation</h1>
-                    <p>Track money flow and relative strength across sectors</p>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🔄 Sector Rotation Dashboard</h1>
+            <div class="header-meta">
+                <div class="market-status">
+                    <span class="status-dot"></span>
+                    Market Open
                 </div>
-            </div>
-            <div class="time-toggle">
-                <button class="time-btn" data-period="1W">1W</button>
-                <button class="time-btn active" data-period="1M">1M</button>
-                <button class="time-btn" data-period="3M">3M</button>
-                <button class="time-btn" data-period="6M">6M</button>
-                <button class="time-btn" data-period="YTD">YTD</button>
+                <span class="last-update">Last update: <span id="lastUpdate">12:34:56 PM</span></span>
+                <button class="btn" onclick="refreshData()">🔄 Refresh</button>
             </div>
         </div>
-    </header>
-    
-    <main class="container">
+
         <div class="dashboard-grid">
-            <!-- Sector Ranking -->
-            <div class="card ranking-card">
-                <div class="card-header">
-                    <h2>📊 Relative Strength Ranking</h2>
-                    <span class="last-updated" id="lastUpdated">Updated just now</span>
-                </div>
-                <div class="card-body" id="sectorRanking">
-                    <!-- Populated by JS -->
-                </div>
-            </div>
-            
-            <!-- Momentum Heatmap -->
-            <div class="card heatmap-card">
-                <div class="card-header">
-                    <h2>🌡️ Momentum Heatmap</h2>
-                </div>
-                <div class="card-body">
-                    <table class="heatmap-table" id="heatmapTable">
-                        <thead>
-                            <tr>
-                                <th>Sector</th>
-                                <th>1W</th>
-                                <th>1M</th>
-                                <th>3M</th>
-                                <th>6M</th>
-                                <th>YTD</th>
-                                <th>RS Score</th>
-                            </tr>
-                        </thead>
-                        <tbody id="heatmapBody">
+            <!-- Main Content -->
+            <div class="main-content">
+                <!-- Sector Performance Grid -->
+                <div class="card" style="margin-bottom: 20px;">
+                    <div class="card-header">
+                        <h2>📊 Sector Performance</h2>
+                        <div class="timeframe-tabs">
+                            <button class="timeframe-tab" onclick="setTimeframe('1d')">1D</button>
+                            <button class="timeframe-tab active" onclick="setTimeframe('1w')">1W</button>
+                            <button class="timeframe-tab" onclick="setTimeframe('1m')">1M</button>
+                            <button class="timeframe-tab" onclick="setTimeframe('3m')">3M</button>
+                            <button class="timeframe-tab" onclick="setTimeframe('ytd')">YTD</button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="sector-grid" id="sectorGrid">
                             <!-- Populated by JS -->
-                        </tbody>
-                    </table>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            
-            <!-- Economic Cycle -->
-            <div class="card cycle-card">
-                <div class="card-header">
-                    <h2>📈 Economic Cycle Position</h2>
+
+                <!-- Two Column Layout -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <!-- Rotation Quadrant -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>🎯 Rotation Matrix (RRG)</h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="quadrant-container">
+                                <div class="quadrant-grid">
+                                    <div class="quadrant leading">
+                                        <span class="quadrant-label">Leading</span>
+                                        <div class="quadrant-tickers" id="leadingTickers"></div>
+                                    </div>
+                                    <div class="quadrant improving">
+                                        <span class="quadrant-label">Improving</span>
+                                        <div class="quadrant-tickers" id="improvingTickers"></div>
+                                    </div>
+                                    <div class="quadrant lagging">
+                                        <span class="quadrant-label">Lagging</span>
+                                        <div class="quadrant-tickers" id="laggingTickers"></div>
+                                    </div>
+                                    <div class="quadrant weakening">
+                                        <span class="quadrant-label">Weakening</span>
+                                        <div class="quadrant-tickers" id="weakeningTickers"></div>
+                                    </div>
+                                </div>
+                                <div class="quadrant-axis horizontal"></div>
+                                <div class="quadrant-axis vertical"></div>
+                                <span class="axis-label left">← Weak RS</span>
+                                <span class="axis-label right">Strong RS →</span>
+                                <span class="axis-label top">↑ Improving</span>
+                                <span class="axis-label bottom">↓ Weakening</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Performance Ranking -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>🏆 Relative Strength Ranking</h2>
+                        </div>
+                        <div class="card-body" style="padding: 0;">
+                            <table class="performance-table">
+                                <thead>
+                                    <tr>
+                                        <th>Rank</th>
+                                        <th>Sector</th>
+                                        <th>Return</th>
+                                        <th>RS Score</th>
+                                        <th>Flow</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="rankingTable">
+                                    <!-- Populated by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <div class="cycle-diagram">
-                        <div class="cycle-quadrant" id="expansion">
-                            <div class="cycle-phase">🚀 Expansion</div>
-                            <div class="cycle-sectors">Tech, Consumer Disc, Industrials</div>
-                        </div>
-                        <div class="cycle-quadrant active" id="peak">
-                            <div class="cycle-indicator"></div>
-                            <div class="cycle-phase">⚡ Peak/Late Cycle</div>
-                            <div class="cycle-sectors">Energy, Materials, Financials</div>
-                        </div>
-                        <div class="cycle-quadrant" id="contraction">
-                            <div class="cycle-phase">📉 Contraction</div>
-                            <div class="cycle-sectors">Healthcare, Utilities, Staples</div>
-                        </div>
-                        <div class="cycle-quadrant" id="trough">
-                            <div class="cycle-phase">🔄 Recovery</div>
-                            <div class="cycle-sectors">Financials, Real Estate, Small Caps</div>
+
+                <!-- Money Flow -->
+                <div class="card" style="margin-top: 20px;">
+                    <div class="card-header">
+                        <h2>💰 Weekly Money Flow</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="flow-bars" id="flowBars">
+                            <!-- Populated by JS -->
                         </div>
                     </div>
                 </div>
             </div>
-            
-            <!-- Pair Trades -->
-            <div class="card pairs-card">
-                <div class="card-header">
-                    <h2>⚖️ Sector Pair Trade Ideas</h2>
+
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <!-- Alerts -->
+                <div class="card sidebar-section">
+                    <div class="card-header">
+                        <h2>🔔 Rotation Alerts</h2>
+                        <span style="color: var(--accent-yellow); font-size: 12px;">3 new</span>
+                    </div>
+                    <div class="alert-list" id="alertList">
+                        <!-- Populated by JS -->
+                    </div>
                 </div>
-                <div class="card-body" id="pairTrades">
-                    <!-- Populated by JS -->
+
+                <!-- Sector Correlation Heatmap -->
+                <div class="card sidebar-section">
+                    <div class="card-header">
+                        <h2>🌡️ Correlation Heatmap</h2>
+                    </div>
+                    <div class="card-body">
+                        <div id="heatmap" class="heatmap-grid">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
                 </div>
-            </div>
-            
-            <!-- Performance Chart -->
-            <div class="card chart-card">
-                <div class="card-header">
-                    <h2>📉 Sector Performance (Rebased to 100)</h2>
-                </div>
-                <div class="chart-container">
-                    <canvas id="perfChart"></canvas>
+
+                <!-- Historical Rotation -->
+                <div class="card sidebar-section">
+                    <div class="card-header">
+                        <h2>📅 Rotation History</h2>
+                    </div>
+                    <div class="card-body">
+                        <div id="rotationHistory">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-    </main>
-    
+    </div>
+
     <script>
-        // Sector data with SPY-relative returns
-        const sectorData = [
-            { ticker: 'XLK', name: 'Technology', w1: 2.8, m1: 5.2, m3: 12.5, m6: 18.2, ytd: 22.5, rs: 85 },
-            { ticker: 'XLY', name: 'Consumer Disc.', w1: 1.5, m1: 3.8, m3: 8.2, m6: 12.5, ytd: 15.8, rs: 72 },
-            { ticker: 'XLF', name: 'Financials', w1: 1.2, m1: 4.5, m3: 10.2, m6: 15.8, ytd: 18.2, rs: 78 },
-            { ticker: 'XLE', name: 'Energy', w1: -0.8, m1: -2.5, m3: -5.2, m6: -8.5, ytd: -12.2, rs: 32 },
-            { ticker: 'XLV', name: 'Healthcare', w1: 0.5, m1: 1.2, m3: 2.8, m6: 5.5, ytd: 8.2, rs: 55 },
-            { ticker: 'XLI', name: 'Industrials', w1: 0.8, m1: 2.5, m3: 6.5, m6: 10.2, ytd: 14.5, rs: 65 },
-            { ticker: 'XLP', name: 'Consumer Staples', w1: 0.2, m1: 0.8, m3: 1.5, m6: 3.2, ytd: 5.5, rs: 42 },
-            { ticker: 'XLU', name: 'Utilities', w1: -0.5, m1: -1.2, m3: -2.5, m6: -4.2, ytd: -6.5, rs: 28 },
-            { ticker: 'XLRE', name: 'Real Estate', w1: 0.8, m1: 2.2, m3: 4.5, m6: 6.8, ytd: 8.5, rs: 52 },
-            { ticker: 'XLB', name: 'Materials', w1: 0.5, m1: 1.8, m3: 4.2, m6: 7.5, ytd: 10.2, rs: 58 },
-            { ticker: 'XLC', name: 'Communication', w1: 1.8, m1: 4.2, m3: 9.5, m6: 14.2, ytd: 18.8, rs: 75 },
+        // Sector data
+        const sectors = [
+            { ticker: 'XLK', name: 'Technology', return: 4.2, rs: 78, flow: 2.4, quadrant: 'leading' },
+            { ticker: 'XLC', name: 'Comm Services', return: 3.1, rs: 72, flow: 1.8, quadrant: 'leading' },
+            { ticker: 'XLY', name: 'Cons Discretionary', return: 2.8, rs: 65, flow: 0.9, quadrant: 'improving' },
+            { ticker: 'XLF', name: 'Financials', return: 1.9, rs: 58, flow: 1.2, quadrant: 'improving' },
+            { ticker: 'XLI', name: 'Industrials', return: 1.2, rs: 52, flow: 0.4, quadrant: 'improving' },
+            { ticker: 'XLV', name: 'Healthcare', return: 0.8, rs: 45, flow: -0.3, quadrant: 'weakening' },
+            { ticker: 'XLB', name: 'Materials', return: 0.4, rs: 42, flow: -0.5, quadrant: 'weakening' },
+            { ticker: 'XLRE', name: 'Real Estate', return: -0.2, rs: 38, flow: -0.8, quadrant: 'weakening' },
+            { ticker: 'XLP', name: 'Cons Staples', return: -0.8, rs: 32, flow: -1.2, quadrant: 'lagging' },
+            { ticker: 'XLU', name: 'Utilities', return: -1.4, rs: 25, flow: -1.8, quadrant: 'lagging' },
+            { ticker: 'XLE', name: 'Energy', return: -2.1, rs: 18, flow: -2.4, quadrant: 'lagging' },
         ];
-        
-        // Sort by RS score for ranking
-        const rankedSectors = [...sectorData].sort((a, b) => b.rs - a.rs);
-        
-        // Pair trade ideas
-        const pairTrades = [
-            { long: 'XLK', short: 'XLE', spread: '+25.3%', zscore: '2.1σ', rationale: 'Tech strength vs Energy weakness' },
-            { long: 'XLF', short: 'XLU', spread: '+18.5%', zscore: '1.8σ', rationale: 'Rate beneficiaries vs rate victims' },
-            { long: 'XLY', short: 'XLP', spread: '+12.2%', zscore: '1.5σ', rationale: 'Risk-on consumer rotation' },
-            { long: 'XLC', short: 'XLE', spread: '+22.8%', zscore: '2.0σ', rationale: 'Digital vs physical economy' },
+
+        const alerts = [
+            { type: 'rotation', ticker: 'XLY', message: 'Moved from Weakening to Improving quadrant', time: '2h ago' },
+            { type: 'breakout', ticker: 'XLK', message: 'Broke above 50-day RS moving average', time: '4h ago' },
+            { type: 'breakdown', ticker: 'XLE', message: 'Lost sector leadership, dropped to Lagging', time: '6h ago' },
+            { type: 'rotation', ticker: 'XLF', message: 'Relative strength improving rapidly', time: '1d ago' },
+            { type: 'breakout', ticker: 'XLC', message: 'New 52-week relative high vs SPY', time: '1d ago' },
         ];
-        
-        let perfChart = null;
-        let currentPeriod = '1M';
-        
-        // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            renderRanking();
-            renderHeatmap();
-            renderPairTrades();
-            initChart();
-            
-            // Time toggle
-            document.querySelectorAll('.time-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
-                    this.classList.add('active');
-                    currentPeriod = this.dataset.period;
-                    renderRanking();
-                });
-            });
-        });
-        
-        function renderRanking() {
-            const container = document.getElementById('sectorRanking');
-            const periodKey = getPeriodKey(currentPeriod);
-            
-            const sorted = [...sectorData].sort((a, b) => b[periodKey] - a[periodKey]);
-            
-            container.innerHTML = sorted.map((s, i) => {
-                const perf = s[periodKey];
-                return `
-                    <div class="sector-item">
-                        <div class="sector-rank ${i === 0 ? 'rank-1' : i === 1 ? 'rank-2' : i === 2 ? 'rank-3' : 'rank-other'}">
-                            ${i + 1}
-                        </div>
-                        <div class="sector-info">
-                            <div class="sector-name">${s.name}</div>
-                            <div class="sector-ticker">${s.ticker}</div>
-                        </div>
-                        <div class="sector-perf">
-                            <div class="perf-value ${perf >= 0 ? 'perf-positive' : 'perf-negative'}">
-                                ${perf >= 0 ? '+' : ''}${perf.toFixed(1)}%
+
+        // Render sector grid
+        function renderSectorGrid() {
+            const grid = document.getElementById('sectorGrid');
+            grid.innerHTML = sectors.map((s, i) => `
+                <div class="sector-card" onclick="selectSector('${s.ticker}')">
+                    <div class="sector-header">
+                        <span class="sector-name">${s.name}</span>
+                        <span class="sector-ticker">${s.ticker}</span>
+                    </div>
+                    <div class="sector-metrics">
+                        <div class="sector-metric">
+                            <div class="sector-metric-value ${s.return >= 0 ? 'positive' : 'negative'}">
+                                ${s.return >= 0 ? '+' : ''}${s.return.toFixed(1)}%
                             </div>
-                            <div class="perf-label">${currentPeriod} return</div>
+                            <div class="sector-metric-label">Return</div>
                         </div>
+                        <div class="sector-metric">
+                            <div class="sector-metric-value">${s.rs}</div>
+                            <div class="sector-metric-label">RS Score</div>
+                        </div>
+                    </div>
+                    <div class="rs-bar-container">
+                        <div class="rs-bar">
+                            <div class="rs-bar-fill ${s.quadrant}" style="width: ${s.rs}%"></div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render rotation quadrants
+        function renderQuadrants() {
+            const quadrants = {
+                leading: document.getElementById('leadingTickers'),
+                improving: document.getElementById('improvingTickers'),
+                weakening: document.getElementById('weakeningTickers'),
+                lagging: document.getElementById('laggingTickers'),
+            };
+
+            Object.keys(quadrants).forEach(q => {
+                const tickers = sectors.filter(s => s.quadrant === q);
+                quadrants[q].innerHTML = tickers.map(t => 
+                    `<span class="quadrant-ticker">${t.ticker}</span>`
+                ).join('');
+            });
+        }
+
+        // Render ranking table
+        function renderRankingTable() {
+            const sorted = [...sectors].sort((a, b) => b.rs - a.rs);
+            const table = document.getElementById('rankingTable');
+            
+            table.innerHTML = sorted.map((s, i) => {
+                const rank = i + 1;
+                const rankClass = rank <= 3 ? 'top3' : (rank >= 9 ? 'bottom3' : '');
+                const flowClass = s.flow >= 0 ? 'inflow' : 'outflow';
+                
+                return `
+                    <tr>
+                        <td><span class="rank-badge ${rankClass}">${rank}</span></td>
+                        <td><strong>${s.ticker}</strong> <span style="color: var(--text-secondary)">${s.name}</span></td>
+                        <td class="${s.return >= 0 ? 'positive' : 'negative'}" style="color: var(${s.return >= 0 ? '--accent-green' : '--accent-red'})">
+                            ${s.return >= 0 ? '+' : ''}${s.return.toFixed(1)}%
+                        </td>
+                        <td>${s.rs}</td>
+                        <td>
+                            <div class="flow-indicator">
+                                <span class="flow-arrow ${flowClass}">${s.flow >= 0 ? '↑' : '↓'}</span>
+                                <span style="color: var(${s.flow >= 0 ? '--accent-green' : '--accent-red'})">${Math.abs(s.flow).toFixed(1)}B</span>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Render flow bars
+        function renderFlowBars() {
+            const container = document.getElementById('flowBars');
+            const sorted = [...sectors].sort((a, b) => b.flow - a.flow);
+            const maxFlow = Math.max(...sectors.map(s => Math.abs(s.flow)));
+            
+            container.innerHTML = sorted.map(s => {
+                const width = (Math.abs(s.flow) / maxFlow) * 50;
+                const isInflow = s.flow >= 0;
+                
+                return `
+                    <div class="flow-bar-row">
+                        <span class="flow-bar-label">${s.ticker}</span>
+                        <div class="flow-bar-track">
+                            <div class="flow-bar-center"></div>
+                            <div class="flow-bar-fill ${isInflow ? 'inflow' : 'outflow'}" 
+                                 style="width: ${width}%"></div>
+                        </div>
+                        <span class="flow-bar-value ${isInflow ? 'positive' : 'negative'}">
+                            ${isInflow ? '+' : ''}${s.flow.toFixed(1)}B
+                        </span>
                     </div>
                 `;
             }).join('');
         }
-        
-        function getPeriodKey(period) {
-            const map = { '1W': 'w1', '1M': 'm1', '3M': 'm3', '6M': 'm6', 'YTD': 'ytd' };
-            return map[period] || 'm1';
-        }
-        
-        function renderHeatmap() {
-            const tbody = document.getElementById('heatmapBody');
-            
-            tbody.innerHTML = rankedSectors.map(s => `
-                <tr>
-                    <td>${s.name}</td>
-                    <td><span class="heat-cell ${getHeatClass(s.w1)}">${formatPerf(s.w1)}</span></td>
-                    <td><span class="heat-cell ${getHeatClass(s.m1)}">${formatPerf(s.m1)}</span></td>
-                    <td><span class="heat-cell ${getHeatClass(s.m3)}">${formatPerf(s.m3)}</span></td>
-                    <td><span class="heat-cell ${getHeatClass(s.m6)}">${formatPerf(s.m6)}</span></td>
-                    <td><span class="heat-cell ${getHeatClass(s.ytd)}">${formatPerf(s.ytd)}</span></td>
-                    <td><strong>${s.rs}</strong></td>
-                </tr>
-            `).join('');
-        }
-        
-        function getHeatClass(val) {
-            if (val >= 5) return 'heat-strong-pos';
-            if (val >= 1) return 'heat-pos';
-            if (val <= -5) return 'heat-strong-neg';
-            if (val <= -1) return 'heat-neg';
-            return 'heat-neutral';
-        }
-        
-        function formatPerf(val) {
-            return `${val >= 0 ? '+' : ''}${val.toFixed(1)}%`;
-        }
-        
-        function renderPairTrades() {
-            const container = document.getElementById('pairTrades');
-            
-            container.innerHTML = pairTrades.map(p => `
-                <div class="pair-item">
-                    <div class="pair-trade">
-                        <span class="pair-side pair-long">Long ${p.long}</span>
-                        <span class="pair-vs">vs</span>
-                        <span class="pair-side pair-short">Short ${p.short}</span>
+
+        // Render alerts
+        function renderAlerts() {
+            const list = document.getElementById('alertList');
+            list.innerHTML = alerts.map(a => `
+                <div class="alert-item">
+                    <div class="alert-icon ${a.type}">
+                        ${a.type === 'breakout' ? '📈' : (a.type === 'breakdown' ? '📉' : '🔄')}
                     </div>
-                    <div class="pair-stats">
-                        <div class="pair-spread">${p.spread}</div>
-                        <div class="pair-zscore">Z: ${p.zscore}</div>
+                    <div class="alert-content">
+                        <div class="alert-title"><strong>${a.ticker}</strong> - ${a.message}</div>
+                        <div class="alert-meta">${a.time}</div>
                     </div>
                 </div>
             `).join('');
         }
-        
-        function initChart() {
-            const ctx = document.getElementById('perfChart').getContext('2d');
+
+        // Render correlation heatmap
+        function renderHeatmap() {
+            const container = document.getElementById('heatmap');
+            const tickers = sectors.map(s => s.ticker);
             
-            // Generate rebased performance data (30 days)
-            const labels = [];
-            const datasets = [];
-            const colors = [
-                '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6',
-                '#06b6d4', '#ec4899', '#14b8a6', '#f97316', '#6366f1', '#84cc16'
+            // Generate correlation values (mock data)
+            const getCorrelation = (i, j) => {
+                if (i === j) return 1;
+                const base = 0.3 + Math.random() * 0.5;
+                // Similar sectors have higher correlation
+                if (Math.abs(i - j) <= 2) return 0.6 + Math.random() * 0.3;
+                return base;
+            };
+            
+            const getHeatColor = (val) => {
+                if (val >= 0.8) return 'rgba(63, 185, 80, 0.8)';
+                if (val >= 0.6) return 'rgba(63, 185, 80, 0.5)';
+                if (val >= 0.4) return 'rgba(210, 153, 34, 0.5)';
+                if (val >= 0.2) return 'rgba(240, 136, 62, 0.5)';
+                return 'rgba(248, 81, 73, 0.5)';
+            };
+            
+            let html = '';
+            for (let i = 0; i < tickers.length; i++) {
+                for (let j = 0; j < tickers.length; j++) {
+                    const corr = getCorrelation(i, j);
+                    html += `<div class="heatmap-cell" style="background: ${getHeatColor(corr)}" 
+                                  title="${tickers[i]} vs ${tickers[j]}: ${corr.toFixed(2)}">
+                                ${i === j ? tickers[i].slice(-1) : ''}
+                             </div>`;
+                }
+            }
+            container.innerHTML = html;
+        }
+
+        // Render rotation history
+        function renderRotationHistory() {
+            const container = document.getElementById('rotationHistory');
+            const history = [
+                { date: 'Jan 27', from: 'XLY', fromQ: 'Weakening', to: 'Improving' },
+                { date: 'Jan 24', from: 'XLE', fromQ: 'Weakening', to: 'Lagging' },
+                { date: 'Jan 22', from: 'XLK', fromQ: 'Improving', to: 'Leading' },
+                { date: 'Jan 20', from: 'XLV', fromQ: 'Improving', to: 'Weakening' },
             ];
             
-            for (let i = 0; i < 30; i++) {
-                const date = new Date();
-                date.setDate(date.getDate() - (29 - i));
-                labels.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
-            }
-            
-            sectorData.forEach((s, idx) => {
-                const data = [100];
-                const dailyReturn = s.m1 / 30;
-                
-                for (let i = 1; i < 30; i++) {
-                    const noise = (Math.random() - 0.5) * 1.5;
-                    data.push(data[i-1] * (1 + (dailyReturn + noise) / 100));
-                }
-                
-                datasets.push({
-                    label: s.ticker,
-                    data: data,
-                    borderColor: colors[idx % colors.length],
-                    backgroundColor: 'transparent',
-                    borderWidth: 2,
-                    tension: 0.3,
-                    pointRadius: 0,
-                });
-            });
-            
-            perfChart = new Chart(ctx, {
-                type: 'line',
-                data: { labels, datasets },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    interaction: {
-                        mode: 'index',
-                        intersect: false,
-                    },
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                            labels: {
-                                color: '#9ca3af',
-                                usePointStyle: true,
-                                padding: 20,
-                            }
-                        }
-                    },
-                    scales: {
-                        x: {
-                            grid: { color: '#374151' },
-                            ticks: { color: '#9ca3af' }
-                        },
-                        y: {
-                            grid: { color: '#374151' },
-                            ticks: { color: '#9ca3af' }
-                        }
-                    }
-                }
-            });
+            container.innerHTML = history.map(h => `
+                <div style="display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border-color);">
+                    <span style="color: var(--text-secondary); font-size: 11px; width: 50px;">${h.date}</span>
+                    <span style="font-weight: 600; color: var(--accent-blue);">${h.from}</span>
+                    <span style="color: var(--text-secondary);">→</span>
+                    <span style="color: var(--accent-cyan);">${h.to}</span>
+                </div>
+            `).join('');
         }
+
+        // Timeframe switching
+        function setTimeframe(tf) {
+            document.querySelectorAll('.timeframe-tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            // In production: fetch new data for timeframe
+        }
+
+        function selectSector(ticker) {
+            document.querySelectorAll('.sector-card').forEach(c => c.classList.remove('selected'));
+            event.currentTarget.classList.add('selected');
+        }
+
+        function refreshData() {
+            document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
+        }
+
+        // Initialize
+        renderSectorGrid();
+        renderQuadrants();
+        renderRankingTable();
+        renderFlowBars();
+        renderAlerts();
+        renderHeatmap();
+        renderRotationHistory();
+
+        // Update time
+        setInterval(() => {
+            document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
+        }, 60000);
     </script>
 </body>
 </html>

@@ -3,1184 +3,1259 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stock Screener | Guide Bot - AI Equity Research</title>
-    <meta name="description" content="Build custom stock screens with flexible filters. Combine fundamentals, technicals, and sentiment with AND/OR logic.">
-    
+    <title>Custom Stock Screener Builder</title>
     <style>
         :root {
             --bg-primary: #0a0e17;
             --bg-secondary: #111827;
-            --bg-card: #1a2234;
-            --bg-card-hover: #1f2942;
-            --text-primary: #f3f4f6;
+            --bg-tertiary: #1f2937;
+            --bg-card: #161e2e;
+            --border-color: #374151;
+            --text-primary: #f9fafb;
             --text-secondary: #9ca3af;
             --text-muted: #6b7280;
+            --accent-blue: #3b82f6;
             --accent-green: #10b981;
             --accent-red: #ef4444;
-            --accent-blue: #3b82f6;
             --accent-yellow: #f59e0b;
             --accent-purple: #8b5cf6;
-            --accent-orange: #f97316;
-            --border-color: #374151;
+            --accent-cyan: #06b6d4;
         }
-        
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: var(--bg-primary);
             color: var(--text-primary);
-            line-height: 1.6;
             min-height: 100vh;
         }
-        
-        .container {
-            max-width: 1600px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        
-        /* Header */
-        header {
-            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-card) 100%);
+
+        .header {
+            background: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary));
+            padding: 24px 32px;
             border-bottom: 1px solid var(--border-color);
-            padding: 20px 0;
-            margin-bottom: 24px;
-        }
-        
-        .header-content {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
-            gap: 16px;
         }
-        
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-        
-        .back-link {
-            color: var(--text-secondary);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.9rem;
-            transition: color 0.2s;
-        }
-        
-        .back-link:hover {
-            color: var(--accent-green);
-        }
-        
-        .header-title h1 {
-            font-size: 1.8rem;
+
+        .header h1 {
+            font-size: 24px;
             font-weight: 700;
-            background: linear-gradient(135deg, #fff 0%, var(--accent-purple) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        
-        .header-title p {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-        }
-        
-        /* Main Layout */
-        .main-layout {
-            display: grid;
-            grid-template-columns: 380px 1fr;
-            gap: 24px;
-        }
-        
-        @media (max-width: 1200px) {
-            .main-layout {
-                grid-template-columns: 1fr;
-            }
-        }
-        
-        /* Screener Panel */
-        .screener-panel {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            overflow: hidden;
-            height: fit-content;
-            position: sticky;
-            top: 20px;
-        }
-        
-        .panel-header {
-            padding: 16px 20px;
-            border-bottom: 1px solid var(--border-color);
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            gap: 12px;
         }
-        
-        .panel-header h2 {
-            font-size: 1.1rem;
-            font-weight: 600;
+
+        .header h1 .icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
         }
-        
-        .panel-body {
-            padding: 20px;
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
         }
-        
-        /* Templates Section */
-        .templates-section {
-            margin-bottom: 20px;
-        }
-        
-        .templates-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 8px;
-            margin-top: 12px;
-        }
-        
-        .template-btn {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
+
+        .btn {
+            padding: 10px 20px;
             border-radius: 8px;
-            padding: 10px 12px;
-            color: var(--text-secondary);
-            font-size: 0.8rem;
+            font-size: 14px;
+            font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s;
-            text-align: left;
-        }
-        
-        .template-btn:hover {
-            border-color: var(--accent-purple);
-            color: var(--text-primary);
-        }
-        
-        .template-btn.active {
-            border-color: var(--accent-purple);
-            background: rgba(139, 92, 246, 0.1);
-            color: var(--accent-purple);
-        }
-        
-        .template-icon {
-            margin-right: 6px;
-        }
-        
-        /* Filter Builder */
-        .filter-builder {
-            margin-bottom: 20px;
-        }
-        
-        .section-label {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: 12px;
+            border: none;
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
         }
-        
-        .filter-group {
+
+        .btn-primary {
+            background: var(--accent-blue);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+
+        .btn-success {
+            background: var(--accent-green);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-color);
+        }
+
+        .btn-danger {
+            background: var(--accent-red);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .main-container {
+            display: grid;
+            grid-template-columns: 300px 1fr 350px;
+            height: calc(100vh - 89px);
+        }
+
+        /* Presets Sidebar */
+        .presets-sidebar {
             background: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .sidebar-title {
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+            letter-spacing: 0.5px;
+        }
+
+        .preset-card {
+            background: var(--bg-card);
             border: 1px solid var(--border-color);
             border-radius: 10px;
-            padding: 12px;
-            margin-bottom: 10px;
-        }
-        
-        .filter-row {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-        
-        .filter-select {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            padding: 8px 10px;
-            color: var(--text-primary);
-            font-size: 0.85rem;
-            flex: 1;
-            min-width: 100px;
-        }
-        
-        .filter-input {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            padding: 8px 10px;
-            color: var(--text-primary);
-            font-size: 0.85rem;
-            width: 80px;
-        }
-        
-        .filter-remove {
-            background: transparent;
-            border: none;
-            color: var(--accent-red);
+            padding: 14px;
+            margin-bottom: 12px;
             cursor: pointer;
-            padding: 4px;
-            font-size: 1.1rem;
-            line-height: 1;
+            transition: all 0.2s;
         }
-        
+
+        .preset-card:hover {
+            border-color: var(--accent-blue);
+            transform: translateX(4px);
+        }
+
+        .preset-card.active {
+            border-color: var(--accent-blue);
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .preset-name {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 6px;
+        }
+
+        .preset-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .preset-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .preset-tag.fundamental { background: rgba(59, 130, 246, 0.2); color: var(--accent-blue); }
+        .preset-tag.technical { background: rgba(139, 92, 246, 0.2); color: var(--accent-purple); }
+        .preset-tag.mixed { background: rgba(245, 158, 11, 0.2); color: var(--accent-yellow); }
+
+        .new-preset-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
+            border: 2px dashed var(--border-color);
+            border-radius: 10px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .new-preset-btn:hover {
+            border-color: var(--accent-blue);
+            color: var(--accent-blue);
+        }
+
+        /* Main Builder Area */
+        .builder-area {
+            padding: 24px;
+            overflow-y: auto;
+        }
+
+        .builder-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .section-header {
+            background: var(--bg-tertiary);
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .section-icon.fundamental { background: rgba(59, 130, 246, 0.2); }
+        .section-icon.technical { background: rgba(139, 92, 246, 0.2); }
+        .section-icon.alternative { background: rgba(6, 182, 212, 0.2); }
+
+        .section-body {
+            padding: 20px;
+        }
+
+        /* Filter Rows */
+        .filter-row {
+            display: grid;
+            grid-template-columns: 180px 150px 120px 150px 40px;
+            gap: 12px;
+            margin-bottom: 12px;
+            align-items: center;
+        }
+
+        .filter-row select,
+        .filter-row input {
+            padding: 10px 12px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 13px;
+        }
+
+        .filter-row select:focus,
+        .filter-row input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+        }
+
         .logic-toggle {
             display: flex;
             gap: 4px;
-            margin: 8px 0;
+            padding: 4px;
+            background: var(--bg-secondary);
+            border-radius: 6px;
         }
-        
+
         .logic-btn {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
+            padding: 6px 12px;
+            border: none;
             border-radius: 4px;
-            padding: 4px 12px;
-            color: var(--text-muted);
-            font-size: 0.75rem;
+            font-size: 12px;
             font-weight: 600;
             cursor: pointer;
+            background: transparent;
+            color: var(--text-muted);
             transition: all 0.2s;
         }
-        
+
         .logic-btn.active {
-            background: var(--accent-purple);
-            border-color: var(--accent-purple);
+            background: var(--accent-blue);
             color: white;
         }
-        
-        .add-filter-btn {
-            background: transparent;
-            border: 1px dashed var(--border-color);
-            border-radius: 8px;
-            padding: 10px;
-            color: var(--text-muted);
-            font-size: 0.85rem;
-            cursor: pointer;
-            width: 100%;
-            transition: all 0.2s;
-        }
-        
-        .add-filter-btn:hover {
-            border-color: var(--accent-purple);
-            color: var(--accent-purple);
-        }
-        
-        /* Action Buttons */
-        .action-buttons {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        
-        .btn {
+
+        .remove-filter-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
             border: none;
-            border-radius: 10px;
-            padding: 12px 20px;
-            font-size: 0.95rem;
-            font-weight: 600;
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--accent-red);
             cursor: pointer;
-            transition: all 0.2s;
             display: flex;
             align-items: center;
-            gap: 8px;
-            flex: 1;
             justify-content: center;
+            transition: all 0.2s;
         }
-        
-        .btn-primary {
-            background: var(--accent-purple);
+
+        .remove-filter-btn:hover {
+            background: var(--accent-red);
             color: white;
         }
-        
-        .btn-primary:hover {
-            opacity: 0.9;
-            transform: translateY(-1px);
-        }
-        
-        .btn-secondary {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
+
+        .add-filter-btn {
+            padding: 10px 16px;
+            background: transparent;
+            border: 1px dashed var(--border-color);
+            border-radius: 6px;
             color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
         }
-        
-        .btn-secondary:hover {
-            border-color: var(--accent-purple);
-            color: var(--text-primary);
+
+        .add-filter-btn:hover {
+            border-color: var(--accent-blue);
+            color: var(--accent-blue);
         }
-        
-        /* Results Panel */
-        .results-panel {
+
+        /* Schedule Section */
+        .schedule-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .schedule-option {
+            padding: 16px;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .schedule-option:hover {
+            border-color: var(--accent-blue);
+        }
+
+        .schedule-option.active {
+            border-color: var(--accent-green);
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .schedule-option .icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .schedule-option .label {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .schedule-option .desc {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* Results Sidebar */
+        .results-sidebar {
+            background: var(--bg-secondary);
+            border-left: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .results-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .results-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .stat-box {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
-            border-radius: 16px;
-            overflow: hidden;
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
         }
-        
-        .results-header {
-            padding: 16px 20px;
-            border-bottom: 1px solid var(--border-color);
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--accent-blue);
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+
+        .results-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        .result-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 14px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .result-item:hover {
+            border-color: var(--accent-blue);
+        }
+
+        .result-ticker {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
-            gap: 12px;
+            margin-bottom: 8px;
         }
-        
-        .results-count {
-            color: var(--text-muted);
-            font-size: 0.9rem;
+
+        .ticker-symbol {
+            font-weight: 700;
+            font-size: 16px;
         }
-        
-        .results-actions {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .btn-small {
-            padding: 8px 14px;
-            font-size: 0.85rem;
-        }
-        
-        /* Results Table */
-        .table-wrapper {
-            overflow-x: auto;
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 900px;
-        }
-        
-        th, td {
-            padding: 14px 16px;
-            text-align: right;
-            border-bottom: 1px solid var(--border-color);
-        }
-        
-        th {
-            background: var(--bg-secondary);
-            color: var(--text-secondary);
+
+        .ticker-change {
+            font-size: 13px;
             font-weight: 600;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            cursor: pointer;
-            user-select: none;
-            white-space: nowrap;
+            padding: 4px 8px;
+            border-radius: 4px;
         }
-        
-        th:hover {
-            color: var(--text-primary);
-        }
-        
-        th.sorted-asc::after {
-            content: ' ▲';
-        }
-        
-        th.sorted-desc::after {
-            content: ' ▼';
-        }
-        
-        th:first-child,
-        td:first-child {
-            text-align: left;
-            position: sticky;
-            left: 0;
-            background: var(--bg-card);
-        }
-        
-        th:first-child {
-            background: var(--bg-secondary);
-        }
-        
-        tr:hover {
-            background: var(--bg-card-hover);
-        }
-        
-        tr:hover td:first-child {
-            background: var(--bg-card-hover);
-        }
-        
-        .ticker-cell {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .ticker {
-            font-weight: 700;
-            color: var(--accent-blue);
-            min-width: 50px;
-        }
-        
-        .company-name {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            max-width: 120px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-        
-        .value-positive {
-            color: var(--accent-green);
-        }
-        
-        .value-negative {
-            color: var(--accent-red);
-        }
-        
-        .pass-indicator {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            margin-right: 6px;
-        }
-        
-        .pass-indicator.pass {
-            background: var(--accent-green);
-        }
-        
-        .pass-indicator.fail {
-            background: var(--accent-red);
-        }
-        
-        /* Score Badge */
-        .score-badge {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            font-weight: 700;
-            font-size: 0.85rem;
-        }
-        
-        .score-badge.high {
+
+        .ticker-change.positive {
             background: rgba(16, 185, 129, 0.2);
             color: var(--accent-green);
         }
-        
-        .score-badge.medium {
-            background: rgba(245, 158, 11, 0.2);
-            color: var(--accent-yellow);
-        }
-        
-        .score-badge.low {
+
+        .ticker-change.negative {
             background: rgba(239, 68, 68, 0.2);
             color: var(--accent-red);
         }
-        
-        /* Empty State */
-        .empty-state {
+
+        .result-name {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .result-metrics {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            font-size: 11px;
+        }
+
+        .metric {
             text-align: center;
-            padding: 60px 20px;
+        }
+
+        .metric-value {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .metric-label {
             color: var(--text-muted);
         }
-        
-        .empty-state h3 {
-            font-size: 1.2rem;
-            margin-bottom: 8px;
-            color: var(--text-secondary);
+
+        /* Performance Section */
+        .performance-panel {
+            padding: 16px;
+            border-top: 1px solid var(--border-color);
+            background: var(--bg-card);
         }
-        
-        /* Save Modal */
+
+        .performance-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+        }
+
+        .performance-chart {
+            height: 100px;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            display: flex;
+            align-items: flex-end;
+            padding: 12px;
+            gap: 4px;
+        }
+
+        .chart-bar {
+            flex: 1;
+            background: var(--accent-blue);
+            border-radius: 4px 4px 0 0;
+            min-height: 8px;
+            transition: all 0.3s;
+        }
+
+        .chart-bar.positive { background: var(--accent-green); }
+        .chart-bar.negative { background: var(--accent-red); }
+
+        .performance-summary {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .perf-stat {
+            text-align: center;
+            padding: 8px;
+            background: var(--bg-secondary);
+            border-radius: 6px;
+        }
+
+        .perf-stat-value {
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .perf-stat-value.positive { color: var(--accent-green); }
+        .perf-stat-value.negative { color: var(--accent-red); }
+
+        .perf-stat-label {
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        /* Modal */
         .modal-overlay {
-            display: none;
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
             background: rgba(0, 0, 0, 0.7);
-            z-index: 1000;
-            justify-content: center;
+            display: none;
             align-items: center;
+            justify-content: center;
+            z-index: 1000;
         }
-        
-        .modal-overlay.visible {
+
+        .modal-overlay.active {
             display: flex;
         }
-        
+
         .modal {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
             border-radius: 16px;
-            padding: 24px;
-            width: 90%;
-            max-width: 450px;
+            width: 480px;
+            max-width: 90%;
+            overflow: hidden;
         }
-        
-        .modal h3 {
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .modal-close {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            border: none;
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .form-group {
             margin-bottom: 16px;
         }
-        
-        .modal-input {
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .form-input {
             width: 100%;
             padding: 12px;
             background: var(--bg-secondary);
             border: 1px solid var(--border-color);
             border-radius: 8px;
             color: var(--text-primary);
-            font-size: 1rem;
-            margin-bottom: 16px;
+            font-size: 14px;
         }
-        
-        .modal-buttons {
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+        }
+
+        .modal-footer {
+            padding: 20px;
+            border-top: 1px solid var(--border-color);
             display: flex;
             justify-content: flex-end;
             gap: 12px;
         }
-        
-        /* Saved Screens */
-        .saved-screens {
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid var(--border-color);
-        }
-        
-        .saved-screen-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 12px;
-            background: var(--bg-secondary);
-            border-radius: 8px;
-            margin-bottom: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .saved-screen-item:hover {
-            background: var(--bg-card-hover);
-        }
-        
-        .saved-screen-name {
-            font-weight: 500;
-            font-size: 0.9rem;
-        }
-        
-        .saved-screen-count {
-            font-size: 0.8rem;
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
             color: var(--text-muted);
         }
-        
-        .delete-screen {
-            background: transparent;
-            border: none;
-            color: var(--accent-red);
-            cursor: pointer;
-            opacity: 0;
-            transition: opacity 0.2s;
+
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
         }
-        
-        .saved-screen-item:hover .delete-screen {
-            opacity: 1;
+
+        .empty-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
         }
-        
-        /* Responsive */
-        @media (max-width: 768px) {
-            .templates-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .filter-row {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            
-            .filter-select,
-            .filter-input {
-                width: 100%;
-            }
-            
-            .action-buttons {
-                flex-direction: column;
-            }
-            
-            .btn {
-                width: 100%;
-            }
+
+        .empty-text {
+            font-size: 13px;
         }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 16px 20px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            transform: translateX(120%);
+            transition: transform 0.3s;
+            z-index: 1001;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success { border-left: 4px solid var(--accent-green); }
+        .notification.error { border-left: 4px solid var(--accent-red); }
+        .notification.warning { border-left: 4px solid var(--accent-yellow); }
     </style>
 </head>
 <body>
-    <header>
-        <div class="container header-content">
-            <div class="header-left">
-                <a href="../index.html" class="back-link">
-                    ← Back to Guide Bot
-                </a>
-                <div class="header-title">
-                    <h1>🔍 Stock Screener</h1>
-                    <p>Build custom screens with AND/OR logic</p>
+    <div class="header">
+        <h1>
+            <span class="icon">🔍</span>
+            Custom Stock Screener Builder
+        </h1>
+        <div class="header-actions">
+            <button class="btn btn-secondary" onclick="runBacktest()">
+                📊 Backtest
+            </button>
+            <button class="btn btn-primary" onclick="runScreen()">
+                ▶️ Run Screen
+            </button>
+            <button class="btn btn-success" onclick="openSaveModal()">
+                💾 Save Preset
+            </button>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <!-- Presets Sidebar -->
+        <div class="presets-sidebar">
+            <div class="sidebar-title">📁 Saved Presets</div>
+            <div id="presetsList"></div>
+            <button class="new-preset-btn" onclick="createNewScreen()">
+                ➕ New Screen
+            </button>
+        </div>
+
+        <!-- Main Builder -->
+        <div class="builder-area">
+            <!-- Screen Name -->
+            <div class="builder-section">
+                <div class="section-header">
+                    <span class="section-title">
+                        <span class="section-icon" style="background: rgba(245, 158, 11, 0.2);">📝</span>
+                        Screen Configuration
+                    </span>
+                </div>
+                <div class="section-body">
+                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 16px;">
+                        <div class="form-group" style="margin: 0;">
+                            <label class="form-label">Screen Name</label>
+                            <input type="text" class="form-input" id="screenName" placeholder="My Custom Screen">
+                        </div>
+                        <div class="form-group" style="margin: 0;">
+                            <label class="form-label">Universe</label>
+                            <select class="form-input" id="universe">
+                                <option value="sp500">S&P 500</option>
+                                <option value="sp1500">S&P 1500</option>
+                                <option value="russell1000">Russell 1000</option>
+                                <option value="russell2000">Russell 2000</option>
+                                <option value="nasdaq100">Nasdaq 100</option>
+                                <option value="all">All US Stocks</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fundamental Filters -->
+            <div class="builder-section">
+                <div class="section-header">
+                    <span class="section-title">
+                        <span class="section-icon fundamental">📊</span>
+                        Fundamental Filters
+                    </span>
+                    <div class="logic-toggle">
+                        <button class="logic-btn active" data-logic="and" onclick="setLogic('fundamental', 'and')">AND</button>
+                        <button class="logic-btn" data-logic="or" onclick="setLogic('fundamental', 'or')">OR</button>
+                    </div>
+                </div>
+                <div class="section-body">
+                    <div id="fundamentalFilters"></div>
+                    <button class="add-filter-btn" onclick="addFilter('fundamental')">
+                        ➕ Add Fundamental Filter
+                    </button>
+                </div>
+            </div>
+
+            <!-- Technical Filters -->
+            <div class="builder-section">
+                <div class="section-header">
+                    <span class="section-title">
+                        <span class="section-icon technical">📈</span>
+                        Technical Filters
+                    </span>
+                    <div class="logic-toggle">
+                        <button class="logic-btn active" data-logic="and" onclick="setLogic('technical', 'and')">AND</button>
+                        <button class="logic-btn" data-logic="or" onclick="setLogic('technical', 'or')">OR</button>
+                    </div>
+                </div>
+                <div class="section-body">
+                    <div id="technicalFilters"></div>
+                    <button class="add-filter-btn" onclick="addFilter('technical')">
+                        ➕ Add Technical Filter
+                    </button>
+                </div>
+            </div>
+
+            <!-- Alternative Data Filters -->
+            <div class="builder-section">
+                <div class="section-header">
+                    <span class="section-title">
+                        <span class="section-icon alternative">🔮</span>
+                        Alternative Data Filters
+                    </span>
+                    <div class="logic-toggle">
+                        <button class="logic-btn active" data-logic="and" onclick="setLogic('alternative', 'and')">AND</button>
+                        <button class="logic-btn" data-logic="or" onclick="setLogic('alternative', 'or')">OR</button>
+                    </div>
+                </div>
+                <div class="section-body">
+                    <div id="alternativeFilters"></div>
+                    <button class="add-filter-btn" onclick="addFilter('alternative')">
+                        ➕ Add Alternative Filter
+                    </button>
+                </div>
+            </div>
+
+            <!-- Schedule -->
+            <div class="builder-section">
+                <div class="section-header">
+                    <span class="section-title">
+                        <span class="section-icon" style="background: rgba(16, 185, 129, 0.2);">⏰</span>
+                        Schedule Scans
+                    </span>
+                </div>
+                <div class="section-body">
+                    <div class="schedule-options">
+                        <div class="schedule-option" data-schedule="none" onclick="setSchedule('none')">
+                            <div class="icon">🚫</div>
+                            <div class="label">Manual Only</div>
+                            <div class="desc">Run on demand</div>
+                        </div>
+                        <div class="schedule-option active" data-schedule="daily" onclick="setSchedule('daily')">
+                            <div class="icon">📅</div>
+                            <div class="label">Daily</div>
+                            <div class="desc">9:30 AM ET</div>
+                        </div>
+                        <div class="schedule-option" data-schedule="weekly" onclick="setSchedule('weekly')">
+                            <div class="icon">📆</div>
+                            <div class="label">Weekly</div>
+                            <div class="desc">Monday 9:30 AM</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-    </header>
-    
-    <main class="container">
-        <div class="main-layout">
-            <!-- Screener Panel -->
-            <div class="screener-panel">
-                <div class="panel-header">
-                    <h2>📋 Screen Builder</h2>
-                    <button class="btn-small btn-secondary" onclick="clearFilters()">Clear All</button>
-                </div>
-                <div class="panel-body">
-                    <!-- Quick Templates -->
-                    <div class="templates-section">
-                        <div class="section-label">Quick Templates</div>
-                        <div class="templates-grid">
-                            <button class="template-btn" onclick="loadTemplate('value')">
-                                <span class="template-icon">💎</span>Value Stocks
-                            </button>
-                            <button class="template-btn" onclick="loadTemplate('growth')">
-                                <span class="template-icon">🚀</span>High Growth
-                            </button>
-                            <button class="template-btn" onclick="loadTemplate('dividend')">
-                                <span class="template-icon">💰</span>Dividend Payers
-                            </button>
-                            <button class="template-btn" onclick="loadTemplate('momentum')">
-                                <span class="template-icon">📈</span>Momentum
-                            </button>
-                            <button class="template-btn" onclick="loadTemplate('quality')">
-                                <span class="template-icon">⭐</span>Quality
-                            </button>
-                            <button class="template-btn" onclick="loadTemplate('smallcap')">
-                                <span class="template-icon">🔬</span>Small Cap Value
-                            </button>
-                        </div>
+
+        <!-- Results Sidebar -->
+        <div class="results-sidebar">
+            <div class="results-header">
+                <div class="sidebar-title">🎯 Screen Results</div>
+                <div class="results-stats">
+                    <div class="stat-box">
+                        <div class="stat-value" id="matchCount">0</div>
+                        <div class="stat-label">Matches</div>
                     </div>
-                    
-                    <!-- Filter Builder -->
-                    <div class="filter-builder">
-                        <div class="section-label">
-                            <span>Filters</span>
-                            <div class="logic-toggle">
-                                <button class="logic-btn active" data-logic="AND" onclick="setLogic('AND')">AND</button>
-                                <button class="logic-btn" data-logic="OR" onclick="setLogic('OR')">OR</button>
-                            </div>
-                        </div>
-                        
-                        <div id="filtersContainer">
-                            <!-- Filters added dynamically -->
-                        </div>
-                        
-                        <button class="add-filter-btn" onclick="addFilter()">
-                            + Add Filter
-                        </button>
-                    </div>
-                    
-                    <!-- Action Buttons -->
-                    <div class="action-buttons">
-                        <button class="btn btn-primary" onclick="runScreen()">
-                            🔍 Run Screen
-                        </button>
-                        <button class="btn btn-secondary" onclick="openSaveModal()">
-                            💾 Save
-                        </button>
-                    </div>
-                    
-                    <!-- Saved Screens -->
-                    <div class="saved-screens" id="savedScreensSection">
-                        <div class="section-label">Saved Screens</div>
-                        <div id="savedScreensList">
-                            <!-- Loaded dynamically -->
-                        </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="universeSize">500</div>
+                        <div class="stat-label">Universe</div>
                     </div>
                 </div>
             </div>
-            
-            <!-- Results Panel -->
-            <div class="results-panel">
-                <div class="results-header">
-                    <div>
-                        <h2>📊 Results</h2>
-                        <span class="results-count" id="resultsCount">Run a screen to see results</span>
-                    </div>
-                    <div class="results-actions">
-                        <button class="btn btn-secondary btn-small" onclick="exportResults()">
-                            📥 Export CSV
-                        </button>
-                    </div>
-                </div>
-                <div class="table-wrapper">
-                    <table id="resultsTable">
-                        <thead>
-                            <tr>
-                                <th data-sort="ticker">Company</th>
-                                <th data-sort="score">Score</th>
-                                <th data-sort="price">Price</th>
-                                <th data-sort="marketCap">Mkt Cap</th>
-                                <th data-sort="pe">P/E</th>
-                                <th data-sort="revenueGrowth">Rev Growth</th>
-                                <th data-sort="netMargin">Net Margin</th>
-                                <th data-sort="roe">ROE</th>
-                                <th data-sort="dividendYield">Div Yield</th>
-                            </tr>
-                        </thead>
-                        <tbody id="resultsBody">
-                            <tr>
-                                <td colspan="9" class="empty-state">
-                                    <h3>🔍 Build your screen</h3>
-                                    <p>Add filters and click "Run Screen" to find matching stocks</p>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+
+            <div class="results-list" id="resultsList">
+                <div class="empty-state">
+                    <div class="empty-icon">🔍</div>
+                    <div class="empty-title">No Results Yet</div>
+                    <div class="empty-text">Add filters and run the screen to see matching stocks</div>
                 </div>
             </div>
-        </div>
-    </main>
-    
-    <!-- Save Modal -->
-    <div class="modal-overlay" id="saveModal">
-        <div class="modal">
-            <h3>💾 Save Screen</h3>
-            <input type="text" class="modal-input" id="screenName" placeholder="Screen name (e.g., My Value Screen)">
-            <div class="modal-buttons">
-                <button class="btn btn-secondary" onclick="closeSaveModal()">Cancel</button>
-                <button class="btn btn-primary" onclick="saveScreen()">Save</button>
+
+            <div class="performance-panel">
+                <div class="performance-title">📈 Historical Performance</div>
+                <div class="performance-chart" id="performanceChart"></div>
+                <div class="performance-summary">
+                    <div class="perf-stat">
+                        <div class="perf-stat-value positive" id="perfReturn">+18.4%</div>
+                        <div class="perf-stat-label">1Y Return</div>
+                    </div>
+                    <div class="perf-stat">
+                        <div class="perf-stat-value" id="perfSharpe">1.42</div>
+                        <div class="perf-stat-label">Sharpe</div>
+                    </div>
+                    <div class="perf-stat">
+                        <div class="perf-stat-value negative" id="perfDrawdown">-12.3%</div>
+                        <div class="perf-stat-label">Max DD</div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-    
+
+    <!-- Save Preset Modal -->
+    <div class="modal-overlay" id="saveModal">
+        <div class="modal">
+            <div class="modal-header">
+                <span class="modal-title">💾 Save Screen Preset</span>
+                <button class="modal-close" onclick="closeSaveModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Preset Name</label>
+                    <input type="text" class="form-input" id="presetName" placeholder="Value + Momentum Screen">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <input type="text" class="form-input" id="presetDesc" placeholder="Combines value metrics with price momentum">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tags</label>
+                    <select class="form-input" id="presetTags">
+                        <option value="fundamental">Fundamental</option>
+                        <option value="technical">Technical</option>
+                        <option value="mixed">Mixed Strategy</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeSaveModal()">Cancel</button>
+                <button class="btn btn-success" onclick="savePreset()">Save Preset</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification">
+        <span id="notificationText"></span>
+    </div>
+
     <script>
-        // Sample stock data - in production from Python fetcher
-        const stockUniverse = [
-            { ticker: 'AAPL', name: 'Apple Inc.', sector: 'Technology', price: 178.50, marketCap: 2800000000000, pe: 28.5, forwardPE: 26.2, revenueGrowth: 8.5, epsGrowth: 12.3, netMargin: 25.3, grossMargin: 43.5, roe: 147.2, roic: 48.5, dividendYield: 0.5, debtToEquity: 1.8, currentRatio: 1.0, rsi: 55 },
-            { ticker: 'MSFT', name: 'Microsoft', sector: 'Technology', price: 378.90, marketCap: 2810000000000, pe: 35.2, forwardPE: 31.5, revenueGrowth: 15.8, epsGrowth: 18.2, netMargin: 36.5, grossMargin: 69.8, roe: 38.5, roic: 25.2, dividendYield: 0.8, debtToEquity: 0.4, currentRatio: 1.8, rsi: 62 },
-            { ticker: 'GOOG', name: 'Alphabet', sector: 'Technology', price: 141.80, marketCap: 1780000000000, pe: 24.8, forwardPE: 21.2, revenueGrowth: 12.5, epsGrowth: 28.5, netMargin: 23.8, grossMargin: 56.2, roe: 28.2, roic: 22.5, dividendYield: 0, debtToEquity: 0.1, currentRatio: 2.9, rsi: 48 },
-            { ticker: 'META', name: 'Meta Platforms', sector: 'Technology', price: 505.20, marketCap: 1290000000000, pe: 27.5, forwardPE: 22.8, revenueGrowth: 22.5, epsGrowth: 45.2, netMargin: 28.2, grossMargin: 80.5, roe: 32.5, roic: 28.8, dividendYield: 0.4, debtToEquity: 0.2, currentRatio: 2.7, rsi: 71 },
-            { ticker: 'NVDA', name: 'NVIDIA', sector: 'Technology', price: 495.50, marketCap: 1220000000000, pe: 62.5, forwardPE: 35.2, revenueGrowth: 122.5, epsGrowth: 285.2, netMargin: 48.5, grossMargin: 72.8, roe: 82.5, roic: 65.2, dividendYield: 0.04, debtToEquity: 0.4, currentRatio: 4.2, rsi: 68 },
-            { ticker: 'JPM', name: 'JPMorgan Chase', sector: 'Financial', price: 195.80, marketCap: 565000000000, pe: 11.2, forwardPE: 10.5, revenueGrowth: 8.2, epsGrowth: 15.5, netMargin: 32.5, grossMargin: 0, roe: 15.2, roic: 0, dividendYield: 2.4, debtToEquity: 1.2, currentRatio: 0, rsi: 58 },
-            { ticker: 'JNJ', name: 'Johnson & Johnson', sector: 'Healthcare', price: 156.20, marketCap: 376000000000, pe: 15.8, forwardPE: 14.2, revenueGrowth: 5.2, epsGrowth: 8.5, netMargin: 18.5, grossMargin: 68.2, roe: 22.5, roic: 15.8, dividendYield: 3.0, debtToEquity: 0.4, currentRatio: 1.2, rsi: 42 },
-            { ticker: 'PG', name: 'Procter & Gamble', sector: 'Consumer', price: 162.50, marketCap: 382000000000, pe: 26.5, forwardPE: 24.2, revenueGrowth: 4.5, epsGrowth: 6.2, netMargin: 18.2, grossMargin: 51.5, roe: 32.5, roic: 18.5, dividendYield: 2.4, debtToEquity: 0.6, currentRatio: 0.7, rsi: 51 },
-            { ticker: 'XOM', name: 'Exxon Mobil', sector: 'Energy', price: 105.80, marketCap: 420000000000, pe: 12.5, forwardPE: 11.8, revenueGrowth: -5.2, epsGrowth: -12.5, netMargin: 10.5, grossMargin: 32.5, roe: 18.2, roic: 12.5, dividendYield: 3.5, debtToEquity: 0.2, currentRatio: 1.4, rsi: 45 },
-            { ticker: 'BRK.B', name: 'Berkshire Hathaway', sector: 'Financial', price: 408.50, marketCap: 890000000000, pe: 8.5, forwardPE: 0, revenueGrowth: 12.5, epsGrowth: 25.2, netMargin: 15.2, grossMargin: 0, roe: 12.5, roic: 0, dividendYield: 0, debtToEquity: 0.2, currentRatio: 0, rsi: 55 },
-            { ticker: 'V', name: 'Visa Inc.', sector: 'Financial', price: 278.50, marketCap: 560000000000, pe: 30.2, forwardPE: 26.5, revenueGrowth: 10.5, epsGrowth: 15.2, netMargin: 52.5, grossMargin: 0, roe: 45.2, roic: 28.5, dividendYield: 0.8, debtToEquity: 0.5, currentRatio: 1.5, rsi: 60 },
-            { ticker: 'HD', name: 'Home Depot', sector: 'Consumer', price: 345.20, marketCap: 342000000000, pe: 22.5, forwardPE: 20.8, revenueGrowth: 3.2, epsGrowth: 5.5, netMargin: 10.2, grossMargin: 33.5, roe: 0, roic: 35.2, dividendYield: 2.5, debtToEquity: 0, currentRatio: 1.3, rsi: 52 },
-            { ticker: 'KO', name: 'Coca-Cola', sector: 'Consumer', price: 62.50, marketCap: 270000000000, pe: 24.5, forwardPE: 22.2, revenueGrowth: 6.5, epsGrowth: 8.2, netMargin: 22.5, grossMargin: 60.2, roe: 42.5, roic: 12.5, dividendYield: 3.0, debtToEquity: 1.8, currentRatio: 1.1, rsi: 48 },
-            { ticker: 'PEP', name: 'PepsiCo', sector: 'Consumer', price: 172.80, marketCap: 238000000000, pe: 26.2, forwardPE: 23.5, revenueGrowth: 5.8, epsGrowth: 7.5, netMargin: 12.5, grossMargin: 54.8, roe: 52.5, roic: 15.2, dividendYield: 2.8, debtToEquity: 2.2, currentRatio: 0.8, rsi: 46 },
-            { ticker: 'COST', name: 'Costco', sector: 'Consumer', price: 725.50, marketCap: 322000000000, pe: 48.5, forwardPE: 42.2, revenueGrowth: 8.5, epsGrowth: 12.5, netMargin: 2.8, grossMargin: 12.5, roe: 28.5, roic: 18.5, dividendYield: 0.6, debtToEquity: 0.3, currentRatio: 1.0, rsi: 65 },
-            { ticker: 'MRK', name: 'Merck', sector: 'Healthcare', price: 125.80, marketCap: 318000000000, pe: 18.5, forwardPE: 14.2, revenueGrowth: 12.5, epsGrowth: 45.2, netMargin: 22.5, grossMargin: 72.5, roe: 35.2, roic: 18.5, dividendYield: 2.4, debtToEquity: 0.8, currentRatio: 1.4, rsi: 58 },
-            { ticker: 'ABBV', name: 'AbbVie', sector: 'Healthcare', price: 168.50, marketCap: 297000000000, pe: 22.5, forwardPE: 15.2, revenueGrowth: -5.5, epsGrowth: 8.2, netMargin: 18.5, grossMargin: 68.5, roe: 0, roic: 12.5, dividendYield: 3.6, debtToEquity: 5.2, currentRatio: 0.9, rsi: 62 },
-            { ticker: 'CVX', name: 'Chevron', sector: 'Energy', price: 148.20, marketCap: 275000000000, pe: 11.8, forwardPE: 12.5, revenueGrowth: -8.5, epsGrowth: -15.2, netMargin: 12.5, grossMargin: 42.5, roe: 14.5, roic: 10.2, dividendYield: 4.2, debtToEquity: 0.1, currentRatio: 1.5, rsi: 38 },
-            { ticker: 'INTC', name: 'Intel', sector: 'Technology', price: 45.20, marketCap: 192000000000, pe: 0, forwardPE: 28.5, revenueGrowth: -15.2, epsGrowth: 0, netMargin: -2.5, grossMargin: 42.5, roe: -5.2, roic: -2.5, dividendYield: 1.1, debtToEquity: 0.5, currentRatio: 1.6, rsi: 35 },
-            { ticker: 'CSCO', name: 'Cisco', sector: 'Technology', price: 52.80, marketCap: 215000000000, pe: 15.2, forwardPE: 13.5, revenueGrowth: -5.8, epsGrowth: 2.5, netMargin: 22.5, grossMargin: 62.5, roe: 28.5, roic: 15.2, dividendYield: 2.9, debtToEquity: 0.2, currentRatio: 1.4, rsi: 52 },
-        ];
-        
-        // Filter definitions
-        const filterDefinitions = {
-            // Valuation
-            pe: { label: 'P/E Ratio', category: 'Valuation' },
-            forwardPE: { label: 'Forward P/E', category: 'Valuation' },
-            // Growth
-            revenueGrowth: { label: 'Revenue Growth %', category: 'Growth' },
-            epsGrowth: { label: 'EPS Growth %', category: 'Growth' },
-            // Profitability
-            netMargin: { label: 'Net Margin %', category: 'Profitability' },
-            grossMargin: { label: 'Gross Margin %', category: 'Profitability' },
-            // Returns
-            roe: { label: 'ROE %', category: 'Returns' },
-            roic: { label: 'ROIC %', category: 'Returns' },
-            // Income
-            dividendYield: { label: 'Dividend Yield %', category: 'Income' },
-            // Size
-            marketCap: { label: 'Market Cap ($B)', category: 'Size', scale: 1e9 },
-            // Technical
-            rsi: { label: 'RSI (14)', category: 'Technical' },
-            // Balance Sheet
-            debtToEquity: { label: 'Debt/Equity', category: 'Balance Sheet' },
-            currentRatio: { label: 'Current Ratio', category: 'Balance Sheet' },
+        // Filter options
+        const filterOptions = {
+            fundamental: [
+                { value: 'pe', label: 'P/E Ratio' },
+                { value: 'pb', label: 'P/B Ratio' },
+                { value: 'ps', label: 'P/S Ratio' },
+                { value: 'ev_ebitda', label: 'EV/EBITDA' },
+                { value: 'market_cap', label: 'Market Cap ($B)' },
+                { value: 'roe', label: 'ROE (%)' },
+                { value: 'roic', label: 'ROIC (%)' },
+                { value: 'debt_equity', label: 'Debt/Equity' },
+                { value: 'current_ratio', label: 'Current Ratio' },
+                { value: 'gross_margin', label: 'Gross Margin (%)' },
+                { value: 'operating_margin', label: 'Operating Margin (%)' },
+                { value: 'net_margin', label: 'Net Margin (%)' },
+                { value: 'revenue_growth', label: 'Revenue Growth (%)' },
+                { value: 'eps_growth', label: 'EPS Growth (%)' },
+                { value: 'dividend_yield', label: 'Dividend Yield (%)' },
+                { value: 'payout_ratio', label: 'Payout Ratio (%)' },
+                { value: 'fcf_yield', label: 'FCF Yield (%)' }
+            ],
+            technical: [
+                { value: 'price_52w_high', label: '% from 52W High' },
+                { value: 'price_52w_low', label: '% from 52W Low' },
+                { value: 'sma_50', label: 'Price vs SMA 50' },
+                { value: 'sma_200', label: 'Price vs SMA 200' },
+                { value: 'rsi_14', label: 'RSI (14)' },
+                { value: 'macd_signal', label: 'MACD Signal' },
+                { value: 'volume_avg', label: 'Volume vs Avg (%)' },
+                { value: 'volatility_30', label: '30D Volatility (%)' },
+                { value: 'beta', label: 'Beta' },
+                { value: 'momentum_1m', label: '1M Momentum (%)' },
+                { value: 'momentum_3m', label: '3M Momentum (%)' },
+                { value: 'momentum_6m', label: '6M Momentum (%)' },
+                { value: 'atr_pct', label: 'ATR (%)' }
+            ],
+            alternative: [
+                { value: 'short_interest', label: 'Short Interest (%)' },
+                { value: 'days_to_cover', label: 'Days to Cover' },
+                { value: 'insider_buying', label: 'Insider Buying ($M)' },
+                { value: 'inst_ownership', label: 'Inst. Ownership (%)' },
+                { value: 'analyst_rating', label: 'Analyst Rating (1-5)' },
+                { value: 'price_target_upside', label: 'PT Upside (%)' },
+                { value: 'earnings_surprise', label: 'Last EPS Surprise (%)' },
+                { value: 'estimate_revisions', label: 'Est. Revisions (30d)' },
+                { value: 'social_sentiment', label: 'Social Sentiment' },
+                { value: 'news_sentiment', label: 'News Sentiment' },
+                { value: 'web_traffic_growth', label: 'Web Traffic Growth (%)' },
+                { value: 'job_postings_growth', label: 'Job Postings Growth (%)' }
+            ]
         };
-        
+
         const operators = [
             { value: 'gt', label: '>' },
             { value: 'gte', label: '>=' },
             { value: 'lt', label: '<' },
             { value: 'lte', label: '<=' },
             { value: 'eq', label: '=' },
+            { value: 'between', label: 'Between' }
         ];
-        
-        // Templates
-        const templates = {
-            value: [
-                { metric: 'pe', operator: 'lt', value: 15 },
-                { metric: 'dividendYield', operator: 'gt', value: 2 },
-                { metric: 'roe', operator: 'gt', value: 10 },
-            ],
-            growth: [
-                { metric: 'revenueGrowth', operator: 'gt', value: 15 },
-                { metric: 'epsGrowth', operator: 'gt', value: 20 },
-                { metric: 'grossMargin', operator: 'gt', value: 40 },
-            ],
-            dividend: [
-                { metric: 'dividendYield', operator: 'gt', value: 2.5 },
-                { metric: 'pe', operator: 'lt', value: 25 },
-                { metric: 'netMargin', operator: 'gt', value: 10 },
-            ],
-            momentum: [
-                { metric: 'rsi', operator: 'gt', value: 50 },
-                { metric: 'revenueGrowth', operator: 'gt', value: 10 },
-                { metric: 'epsGrowth', operator: 'gt', value: 15 },
-            ],
-            quality: [
-                { metric: 'roe', operator: 'gt', value: 15 },
-                { metric: 'netMargin', operator: 'gt', value: 15 },
-                { metric: 'debtToEquity', operator: 'lt', value: 1 },
-            ],
-            smallcap: [
-                { metric: 'marketCap', operator: 'lt', value: 10 },
-                { metric: 'pe', operator: 'lt', value: 15 },
-                { metric: 'revenueGrowth', operator: 'gt', value: 10 },
-            ],
+
+        // State
+        let currentScreen = {
+            name: '',
+            universe: 'sp500',
+            filters: {
+                fundamental: { logic: 'and', conditions: [] },
+                technical: { logic: 'and', conditions: [] },
+                alternative: { logic: 'and', conditions: [] }
+            },
+            schedule: 'daily'
         };
-        
-        let filters = [];
-        let logic = 'AND';
-        let sortColumn = 'score';
-        let sortDirection = 'desc';
-        let results = [];
-        let savedScreens = JSON.parse(localStorage.getItem('savedScreens') || '[]');
-        
+
+        let presets = [
+            { id: 1, name: 'Value + Quality', tag: 'fundamental', filters: 8, matches: 47 },
+            { id: 2, name: 'Momentum Breakout', tag: 'technical', filters: 5, matches: 32 },
+            { id: 3, name: 'GARP Screen', tag: 'mixed', filters: 12, matches: 28 },
+            { id: 4, name: 'Dividend Growth', tag: 'fundamental', filters: 6, matches: 65 },
+            { id: 5, name: 'High Short Interest', tag: 'mixed', filters: 4, matches: 18 }
+        ];
+
         // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            renderSavedScreens();
-            addFilter(); // Start with one filter
-            
-            // Table sorting
-            document.querySelectorAll('th[data-sort]').forEach(th => {
-                th.addEventListener('click', function() {
-                    const column = this.dataset.sort;
-                    if (sortColumn === column) {
-                        sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
-                    } else {
-                        sortColumn = column;
-                        sortDirection = 'desc';
-                    }
-                    renderResults();
-                });
-            });
+        document.addEventListener('DOMContentLoaded', () => {
+            renderPresets();
+            renderPerformanceChart();
+            // Add some default filters
+            addFilter('fundamental');
+            addFilter('technical');
         });
-        
-        function addFilter() {
-            const id = Date.now();
-            filters.push({ id, metric: 'pe', operator: 'lt', value: 20 });
-            renderFilters();
-        }
-        
-        function removeFilter(id) {
-            filters = filters.filter(f => f.id !== id);
-            renderFilters();
-        }
-        
-        function updateFilter(id, field, value) {
-            const filter = filters.find(f => f.id === id);
-            if (filter) {
-                filter[field] = field === 'value' ? parseFloat(value) || 0 : value;
-            }
-        }
-        
-        function renderFilters() {
-            const container = document.getElementById('filtersContainer');
-            
-            container.innerHTML = filters.map((f, i) => `
-                <div class="filter-group" data-id="${f.id}">
-                    <div class="filter-row">
-                        <select class="filter-select" onchange="updateFilter(${f.id}, 'metric', this.value)">
-                            ${Object.entries(filterDefinitions).map(([key, def]) => 
-                                `<option value="${key}" ${f.metric === key ? 'selected' : ''}>${def.label}</option>`
-                            ).join('')}
-                        </select>
-                        <select class="filter-select" style="width: 70px; flex: 0;" onchange="updateFilter(${f.id}, 'operator', this.value)">
-                            ${operators.map(op => 
-                                `<option value="${op.value}" ${f.operator === op.value ? 'selected' : ''}>${op.label}</option>`
-                            ).join('')}
-                        </select>
-                        <input type="number" class="filter-input" value="${f.value}" 
-                            onchange="updateFilter(${f.id}, 'value', this.value)" step="any">
-                        <button class="filter-remove" onclick="removeFilter(${f.id})">×</button>
+
+        function renderPresets() {
+            const container = document.getElementById('presetsList');
+            container.innerHTML = presets.map(preset => `
+                <div class="preset-card" onclick="loadPreset(${preset.id})">
+                    <div class="preset-name">${preset.name}</div>
+                    <div class="preset-meta">
+                        <span class="preset-tag ${preset.tag}">${preset.tag}</span>
+                        <span>${preset.filters} filters · ${preset.matches} matches</span>
                     </div>
                 </div>
             `).join('');
         }
-        
-        function setLogic(newLogic) {
-            logic = newLogic;
-            document.querySelectorAll('.logic-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.logic === newLogic);
+
+        function addFilter(category) {
+            const container = document.getElementById(`${category}Filters`);
+            const options = filterOptions[category];
+            const id = Date.now();
+
+            const filterHtml = `
+                <div class="filter-row" data-id="${id}">
+                    <select class="filter-metric">
+                        ${options.map(opt => `<option value="${opt.value}">${opt.label}</option>`).join('')}
+                    </select>
+                    <select class="filter-operator">
+                        ${operators.map(op => `<option value="${op.value}">${op.label}</option>`).join('')}
+                    </select>
+                    <input type="number" class="filter-value1" placeholder="Value">
+                    <input type="number" class="filter-value2" placeholder="Max" style="display: none;">
+                    <button class="remove-filter-btn" onclick="removeFilter(this)">✕</button>
+                </div>
+            `;
+
+            container.insertAdjacentHTML('beforeend', filterHtml);
+
+            // Setup operator change handler
+            const row = container.querySelector(`[data-id="${id}"]`);
+            const opSelect = row.querySelector('.filter-operator');
+            const value2Input = row.querySelector('.filter-value2');
+
+            opSelect.addEventListener('change', (e) => {
+                value2Input.style.display = e.target.value === 'between' ? 'block' : 'none';
             });
         }
-        
-        function loadTemplate(name) {
-            filters = templates[name].map((f, i) => ({ ...f, id: Date.now() + i }));
-            renderFilters();
-            
-            document.querySelectorAll('.template-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.closest('.template-btn').classList.add('active');
+
+        function removeFilter(btn) {
+            btn.closest('.filter-row').remove();
         }
-        
-        function clearFilters() {
-            filters = [];
-            addFilter();
-            document.querySelectorAll('.template-btn').forEach(btn => btn.classList.remove('active'));
+
+        function setLogic(category, logic) {
+            const header = document.querySelector(`#${category}Filters`).closest('.builder-section').querySelector('.section-header');
+            header.querySelectorAll('.logic-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.logic === logic);
+            });
+            currentScreen.filters[category].logic = logic;
         }
-        
+
+        function setSchedule(schedule) {
+            document.querySelectorAll('.schedule-option').forEach(opt => {
+                opt.classList.toggle('active', opt.dataset.schedule === schedule);
+            });
+            currentScreen.schedule = schedule;
+        }
+
         function runScreen() {
-            results = stockUniverse.filter(stock => {
-                const passes = filters.map(f => {
-                    let value = stock[f.metric];
-                    const def = filterDefinitions[f.metric];
-                    
-                    // Scale market cap to billions
-                    if (def.scale) {
-                        value = value / def.scale;
-                    }
-                    
-                    switch (f.operator) {
-                        case 'gt': return value > f.value;
-                        case 'gte': return value >= f.value;
-                        case 'lt': return value < f.value;
-                        case 'lte': return value <= f.value;
-                        case 'eq': return value === f.value;
-                        default: return true;
-                    }
-                });
-                
-                return logic === 'AND' ? passes.every(p => p) : passes.some(p => p);
-            });
+            showNotification('Running screen...', 'warning');
             
-            // Calculate score (% of filters passed)
-            results = results.map(stock => {
-                const passes = filters.filter(f => {
-                    let value = stock[f.metric];
-                    const def = filterDefinitions[f.metric];
-                    if (def.scale) value = value / def.scale;
-                    
-                    switch (f.operator) {
-                        case 'gt': return value > f.value;
-                        case 'gte': return value >= f.value;
-                        case 'lt': return value < f.value;
-                        case 'lte': return value <= f.value;
-                        case 'eq': return value === f.value;
-                        default: return true;
-                    }
-                });
-                
-                return {
-                    ...stock,
-                    score: Math.round((passes.length / filters.length) * 100),
-                    filtersPassed: passes.length,
-                    filtersTotal: filters.length,
-                };
-            });
-            
-            renderResults();
+            // Simulate running screen
+            setTimeout(() => {
+                const mockResults = generateMockResults();
+                renderResults(mockResults);
+                document.getElementById('matchCount').textContent = mockResults.length;
+                showNotification(`Found ${mockResults.length} matching stocks!`, 'success');
+            }, 1500);
         }
-        
-        function renderResults() {
-            // Sort
-            results.sort((a, b) => {
-                let valA = a[sortColumn];
-                let valB = b[sortColumn];
-                
-                if (typeof valA === 'string') {
-                    valA = valA.toLowerCase();
-                    valB = valB.toLowerCase();
-                }
-                
-                if (sortDirection === 'asc') {
-                    return valA > valB ? 1 : -1;
-                } else {
-                    return valA < valB ? 1 : -1;
-                }
-            });
+
+        function generateMockResults() {
+            const stocks = [
+                { ticker: 'AAPL', name: 'Apple Inc.', change: 2.4, pe: 28.5, momentum: 12.3, si: 0.8 },
+                { ticker: 'MSFT', name: 'Microsoft Corp.', change: 1.8, pe: 32.1, momentum: 15.7, si: 0.6 },
+                { ticker: 'GOOGL', name: 'Alphabet Inc.', change: -0.5, pe: 24.3, momentum: 8.2, si: 1.2 },
+                { ticker: 'NVDA', name: 'NVIDIA Corp.', change: 4.2, pe: 65.2, momentum: 28.4, si: 2.1 },
+                { ticker: 'META', name: 'Meta Platforms', change: 3.1, pe: 22.8, momentum: 22.1, si: 1.5 },
+                { ticker: 'AMZN', name: 'Amazon.com Inc.', change: 1.2, pe: 42.3, momentum: 10.5, si: 0.9 },
+                { ticker: 'JPM', name: 'JPMorgan Chase', change: 0.8, pe: 11.2, momentum: 6.8, si: 0.7 },
+                { ticker: 'V', name: 'Visa Inc.', change: 1.5, pe: 29.4, momentum: 11.2, si: 0.5 }
+            ];
             
-            // Update sort indicators
-            document.querySelectorAll('th[data-sort]').forEach(th => {
-                th.classList.remove('sorted-asc', 'sorted-desc');
-                if (th.dataset.sort === sortColumn) {
-                    th.classList.add(sortDirection === 'asc' ? 'sorted-asc' : 'sorted-desc');
-                }
-            });
-            
-            document.getElementById('resultsCount').textContent = 
-                `${results.length} stocks match your criteria`;
-            
-            const tbody = document.getElementById('resultsBody');
+            return stocks.slice(0, Math.floor(Math.random() * 5) + 4);
+        }
+
+        function renderResults(results) {
+            const container = document.getElementById('resultsList');
             
             if (results.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="9" class="empty-state">
-                            <h3>No stocks match</h3>
-                            <p>Try adjusting your filters or using different criteria</p>
-                        </td>
-                    </tr>
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">😕</div>
+                        <div class="empty-title">No Matches</div>
+                        <div class="empty-text">Try adjusting your filters</div>
+                    </div>
                 `;
                 return;
             }
-            
-            tbody.innerHTML = results.map(stock => `
-                <tr>
-                    <td>
-                        <div class="ticker-cell">
-                            <span class="ticker">${stock.ticker}</span>
-                            <span class="company-name">${stock.name}</span>
-                        </div>
-                    </td>
-                    <td>
-                        <span class="score-badge ${stock.score >= 80 ? 'high' : stock.score >= 50 ? 'medium' : 'low'}">
-                            ${stock.score}
+
+            container.innerHTML = results.map(stock => `
+                <div class="result-item">
+                    <div class="result-ticker">
+                        <span class="ticker-symbol">${stock.ticker}</span>
+                        <span class="ticker-change ${stock.change >= 0 ? 'positive' : 'negative'}">
+                            ${stock.change >= 0 ? '+' : ''}${stock.change.toFixed(1)}%
                         </span>
-                    </td>
-                    <td>$${stock.price.toFixed(2)}</td>
-                    <td>${formatLargeNumber(stock.marketCap)}</td>
-                    <td>${stock.pe > 0 ? stock.pe.toFixed(1) + 'x' : 'N/A'}</td>
-                    <td class="${stock.revenueGrowth >= 0 ? 'value-positive' : 'value-negative'}">
-                        ${stock.revenueGrowth >= 0 ? '+' : ''}${stock.revenueGrowth.toFixed(1)}%
-                    </td>
-                    <td>${stock.netMargin.toFixed(1)}%</td>
-                    <td>${stock.roe > 0 ? stock.roe.toFixed(1) + '%' : 'N/A'}</td>
-                    <td>${stock.dividendYield > 0 ? stock.dividendYield.toFixed(1) + '%' : '-'}</td>
-                </tr>
-            `).join('');
-        }
-        
-        function formatLargeNumber(num) {
-            if (num >= 1e12) return `$${(num / 1e12).toFixed(1)}T`;
-            if (num >= 1e9) return `$${(num / 1e9).toFixed(0)}B`;
-            if (num >= 1e6) return `$${(num / 1e6).toFixed(0)}M`;
-            return num.toLocaleString();
-        }
-        
-        function openSaveModal() {
-            document.getElementById('saveModal').classList.add('visible');
-            document.getElementById('screenName').focus();
-        }
-        
-        function closeSaveModal() {
-            document.getElementById('saveModal').classList.remove('visible');
-            document.getElementById('screenName').value = '';
-        }
-        
-        function saveScreen() {
-            const name = document.getElementById('screenName').value.trim();
-            if (!name) {
-                alert('Please enter a name');
-                return;
-            }
-            
-            savedScreens.push({
-                id: Date.now(),
-                name,
-                filters: [...filters],
-                logic,
-                createdAt: new Date().toISOString(),
-            });
-            
-            localStorage.setItem('savedScreens', JSON.stringify(savedScreens));
-            renderSavedScreens();
-            closeSaveModal();
-        }
-        
-        function loadSavedScreen(id) {
-            const screen = savedScreens.find(s => s.id === id);
-            if (screen) {
-                filters = screen.filters.map((f, i) => ({ ...f, id: Date.now() + i }));
-                logic = screen.logic || 'AND';
-                renderFilters();
-                setLogic(logic);
-            }
-        }
-        
-        function deleteSavedScreen(id, event) {
-            event.stopPropagation();
-            if (confirm('Delete this saved screen?')) {
-                savedScreens = savedScreens.filter(s => s.id !== id);
-                localStorage.setItem('savedScreens', JSON.stringify(savedScreens));
-                renderSavedScreens();
-            }
-        }
-        
-        function renderSavedScreens() {
-            const container = document.getElementById('savedScreensList');
-            
-            if (savedScreens.length === 0) {
-                container.innerHTML = '<div style="color: var(--text-muted); font-size: 0.85rem;">No saved screens yet</div>';
-                return;
-            }
-            
-            container.innerHTML = savedScreens.map(screen => `
-                <div class="saved-screen-item" onclick="loadSavedScreen(${screen.id})">
-                    <div>
-                        <div class="saved-screen-name">${screen.name}</div>
-                        <div class="saved-screen-count">${screen.filters.length} filters</div>
                     </div>
-                    <button class="delete-screen" onclick="deleteSavedScreen(${screen.id}, event)">🗑️</button>
+                    <div class="result-name">${stock.name}</div>
+                    <div class="result-metrics">
+                        <div class="metric">
+                            <div class="metric-value">${stock.pe.toFixed(1)}x</div>
+                            <div class="metric-label">P/E</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">${stock.momentum.toFixed(1)}%</div>
+                            <div class="metric-label">3M Mom</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">${stock.si.toFixed(1)}%</div>
+                            <div class="metric-label">SI</div>
+                        </div>
+                    </div>
                 </div>
             `).join('');
         }
-        
-        function exportResults() {
-            if (results.length === 0) {
-                alert('Run a screen first!');
+
+        function renderPerformanceChart() {
+            const chart = document.getElementById('performanceChart');
+            const months = 12;
+            const returns = Array.from({length: months}, () => (Math.random() - 0.4) * 10);
+            
+            chart.innerHTML = returns.map((ret, i) => {
+                const height = Math.abs(ret) * 5 + 10;
+                const isPositive = ret >= 0;
+                return `<div class="chart-bar ${isPositive ? 'positive' : 'negative'}" style="height: ${height}px" title="${ret.toFixed(1)}%"></div>`;
+            }).join('');
+        }
+
+        function runBacktest() {
+            showNotification('Running backtest (12 months)...', 'warning');
+            
+            setTimeout(() => {
+                renderPerformanceChart();
+                document.getElementById('perfReturn').textContent = `+${(Math.random() * 25 + 5).toFixed(1)}%`;
+                document.getElementById('perfSharpe').textContent = (Math.random() * 1.5 + 0.5).toFixed(2);
+                document.getElementById('perfDrawdown').textContent = `-${(Math.random() * 15 + 5).toFixed(1)}%`;
+                showNotification('Backtest complete!', 'success');
+            }, 2000);
+        }
+
+        function openSaveModal() {
+            document.getElementById('presetName').value = document.getElementById('screenName').value || '';
+            document.getElementById('saveModal').classList.add('active');
+        }
+
+        function closeSaveModal() {
+            document.getElementById('saveModal').classList.remove('active');
+        }
+
+        function savePreset() {
+            const name = document.getElementById('presetName').value;
+            if (!name) {
+                showNotification('Please enter a preset name', 'error');
                 return;
             }
-            
-            const headers = ['Ticker', 'Company', 'Sector', 'Score', 'Price', 'Market Cap', 'P/E', 'Revenue Growth', 'EPS Growth', 'Net Margin', 'ROE', 'Dividend Yield'];
-            const csv = [
-                headers.join(','),
-                ...results.map(s => [
-                    s.ticker,
-                    `"${s.name}"`,
-                    s.sector,
-                    s.score,
-                    s.price,
-                    s.marketCap,
-                    s.pe,
-                    s.revenueGrowth,
-                    s.epsGrowth,
-                    s.netMargin,
-                    s.roe,
-                    s.dividendYield,
-                ].join(','))
-            ].join('\n');
-            
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `screen_results_${new Date().toISOString().slice(0,10)}.csv`;
-            a.click();
+
+            const filterCount = document.querySelectorAll('.filter-row').length;
+            const newPreset = {
+                id: presets.length + 1,
+                name: name,
+                tag: document.getElementById('presetTags').value,
+                filters: filterCount,
+                matches: Math.floor(Math.random() * 50) + 10
+            };
+
+            presets.unshift(newPreset);
+            renderPresets();
+            closeSaveModal();
+            showNotification('Preset saved successfully!', 'success');
         }
-        
-        // Close modal on escape
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') closeSaveModal();
-        });
-        
-        // Close modal on outside click
-        document.getElementById('saveModal').addEventListener('click', function(e) {
-            if (e.target === this) closeSaveModal();
-        });
+
+        function loadPreset(id) {
+            document.querySelectorAll('.preset-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+            showNotification('Preset loaded', 'success');
+        }
+
+        function createNewScreen() {
+            // Clear all filters
+            ['fundamental', 'technical', 'alternative'].forEach(category => {
+                document.getElementById(`${category}Filters`).innerHTML = '';
+            });
+            document.getElementById('screenName').value = '';
+            document.getElementById('matchCount').textContent = '0';
+            document.getElementById('resultsList').innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">🔍</div>
+                    <div class="empty-title">No Results Yet</div>
+                    <div class="empty-text">Add filters and run the screen to see matching stocks</div>
+                </div>
+            `;
+            showNotification('New screen created', 'success');
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            const text = document.getElementById('notificationText');
+            
+            notification.className = `notification ${type}`;
+            text.textContent = message;
+            notification.classList.add('show');
+
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
     </script>
 </body>
 </html>

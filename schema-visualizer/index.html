@@ -1,0 +1,1486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Schema Visualizer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a2e;
+            min-height: 100vh;
+            color: #fff;
+            overflow: hidden;
+        }
+        
+        .app-container {
+            display: flex;
+            height: 100vh;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: #16213e;
+            border-right: 1px solid #0f3460;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid #0f3460;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #e94560 0%, #0f3460 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+        
+        .logo h1 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .logo span {
+            font-size: 12px;
+            color: #888;
+            display: block;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #e94560 0%, #c73659 100%);
+            color: #fff;
+            flex: 1;
+        }
+        
+        .btn-secondary {
+            background: #0f3460;
+            color: #fff;
+        }
+        
+        .btn:hover {
+            transform: translateY(-1px);
+            filter: brightness(1.1);
+        }
+        
+        /* Tables List */
+        .tables-section {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+        }
+        
+        .section-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #888;
+            margin-bottom: 12px;
+            letter-spacing: 1px;
+        }
+        
+        .table-item {
+            background: #0f3460;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+        
+        .table-item:hover {
+            border-color: #e94560;
+        }
+        
+        .table-item.selected {
+            border-color: #e94560;
+            background: rgba(233, 69, 96, 0.1);
+        }
+        
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .table-name {
+            font-weight: 600;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .table-icon {
+            width: 24px;
+            height: 24px;
+            background: #e94560;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+        
+        .column-count {
+            font-size: 11px;
+            color: #888;
+            background: #1a1a2e;
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+        
+        .table-columns {
+            font-size: 12px;
+            color: #aaa;
+        }
+        
+        .column-preview {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+        
+        .col-tag {
+            background: #1a1a2e;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+        }
+        
+        .col-tag.pk {
+            background: #ffd700;
+            color: #000;
+        }
+        
+        .col-tag.fk {
+            background: #00bcd4;
+            color: #000;
+        }
+        
+        /* Canvas Area */
+        .canvas-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .toolbar {
+            height: 50px;
+            background: #16213e;
+            border-bottom: 1px solid #0f3460;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            gap: 15px;
+        }
+        
+        .tool-group {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .tool-btn {
+            width: 36px;
+            height: 36px;
+            background: #0f3460;
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        
+        .tool-btn:hover, .tool-btn.active {
+            background: #e94560;
+        }
+        
+        .tool-separator {
+            width: 1px;
+            height: 24px;
+            background: #0f3460;
+            margin: 0 10px;
+        }
+        
+        .zoom-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: auto;
+        }
+        
+        .zoom-level {
+            font-size: 13px;
+            color: #888;
+            min-width: 50px;
+            text-align: center;
+        }
+        
+        /* Canvas */
+        .canvas-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            background: 
+                linear-gradient(rgba(15, 52, 96, 0.3) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(15, 52, 96, 0.3) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        
+        .canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            cursor: grab;
+        }
+        
+        .canvas:active {
+            cursor: grabbing;
+        }
+        
+        .canvas-content {
+            position: absolute;
+            transform-origin: 0 0;
+        }
+        
+        /* ERD Tables */
+        .erd-table {
+            position: absolute;
+            background: #16213e;
+            border-radius: 12px;
+            min-width: 220px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            border: 2px solid #0f3460;
+            cursor: move;
+            user-select: none;
+            transition: box-shadow 0.2s, border-color 0.2s;
+        }
+        
+        .erd-table:hover {
+            box-shadow: 0 15px 50px rgba(233, 69, 96, 0.2);
+            border-color: #e94560;
+        }
+        
+        .erd-table.dragging {
+            opacity: 0.8;
+            z-index: 1000;
+        }
+        
+        .erd-table-header {
+            background: linear-gradient(135deg, #e94560 0%, #c73659 100%);
+            padding: 12px 15px;
+            border-radius: 10px 10px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .erd-table-name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .erd-table-actions {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .erd-action-btn {
+            width: 24px;
+            height: 24px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            border-radius: 4px;
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+        
+        .erd-action-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .erd-columns {
+            padding: 10px 0;
+        }
+        
+        .erd-column {
+            padding: 8px 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            border-bottom: 1px solid #0f3460;
+            transition: background 0.2s;
+        }
+        
+        .erd-column:last-child {
+            border-bottom: none;
+        }
+        
+        .erd-column:hover {
+            background: rgba(233, 69, 96, 0.1);
+        }
+        
+        .column-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: bold;
+        }
+        
+        .column-icon.pk {
+            background: #ffd700;
+            color: #000;
+        }
+        
+        .column-icon.fk {
+            background: #00bcd4;
+            color: #000;
+        }
+        
+        .column-icon.regular {
+            background: #0f3460;
+            color: #888;
+        }
+        
+        .column-info {
+            flex: 1;
+        }
+        
+        .column-name {
+            font-weight: 500;
+        }
+        
+        .column-type {
+            font-size: 11px;
+            color: #888;
+        }
+        
+        .column-constraints {
+            display: flex;
+            gap: 4px;
+        }
+        
+        .constraint-tag {
+            font-size: 9px;
+            padding: 2px 5px;
+            border-radius: 3px;
+            background: #0f3460;
+            color: #888;
+        }
+        
+        .constraint-tag.nn {
+            background: #ff6b6b;
+            color: #fff;
+        }
+        
+        .constraint-tag.uq {
+            background: #51cf66;
+            color: #fff;
+        }
+        
+        /* Relationships SVG */
+        .relationships-svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: visible;
+        }
+        
+        .relationship-line {
+            stroke: #e94560;
+            stroke-width: 2;
+            fill: none;
+        }
+        
+        .relationship-marker {
+            fill: #e94560;
+        }
+        
+        /* Properties Panel */
+        .properties-panel {
+            width: 300px;
+            background: #16213e;
+            border-left: 1px solid #0f3460;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .panel-header {
+            padding: 20px;
+            border-bottom: 1px solid #0f3460;
+        }
+        
+        .panel-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .panel-subtitle {
+            font-size: 12px;
+            color: #888;
+        }
+        
+        .panel-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+        }
+        
+        .property-group {
+            margin-bottom: 20px;
+        }
+        
+        .property-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #888;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+        
+        .property-input {
+            width: 100%;
+            padding: 10px 12px;
+            background: #0f3460;
+            border: 1px solid #1a1a2e;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 13px;
+            transition: border-color 0.2s;
+        }
+        
+        .property-input:focus {
+            outline: none;
+            border-color: #e94560;
+        }
+        
+        .property-select {
+            width: 100%;
+            padding: 10px 12px;
+            background: #0f3460;
+            border: 1px solid #1a1a2e;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 13px;
+            cursor: pointer;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            background: #0f3460;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        
+        .checkbox-item input {
+            width: 16px;
+            height: 16px;
+            accent-color: #e94560;
+        }
+        
+        /* Statistics */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .stat-card {
+            background: #0f3460;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #e94560;
+        }
+        
+        .stat-label {
+            font-size: 11px;
+            color: #888;
+            margin-top: 4px;
+        }
+        
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+        
+        .modal-overlay.active {
+            display: flex;
+        }
+        
+        .modal {
+            background: #16213e;
+            border-radius: 16px;
+            width: 500px;
+            max-height: 80vh;
+            overflow: hidden;
+            border: 1px solid #0f3460;
+        }
+        
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #0f3460;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .modal-close {
+            width: 32px;
+            height: 32px;
+            background: #0f3460;
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-body {
+            padding: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .modal-footer {
+            padding: 15px 20px;
+            border-top: 1px solid #0f3460;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        /* SQL Import */
+        .sql-textarea {
+            width: 100%;
+            height: 200px;
+            background: #0f3460;
+            border: 1px solid #1a1a2e;
+            border-radius: 8px;
+            color: #fff;
+            padding: 12px;
+            font-family: 'Fira Code', monospace;
+            font-size: 12px;
+            resize: vertical;
+        }
+        
+        .sql-textarea:focus {
+            outline: none;
+            border-color: #e94560;
+        }
+        
+        /* Relationship Types Legend */
+        .legend {
+            padding: 15px;
+            border-top: 1px solid #0f3460;
+        }
+        
+        .legend-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #888;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+        
+        .legend-items {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 12px;
+        }
+        
+        .legend-line {
+            width: 30px;
+            height: 2px;
+            background: #e94560;
+        }
+        
+        .legend-line.one-to-many::after {
+            content: '>';
+            margin-left: -5px;
+        }
+        
+        /* Empty State */
+        .empty-state {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: #888;
+        }
+        
+        .empty-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+        
+        .empty-title {
+            font-size: 20px;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+        
+        .empty-text {
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        
+        /* Mini Map */
+        .mini-map {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 150px;
+            height: 100px;
+            background: rgba(22, 33, 62, 0.9);
+            border: 1px solid #0f3460;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .mini-map-content {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+        
+        .mini-map-viewport {
+            position: absolute;
+            border: 2px solid #e94560;
+            background: rgba(233, 69, 96, 0.1);
+        }
+        
+        .mini-table {
+            position: absolute;
+            background: #e94560;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon">🗄️</div>
+                    <div>
+                        <h1>Schema Visualizer</h1>
+                        <span>ERD Generator</span>
+                    </div>
+                </div>
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="openImportModal()">
+                        📥 Import SQL
+                    </button>
+                    <button class="btn btn-secondary" onclick="addNewTable()">➕</button>
+                </div>
+            </div>
+            
+            <div class="tables-section">
+                <div class="section-title">Tables (<span id="tableCount">0</span>)</div>
+                <div id="tablesList"></div>
+            </div>
+            
+            <div class="legend">
+                <div class="legend-title">Relationship Types</div>
+                <div class="legend-items">
+                    <div class="legend-item">
+                        <svg width="30" height="20"><line x1="0" y1="10" x2="25" y2="10" stroke="#e94560" stroke-width="2"/><circle cx="27" cy="10" r="3" fill="#e94560"/></svg>
+                        <span>One-to-One</span>
+                    </div>
+                    <div class="legend-item">
+                        <svg width="30" height="20"><line x1="0" y1="10" x2="20" y2="10" stroke="#e94560" stroke-width="2"/><polygon points="20,5 30,10 20,15" fill="#e94560"/></svg>
+                        <span>One-to-Many</span>
+                    </div>
+                    <div class="legend-item">
+                        <svg width="30" height="20"><polygon points="0,5 10,10 0,15" fill="#e94560"/><line x1="10" y1="10" x2="20" y2="10" stroke="#e94560" stroke-width="2"/><polygon points="20,5 30,10 20,15" fill="#e94560"/></svg>
+                        <span>Many-to-Many</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Canvas Area -->
+        <div class="canvas-area">
+            <div class="toolbar">
+                <div class="tool-group">
+                    <button class="tool-btn active" id="selectTool" title="Select">🖱️</button>
+                    <button class="tool-btn" id="panTool" title="Pan">✋</button>
+                    <button class="tool-btn" id="relationTool" title="Add Relationship">🔗</button>
+                </div>
+                
+                <div class="tool-separator"></div>
+                
+                <div class="tool-group">
+                    <button class="tool-btn" onclick="autoArrange()" title="Auto Arrange">📐</button>
+                    <button class="tool-btn" onclick="exportImage()" title="Export Image">📷</button>
+                    <button class="tool-btn" onclick="exportSQL()" title="Export SQL">💾</button>
+                </div>
+                
+                <div class="zoom-controls">
+                    <button class="tool-btn" onclick="zoomOut()">➖</button>
+                    <span class="zoom-level" id="zoomLevel">100%</span>
+                    <button class="tool-btn" onclick="zoomIn()">➕</button>
+                    <button class="tool-btn" onclick="resetZoom()">🔍</button>
+                </div>
+            </div>
+            
+            <div class="canvas-container" id="canvasContainer">
+                <svg class="relationships-svg" id="relationshipsSvg">
+                    <defs>
+                        <marker id="arrowOne" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+                            <circle cx="5" cy="5" r="3" fill="#e94560"/>
+                        </marker>
+                        <marker id="arrowMany" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                            <polygon points="0,0 12,6 0,12" fill="#e94560"/>
+                        </marker>
+                    </defs>
+                </svg>
+                <div class="canvas" id="canvas">
+                    <div class="canvas-content" id="canvasContent">
+                        <!-- ERD Tables will be inserted here -->
+                    </div>
+                </div>
+                
+                <div class="empty-state" id="emptyState">
+                    <div class="empty-icon">🗄️</div>
+                    <div class="empty-title">No Tables Yet</div>
+                    <div class="empty-text">Import SQL or add tables manually to get started</div>
+                    <button class="btn btn-primary" onclick="loadSampleSchema()">Load Sample Schema</button>
+                </div>
+                
+                <div class="mini-map" id="miniMap">
+                    <div class="mini-map-content" id="miniMapContent"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Properties Panel -->
+        <div class="properties-panel">
+            <div class="panel-header">
+                <div class="panel-title">Schema Statistics</div>
+                <div class="panel-subtitle">Overview of your database</div>
+            </div>
+            
+            <div class="panel-content">
+                <div class="property-group">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="statTables">0</div>
+                            <div class="stat-label">Tables</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="statColumns">0</div>
+                            <div class="stat-label">Columns</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="statRelations">0</div>
+                            <div class="stat-label">Relations</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="statPKs">0</div>
+                            <div class="stat-label">Primary Keys</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="property-group" id="tableProperties" style="display: none;">
+                    <div class="property-label">Selected Table</div>
+                    <input type="text" class="property-input" id="selectedTableName" placeholder="Table name">
+                    
+                    <div class="property-label" style="margin-top: 15px;">Columns</div>
+                    <div id="selectedTableColumns"></div>
+                    
+                    <button class="btn btn-secondary" style="margin-top: 10px; width: 100%;" onclick="addColumnToSelected()">
+                        ➕ Add Column
+                    </button>
+                </div>
+                
+                <div class="property-group">
+                    <div class="property-label">Display Options</div>
+                    <div class="checkbox-group">
+                        <label class="checkbox-item">
+                            <input type="checkbox" id="showTypes" checked onchange="toggleDisplay()">
+                            <span>Show Data Types</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" id="showConstraints" checked onchange="toggleDisplay()">
+                            <span>Show Constraints</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" id="showRelationships" checked onchange="toggleRelationships()">
+                            <span>Show Relationships</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="property-group">
+                    <div class="property-label">Export Options</div>
+                    <select class="property-select" id="exportFormat">
+                        <option value="png">PNG Image</option>
+                        <option value="svg">SVG Vector</option>
+                        <option value="sql">SQL DDL</option>
+                        <option value="json">JSON Schema</option>
+                    </select>
+                    <button class="btn btn-primary" style="width: 100%; margin-top: 10px;" onclick="exportSchema()">
+                        📤 Export Schema
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Import Modal -->
+    <div class="modal-overlay" id="importModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">Import SQL Schema</div>
+                <button class="modal-close" onclick="closeImportModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="property-label">Paste your CREATE TABLE statements</div>
+                <textarea class="sql-textarea" id="sqlInput" placeholder="CREATE TABLE users (
+    id INT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(255) UNIQUE,
+    created_at TIMESTAMP
+);
+
+CREATE TABLE orders (
+    id INT PRIMARY KEY,
+    user_id INT REFERENCES users(id),
+    total DECIMAL(10,2),
+    status VARCHAR(20)
+);"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeImportModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="importSQL()">Import Schema</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // State
+        let schema = {
+            tables: [],
+            relationships: []
+        };
+        
+        let viewState = {
+            zoom: 1,
+            panX: 50,
+            panY: 50,
+            selectedTable: null,
+            draggingTable: null,
+            dragOffset: { x: 0, y: 0 }
+        };
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            setupCanvasControls();
+            updateStats();
+        });
+        
+        // Canvas controls
+        function setupCanvasControls() {
+            const canvas = document.getElementById('canvas');
+            const container = document.getElementById('canvasContainer');
+            
+            let isPanning = false;
+            let startPan = { x: 0, y: 0 };
+            
+            canvas.addEventListener('mousedown', (e) => {
+                if (e.target === canvas || e.target.id === 'canvasContent') {
+                    isPanning = true;
+                    startPan = { x: e.clientX - viewState.panX, y: e.clientY - viewState.panY };
+                    canvas.style.cursor = 'grabbing';
+                }
+            });
+            
+            document.addEventListener('mousemove', (e) => {
+                if (isPanning) {
+                    viewState.panX = e.clientX - startPan.x;
+                    viewState.panY = e.clientY - startPan.y;
+                    updateCanvasTransform();
+                }
+                
+                if (viewState.draggingTable !== null) {
+                    const table = schema.tables[viewState.draggingTable];
+                    table.x = (e.clientX - viewState.dragOffset.x - viewState.panX) / viewState.zoom;
+                    table.y = (e.clientY - viewState.dragOffset.y - viewState.panY) / viewState.zoom;
+                    renderTables();
+                }
+            });
+            
+            document.addEventListener('mouseup', () => {
+                isPanning = false;
+                canvas.style.cursor = 'grab';
+                viewState.draggingTable = null;
+            });
+            
+            container.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                const delta = e.deltaY > 0 ? -0.1 : 0.1;
+                const newZoom = Math.max(0.25, Math.min(3, viewState.zoom + delta));
+                viewState.zoom = newZoom;
+                updateCanvasTransform();
+                document.getElementById('zoomLevel').textContent = Math.round(newZoom * 100) + '%';
+            });
+        }
+        
+        function updateCanvasTransform() {
+            const content = document.getElementById('canvasContent');
+            content.style.transform = `translate(${viewState.panX}px, ${viewState.panY}px) scale(${viewState.zoom})`;
+            updateMiniMap();
+        }
+        
+        // Zoom controls
+        function zoomIn() {
+            viewState.zoom = Math.min(3, viewState.zoom + 0.25);
+            updateCanvasTransform();
+            document.getElementById('zoomLevel').textContent = Math.round(viewState.zoom * 100) + '%';
+        }
+        
+        function zoomOut() {
+            viewState.zoom = Math.max(0.25, viewState.zoom - 0.25);
+            updateCanvasTransform();
+            document.getElementById('zoomLevel').textContent = Math.round(viewState.zoom * 100) + '%';
+        }
+        
+        function resetZoom() {
+            viewState.zoom = 1;
+            viewState.panX = 50;
+            viewState.panY = 50;
+            updateCanvasTransform();
+            document.getElementById('zoomLevel').textContent = '100%';
+        }
+        
+        // Table management
+        function addNewTable() {
+            const tableName = `table_${schema.tables.length + 1}`;
+            schema.tables.push({
+                name: tableName,
+                x: 100 + (schema.tables.length % 3) * 280,
+                y: 100 + Math.floor(schema.tables.length / 3) * 250,
+                columns: [
+                    { name: 'id', type: 'INT', pk: true, nn: true },
+                    { name: 'created_at', type: 'TIMESTAMP', nn: true }
+                ]
+            });
+            renderTables();
+            renderTablesList();
+            updateStats();
+        }
+        
+        function renderTables() {
+            const content = document.getElementById('canvasContent');
+            const showTypes = document.getElementById('showTypes').checked;
+            const showConstraints = document.getElementById('showConstraints').checked;
+            
+            content.innerHTML = '';
+            
+            schema.tables.forEach((table, tableIdx) => {
+                const div = document.createElement('div');
+                div.className = 'erd-table';
+                div.style.left = table.x + 'px';
+                div.style.top = table.y + 'px';
+                
+                let columnsHTML = table.columns.map((col, colIdx) => {
+                    let iconClass = col.pk ? 'pk' : (col.fk ? 'fk' : 'regular');
+                    let iconText = col.pk ? '🔑' : (col.fk ? '🔗' : '○');
+                    
+                    let constraintTags = '';
+                    if (showConstraints) {
+                        if (col.nn) constraintTags += '<span class="constraint-tag nn">NN</span>';
+                        if (col.uq) constraintTags += '<span class="constraint-tag uq">UQ</span>';
+                    }
+                    
+                    return `
+                        <div class="erd-column">
+                            <div class="column-icon ${iconClass}">${iconText}</div>
+                            <div class="column-info">
+                                <div class="column-name">${col.name}</div>
+                                ${showTypes ? `<div class="column-type">${col.type}</div>` : ''}
+                            </div>
+                            <div class="column-constraints">${constraintTags}</div>
+                        </div>
+                    `;
+                }).join('');
+                
+                div.innerHTML = `
+                    <div class="erd-table-header">
+                        <div class="erd-table-name">${table.name}</div>
+                        <div class="erd-table-actions">
+                            <button class="erd-action-btn" onclick="editTable(${tableIdx})" title="Edit">✏️</button>
+                            <button class="erd-action-btn" onclick="deleteTable(${tableIdx})" title="Delete">🗑️</button>
+                        </div>
+                    </div>
+                    <div class="erd-columns">${columnsHTML}</div>
+                `;
+                
+                div.addEventListener('mousedown', (e) => {
+                    if (e.target.closest('.erd-action-btn')) return;
+                    viewState.draggingTable = tableIdx;
+                    const rect = div.getBoundingClientRect();
+                    viewState.dragOffset = {
+                        x: e.clientX - rect.left,
+                        y: e.clientY - rect.top
+                    };
+                    div.classList.add('dragging');
+                });
+                
+                content.appendChild(div);
+            });
+            
+            document.getElementById('emptyState').style.display = schema.tables.length === 0 ? 'block' : 'none';
+            renderRelationships();
+            updateMiniMap();
+        }
+        
+        function renderRelationships() {
+            const svg = document.getElementById('relationshipsSvg');
+            const showRels = document.getElementById('showRelationships').checked;
+            
+            // Clear existing lines except defs
+            while (svg.children.length > 1) {
+                svg.removeChild(svg.lastChild);
+            }
+            
+            if (!showRels) return;
+            
+            schema.relationships.forEach(rel => {
+                const fromTable = schema.tables.find(t => t.name === rel.from.table);
+                const toTable = schema.tables.find(t => t.name === rel.to.table);
+                
+                if (!fromTable || !toTable) return;
+                
+                const fromX = (fromTable.x + 220) * viewState.zoom + viewState.panX;
+                const fromY = (fromTable.y + 60) * viewState.zoom + viewState.panY;
+                const toX = toTable.x * viewState.zoom + viewState.panX;
+                const toY = (toTable.y + 60) * viewState.zoom + viewState.panY;
+                
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                const midX = (fromX + toX) / 2;
+                
+                path.setAttribute('d', `M ${fromX} ${fromY} C ${midX} ${fromY}, ${midX} ${toY}, ${toX} ${toY}`);
+                path.setAttribute('class', 'relationship-line');
+                path.setAttribute('marker-end', rel.type === 'one-to-many' ? 'url(#arrowMany)' : 'url(#arrowOne)');
+                
+                svg.appendChild(path);
+            });
+        }
+        
+        function renderTablesList() {
+            const list = document.getElementById('tablesList');
+            document.getElementById('tableCount').textContent = schema.tables.length;
+            
+            list.innerHTML = schema.tables.map((table, idx) => {
+                const pkCols = table.columns.filter(c => c.pk);
+                const fkCols = table.columns.filter(c => c.fk);
+                
+                return `
+                    <div class="table-item ${viewState.selectedTable === idx ? 'selected' : ''}" onclick="selectTable(${idx})">
+                        <div class="table-header">
+                            <div class="table-name">
+                                <div class="table-icon">📋</div>
+                                ${table.name}
+                            </div>
+                            <span class="column-count">${table.columns.length} cols</span>
+                        </div>
+                        <div class="table-columns">
+                            <div class="column-preview">
+                                ${pkCols.map(c => `<span class="col-tag pk">🔑 ${c.name}</span>`).join('')}
+                                ${fkCols.map(c => `<span class="col-tag fk">🔗 ${c.name}</span>`).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function selectTable(idx) {
+            viewState.selectedTable = idx;
+            renderTablesList();
+            
+            const table = schema.tables[idx];
+            document.getElementById('tableProperties').style.display = 'block';
+            document.getElementById('selectedTableName').value = table.name;
+            
+            // Center on table
+            viewState.panX = -table.x * viewState.zoom + 400;
+            viewState.panY = -table.y * viewState.zoom + 200;
+            updateCanvasTransform();
+        }
+        
+        function editTable(idx) {
+            selectTable(idx);
+        }
+        
+        function deleteTable(idx) {
+            schema.tables.splice(idx, 1);
+            schema.relationships = schema.relationships.filter(r => 
+                r.from.table !== schema.tables[idx]?.name && r.to.table !== schema.tables[idx]?.name
+            );
+            viewState.selectedTable = null;
+            document.getElementById('tableProperties').style.display = 'none';
+            renderTables();
+            renderTablesList();
+            updateStats();
+        }
+        
+        // Import/Export
+        function openImportModal() {
+            document.getElementById('importModal').classList.add('active');
+        }
+        
+        function closeImportModal() {
+            document.getElementById('importModal').classList.remove('active');
+        }
+        
+        function importSQL() {
+            const sql = document.getElementById('sqlInput').value;
+            parseSQL(sql);
+            closeImportModal();
+        }
+        
+        function parseSQL(sql) {
+            const tableRegex = /CREATE\s+TABLE\s+(\w+)\s*\(([\s\S]*?)\);/gi;
+            const tables = [];
+            const relationships = [];
+            let match;
+            let tableIndex = 0;
+            
+            while ((match = tableRegex.exec(sql)) !== null) {
+                const tableName = match[1];
+                const columnsStr = match[2];
+                
+                const columns = [];
+                const lines = columnsStr.split(',').map(l => l.trim()).filter(l => l);
+                
+                lines.forEach(line => {
+                    // Skip constraints
+                    if (line.match(/^(PRIMARY|FOREIGN|UNIQUE|CHECK|CONSTRAINT)/i)) return;
+                    
+                    const colMatch = line.match(/^(\w+)\s+(\w+(?:\([^)]+\))?)/i);
+                    if (colMatch) {
+                        const col = {
+                            name: colMatch[1],
+                            type: colMatch[2].toUpperCase(),
+                            pk: /PRIMARY\s+KEY/i.test(line),
+                            nn: /NOT\s+NULL/i.test(line),
+                            uq: /UNIQUE/i.test(line)
+                        };
+                        
+                        // Check for foreign key
+                        const fkMatch = line.match(/REFERENCES\s+(\w+)\s*\((\w+)\)/i);
+                        if (fkMatch) {
+                            col.fk = true;
+                            relationships.push({
+                                from: { table: tableName, column: col.name },
+                                to: { table: fkMatch[1], column: fkMatch[2] },
+                                type: 'one-to-many'
+                            });
+                        }
+                        
+                        columns.push(col);
+                    }
+                });
+                
+                tables.push({
+                    name: tableName,
+                    x: 100 + (tableIndex % 3) * 280,
+                    y: 100 + Math.floor(tableIndex / 3) * 250,
+                    columns: columns
+                });
+                tableIndex++;
+            }
+            
+            schema.tables = tables;
+            schema.relationships = relationships;
+            
+            renderTables();
+            renderTablesList();
+            updateStats();
+        }
+        
+        function loadSampleSchema() {
+            const sampleSQL = `
+CREATE TABLE users (
+    id INT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP
+);
+
+CREATE TABLE categories (
+    id INT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    parent_id INT REFERENCES categories(id)
+);
+
+CREATE TABLE products (
+    id INT PRIMARY KEY,
+    name VARCHAR(200) NOT NULL,
+    description TEXT,
+    price DECIMAL(10,2) NOT NULL,
+    category_id INT REFERENCES categories(id),
+    created_at TIMESTAMP NOT NULL
+);
+
+CREATE TABLE orders (
+    id INT PRIMARY KEY,
+    user_id INT REFERENCES users(id) NOT NULL,
+    status VARCHAR(20) NOT NULL,
+    total DECIMAL(10,2) NOT NULL,
+    created_at TIMESTAMP NOT NULL
+);
+
+CREATE TABLE order_items (
+    id INT PRIMARY KEY,
+    order_id INT REFERENCES orders(id) NOT NULL,
+    product_id INT REFERENCES products(id) NOT NULL,
+    quantity INT NOT NULL,
+    unit_price DECIMAL(10,2) NOT NULL
+);
+
+CREATE TABLE reviews (
+    id INT PRIMARY KEY,
+    user_id INT REFERENCES users(id) NOT NULL,
+    product_id INT REFERENCES products(id) NOT NULL,
+    rating INT NOT NULL,
+    comment TEXT,
+    created_at TIMESTAMP NOT NULL
+);
+            `;
+            
+            parseSQL(sampleSQL);
+        }
+        
+        function exportSchema() {
+            const format = document.getElementById('exportFormat').value;
+            
+            switch (format) {
+                case 'json':
+                    const json = JSON.stringify(schema, null, 2);
+                    downloadFile('schema.json', json, 'application/json');
+                    break;
+                case 'sql':
+                    const sql = generateSQL();
+                    downloadFile('schema.sql', sql, 'text/sql');
+                    break;
+                default:
+                    alert(`Export to ${format.toUpperCase()} - Feature coming soon!`);
+            }
+        }
+        
+        function generateSQL() {
+            return schema.tables.map(table => {
+                const columns = table.columns.map(col => {
+                    let def = `    ${col.name} ${col.type}`;
+                    if (col.pk) def += ' PRIMARY KEY';
+                    if (col.nn) def += ' NOT NULL';
+                    if (col.uq) def += ' UNIQUE';
+                    return def;
+                }).join(',\n');
+                
+                return `CREATE TABLE ${table.name} (\n${columns}\n);`;
+            }).join('\n\n');
+        }
+        
+        function downloadFile(filename, content, type) {
+            const blob = new Blob([content], { type });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+        
+        function exportImage() {
+            alert('Export to image - Use browser screenshot or export as SVG');
+        }
+        
+        function exportSQL() {
+            const sql = generateSQL();
+            console.log(sql);
+            alert('SQL exported to console. Check developer tools.');
+        }
+        
+        // Auto arrange
+        function autoArrange() {
+            const cols = 3;
+            const spacingX = 280;
+            const spacingY = 250;
+            
+            schema.tables.forEach((table, idx) => {
+                table.x = 100 + (idx % cols) * spacingX;
+                table.y = 100 + Math.floor(idx / cols) * spacingY;
+            });
+            
+            renderTables();
+        }
+        
+        // Display toggles
+        function toggleDisplay() {
+            renderTables();
+        }
+        
+        function toggleRelationships() {
+            renderRelationships();
+        }
+        
+        // Statistics
+        function updateStats() {
+            document.getElementById('statTables').textContent = schema.tables.length;
+            document.getElementById('statColumns').textContent = schema.tables.reduce((sum, t) => sum + t.columns.length, 0);
+            document.getElementById('statRelations').textContent = schema.relationships.length;
+            document.getElementById('statPKs').textContent = schema.tables.reduce((sum, t) => sum + t.columns.filter(c => c.pk).length, 0);
+        }
+        
+        // Mini map
+        function updateMiniMap() {
+            const content = document.getElementById('miniMapContent');
+            const container = document.getElementById('canvasContainer');
+            const mapWidth = 150;
+            const mapHeight = 100;
+            
+            // Calculate bounds
+            if (schema.tables.length === 0) {
+                content.innerHTML = '';
+                return;
+            }
+            
+            const bounds = {
+                minX: Math.min(...schema.tables.map(t => t.x)),
+                maxX: Math.max(...schema.tables.map(t => t.x + 220)),
+                minY: Math.min(...schema.tables.map(t => t.y)),
+                maxY: Math.max(...schema.tables.map(t => t.y + 150))
+            };
+            
+            const schemaWidth = bounds.maxX - bounds.minX + 100;
+            const schemaHeight = bounds.maxY - bounds.minY + 100;
+            const scale = Math.min(mapWidth / schemaWidth, mapHeight / schemaHeight);
+            
+            let html = '';
+            schema.tables.forEach(table => {
+                const x = (table.x - bounds.minX + 50) * scale;
+                const y = (table.y - bounds.minY + 50) * scale;
+                const w = 220 * scale;
+                const h = (40 + table.columns.length * 30) * scale;
+                html += `<div class="mini-table" style="left:${x}px;top:${y}px;width:${Math.max(w, 3)}px;height:${Math.max(h, 3)}px;"></div>`;
+            });
+            
+            // Viewport indicator
+            const vpX = (-viewState.panX / viewState.zoom - bounds.minX + 50) * scale;
+            const vpY = (-viewState.panY / viewState.zoom - bounds.minY + 50) * scale;
+            const vpW = (container.offsetWidth / viewState.zoom) * scale;
+            const vpH = (container.offsetHeight / viewState.zoom) * scale;
+            
+            html += `<div class="mini-map-viewport" style="left:${vpX}px;top:${vpY}px;width:${vpW}px;height:${vpH}px;"></div>`;
+            
+            content.innerHTML = html;
+        }
+    </script>
+</body>
+</html>

@@ -17,5 +17,24 @@
       }
     },
     "timestamp": "2026-01-27T21:23:16.233207"
+  },
+  {
+    "environment": "car",
+    "environment_name": "In Car",
+    "emoji": "\ud83d\ude97",
+    "confidence": 0.95,
+    "simulated": true,
+    "response_guidelines": {
+      "verbosity": "minimal",
+      "max_words": 50,
+      "tone": "direct",
+      "features": {
+        "detailed_explanations": false,
+        "examples": false,
+        "follow_up_questions": false,
+        "tangents_ok": false
+      }
+    },
+    "timestamp": "2026-01-27T21:25:34.888769"
   }
 ]

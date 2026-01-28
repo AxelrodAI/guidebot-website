@@ -1,0 +1,47 @@
+{
+  "name": "Sample Portfolio",
+  "created_at": "2026-01-27T21:30:27.362879",
+  "positions": [
+    {
+      "ticker": "AAPL",
+      "shares": 100,
+      "cost_basis": 150.0
+    },
+    {
+      "ticker": "MSFT",
+      "shares": 50,
+      "cost_basis": 280.0
+    },
+    {
+      "ticker": "GOOGL",
+      "shares": 20,
+      "cost_basis": 140.0
+    },
+    {
+      "ticker": "NVDA",
+      "shares": 30,
+      "cost_basis": 450.0
+    },
+    {
+      "ticker": "JPM",
+      "shares": 40,
+      "cost_basis": 150.0
+    },
+    {
+      "ticker": "JNJ",
+      "shares": 25,
+      "cost_basis": 160.0
+    },
+    {
+      "ticker": "XOM",
+      "shares": 60,
+      "cost_basis": 95.0
+    },
+    {
+      "ticker": "PG",
+      "shares": 35,
+      "cost_basis": 150.0
+    }
+  ],
+  "updated_at": "2026-01-27T21:30:27.362879"
+}

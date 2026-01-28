@@ -1,0 +1,245 @@
+{
+  "articles": [
+    {
+      "id": "d6377d223c35",
+      "ticker": "AAPL",
+      "title": "AAPL Reports Strong Q4 Earnings, Beats Estimates",
+      "summary": "Full article about AAPL's recent earnings developments...",
+      "source": "Bloomberg",
+      "url": "https://news.example.com/aapl/1",
+      "published": "2026-01-26T23:33:52.851323",
+      "fetched": "2026-01-27T21:33:52.851323",
+      "categories": [
+        "earnings"
+      ],
+      "priority": 5,
+      "icons": [
+        "[EARN]"
+      ]
+    },
+    {
+      "id": "8d659359d3f2",
+      "ticker": "AAPL",
+      "title": "AAPL Reports Strong Q4 Earnings, Beats Estimates",
+      "summary": "Full article about AAPL's recent earnings developments...",
+      "source": "Reuters",
+      "url": "https://news.example.com/aapl/2",
+      "published": "2026-01-25T08:33:52.851323",
+      "fetched": "2026-01-27T21:33:52.851323",
+      "categories": [
+        "earnings"
+      ],
+      "priority": 5,
+      "icons": [
+        "[EARN]"
+      ]
+    },
+    {
+      "id": "6034d1c96e70",
+      "ticker": "AAPL",
+      "title": "AAPL Receives FDA Approval for New Treatment",
+      "summary": "Full article about AAPL's recent fda developments...",
+      "source": "CNBC",
+      "url": "https://news.example.com/aapl/3",
+      "published": "2026-01-23T12:33:52.851323",
+      "fetched": "2026-01-27T21:33:52.851323",
+      "categories": [
+        "fda"
+      ],
+      "priority": 5,
+      "icons": [
+        "[FDA]"
+      ]
+    },
+    {
+      "id": "3e49edb2600f",
+      "ticker": "TSLA",
+      "title": "TSLA Raises Full-Year Guidance on Strong Demand",
+      "summary": "Full article about TSLA's recent guidance developments...",
+      "source": "Reuters",
+      "url": "https://news.example.com/tsla/1",
+      "published": "2026-01-22T02:33:52.851323",
+      "fetched": "2026-01-27T21:33:52.851323",
+      "categories": [
+        "earnings",
+        "guidance"
+      ],
+      "priority": 5,
+      "icons": [
+        "[EARN]",
+        "[GUIDE]"
+      ]
+    },
+    {
+      "id": "e1dc0cdfe86c",
+      "ticker": "TSLA",
+      "title": "Analysts Raise Price Target on TSLA Following Results",
+      "summary": "Full article about TSLA's recent analyst developments...",
+      "source": "Bloomberg",
+      "url": "https://news.example.com/tsla/2",
+      "published": "2026-01-23T11:33:52.851323",
+      "fetched": "2026-01-27T21:33:52.851323",
+      "categories": [
+        "guidance"
+      ],
+      "priority": 4,
+      "icons": [
+        "[GUIDE]"
+      ]
+    },
+    {
+      "id": "0f895a9055e0",
+      "ticker": "TSLA",
+      "title": "TSLA Reports Strong Q4 Earnings, Beats Estimates",
+      "summary": "Full article about TSLA's recent earnings developments...",
+      "source": "Bloomberg",
+      "url": "https://news.example.com/tsla/3",
+      "published": "2026-01-21T09:33:52.851323",
+      "fetched": "2026-01-27T21:33:52.851323",
+      "categories": [
+        "earnings"
+      ],
+      "priority": 5,
+      "icons": [
+        "[EARN]"
+      ]
+    },
+    {
+      "id": "0202bcd09339",
+      "ticker": "AAPL",
+      "title": "AAPL Declares Special Dividend of $2.00 Per Share",
+      "summary": "Full article about AAPL's recent dividend developments...",
+      "source": "MarketWatch",
+      "url": "https://news.example.com/aapl/1",
+      "published": "2026-01-23T06:33:56.584278",
+      "fetched": "2026-01-27T21:33:56.584278",
+      "categories": [
+        "dividend"
+      ],
+      "priority": 3,
+      "icons": [
+        "[DIV]"
+      ]
+    },
+    {
+      "id": "4941efc9d3be",
+      "ticker": "AAPL",
+      "title": "AAPL Receives FDA Approval for New Treatment",
+      "summary": "Full article about AAPL's recent fda developments...",
+      "source": "MarketWatch",
+      "url": "https://news.example.com/aapl/2",
+      "published": "2026-01-27T19:33:56.584278",
+      "fetched": "2026-01-27T21:33:56.584278",
+      "categories": [
+        "fda"
+      ],
+      "priority": 5,
+      "icons": [
+        "[FDA]"
+      ]
+    },
+    {
+      "id": "6046d44916a7",
+      "ticker": "AAPL",
+      "title": "AAPL Reports Strong Q4 Earnings, Beats Estimates",
+      "summary": "Full article about AAPL's recent earnings developments...",
+      "source": "Reuters",
+      "url": "https://news.example.com/aapl/3",
+      "published": "2026-01-21T22:33:56.584278",
+      "fetched": "2026-01-27T21:33:56.584278",
+      "categories": [
+        "earnings"
+      ],
+      "priority": 5,
+      "icons": [
+        "[EARN]"
+      ]
+    },
+    {
+      "id": "0c8cd9753217",
+      "ticker": "AAPL",
+      "title": "AAPL Receives FDA Approval for New Treatment",
+      "summary": "Full article about AAPL's recent fda developments...",
+      "source": "MarketWatch",
+      "url": "https://news.example.com/aapl/4",
+      "published": "2026-01-21T07:33:56.584278",
+      "fetched": "2026-01-27T21:33:56.584278",
+      "categories": [
+        "fda"
+      ],
+      "priority": 5,
+      "icons": [
+        "[FDA]"
+      ]
+    },
+    {
+      "id": "3e4df35c6421",
+      "ticker": "TSLA",
+      "title": "TSLA Files 10-K Annual Report with SEC",
+      "summary": "Full article about TSLA's recent filing developments...",
+      "source": "Reuters",
+      "url": "https://news.example.com/tsla/1",
+      "published": "2026-01-24T02:33:56.584278",
+      "fetched": "2026-01-27T21:33:56.584278",
+      "categories": [
+        "earnings"
+      ],
+      "priority": 5,
+      "icons": [
+        "[EARN]"
+      ]
+    },
+    {
+      "id": "8966d0d88acd",
+      "ticker": "TSLA",
+      "title": "TSLA Announces $500M Share Repurchase Program",
+      "summary": "Full article about TSLA's recent buyback developments...",
+      "source": "WSJ",
+      "url": "https://news.example.com/tsla/2",
+      "published": "2026-01-23T13:33:56.584278",
+      "fetched": "2026-01-27T21:33:56.584278",
+      "categories": [
+        "buyback"
+      ],
+      "priority": 3,
+      "icons": [
+        "[BUY]"
+      ]
+    },
+    {
+      "id": "925cfa5bcdaa",
+      "ticker": "TSLA",
+      "title": "TSLA Receives FDA Approval for New Treatment",
+      "summary": "Full article about TSLA's recent fda developments...",
+      "source": "WSJ",
+      "url": "https://news.example.com/tsla/3",
+      "published": "2026-01-24T15:33:56.584278",
+      "fetched": "2026-01-27T21:33:56.584278",
+      "categories": [
+        "fda"
+      ],
+      "priority": 5,
+      "icons": [
+        "[FDA]"
+      ]
+    },
+    {
+      "id": "c68e112ff69a",
+      "ticker": "TSLA",
+      "title": "TSLA Announces $500M Share Repurchase Program",
+      "summary": "Full article about TSLA's recent buyback developments...",
+      "source": "WSJ",
+      "url": "https://news.example.com/tsla/4",
+      "published": "2026-01-22T15:33:56.584278",
+      "fetched": "2026-01-27T21:33:56.584278",
+      "categories": [
+        "buyback"
+      ],
+      "priority": 3,
+      "icons": [
+        "[BUY]"
+      ]
+    }
+  ],
+  "last_fetch": "2026-01-27T21:33:56.604073"
+}

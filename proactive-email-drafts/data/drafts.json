@@ -1,0 +1,82 @@
+{
+  "drafts": [
+    {
+      "id": "draft_079cec1f819a",
+      "in_reply_to": "079cec1f819a",
+      "to": "john.smith@acmecorp.com",
+      "subject": "Re: URGENT: Q4 Budget Review Meeting - Need Your Approval",
+      "body": "Hi John.Smith,\n\nThank you for bringing this to my attention.\n\nI'll address your 3 questions:\n\n1. [ANSWER: we need to schedule an urgent meeting to review the q4 budget proposal before th...]\n\n2. [ANSWER: could you please:\n1...]\n\n3. [ANSWER: this is critical for our planning cycle and i need your approval asap...]\n\nRegarding the meeting request:\n[CONFIRM/PROPOSE_ALTERNATIVE: Check your calendar and respond]\n\nI've noted the following action items:\n\u2022 we need to schedule an urgent meeting to review the q4 budget proposal before th\n\u2022 review the attached budget document\n[CONFIRM_ACTIONS: Review and confirm timeline]\n\nI understand this is urgent and will prioritize accordingly.\n\nBest,\nUser",
+      "context": {
+        "urgency_score": 8,
+        "urgency_signals": [
+          "urgent",
+          "asap",
+          "critical",
+          "deadline"
+        ],
+        "questions": [
+          "we need to schedule an urgent meeting to review the q4 budget proposal before the deadline on friday",
+          "could you please:\n1",
+          "this is critical for our planning cycle and i need your approval asap"
+        ],
+        "is_meeting_request": true,
+        "action_items": [
+          "we need to schedule an urgent meeting to review the q4 budget proposal before the deadline on friday",
+          "review the attached budget document"
+        ],
+        "priority": 5,
+        "sentiment": "negative",
+        "word_count": 70,
+        "needs_response": true
+      },
+      "generated_at": "2026-01-27T21:31:22.035368",
+      "status": "draft",
+      "confidence": 0.9,
+      "placeholders": [
+        "ANSWER: we need to schedule an urgent meeting to review the q4 budget proposal before th...",
+        "ANSWER: could you please:\n1...",
+        "ANSWER: this is critical for our planning cycle and i need your approval asap...",
+        "CONFIRM_ACTIONS: Review and confirm timeline"
+      ]
+    },
+    {
+      "id": "draft_079cec1f819a",
+      "in_reply_to": "079cec1f819a",
+      "to": "john.smith@acmecorp.com",
+      "subject": "Re: URGENT: Q4 Budget Review Meeting - Need Your Approval",
+      "body": "Hi John.Smith,\n\nThank you for bringing this to my attention.\n\nI'll address your 3 questions:\n\n1. [ANSWER: we need to schedule an urgent meeting to review the q4 budget proposal before th...]\n\n2. [ANSWER: could you please:\n1...]\n\n3. [ANSWER: this is critical for our planning cycle and i need your approval asap...]\n\nRegarding the meeting request:\n[CONFIRM/PROPOSE_ALTERNATIVE: Check your calendar and respond]\n\nI've noted the following action items:\n\u2022 we need to schedule an urgent meeting to review the q4 budget proposal before th\n\u2022 review the attached budget document\n[CONFIRM_ACTIONS: Review and confirm timeline]\n\nI understand this is urgent and will prioritize accordingly.\n\nBest,\nUser",
+      "context": {
+        "urgency_score": 8,
+        "urgency_signals": [
+          "urgent",
+          "asap",
+          "critical",
+          "deadline"
+        ],
+        "questions": [
+          "we need to schedule an urgent meeting to review the q4 budget proposal before the deadline on friday",
+          "could you please:\n1",
+          "this is critical for our planning cycle and i need your approval asap"
+        ],
+        "is_meeting_request": true,
+        "action_items": [
+          "we need to schedule an urgent meeting to review the q4 budget proposal before the deadline on friday",
+          "review the attached budget document"
+        ],
+        "priority": 5,
+        "sentiment": "negative",
+        "word_count": 70,
+        "needs_response": true
+      },
+      "generated_at": "2026-01-27T21:32:36.996538",
+      "status": "draft",
+      "confidence": 0.9,
+      "placeholders": [
+        "ANSWER: we need to schedule an urgent meeting to review the q4 budget proposal before th...",
+        "ANSWER: could you please:\n1...",
+        "ANSWER: this is critical for our planning cycle and i need your approval asap...",
+        "CONFIRM_ACTIONS: Review and confirm timeline"
+      ]
+    }
+  ]
+}

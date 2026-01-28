@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Communication Sentiment Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logo-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        
+        .logo h1 {
+            font-size: 24px;
+            font-weight: 700;
+        }
+        
+        .logo span {
+            font-size: 13px;
+            color: #888;
+            display: block;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        
+        .time-filter {
+            display: flex;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 4px;
+        }
+        
+        .time-btn {
+            padding: 8px 16px;
+            background: none;
+            border: none;
+            color: #888;
+            cursor: pointer;
+            border-radius: 8px;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        
+        .time-btn.active {
+            background: #667eea;
+            color: #fff;
+        }
+        
+        .refresh-btn {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            cursor: pointer;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform 0.2s;
+        }
+        
+        .refresh-btn:hover {
+            transform: scale(1.02);
+        }
+        
+        /* Overall Sentiment */
+        .sentiment-overview {
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .overall-score {
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .score-circle {
+            width: 160px;
+            height: 160px;
+            margin: 0 auto 20px;
+            position: relative;
+        }
+        
+        .score-ring {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: conic-gradient(
+                var(--score-color, #667eea) var(--score-percent, 75%),
+                rgba(255,255,255,0.1) 0
+            );
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .score-inner {
+            width: 130px;
+            height: 130px;
+            background: #1a1a2e;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .score-value {
+            font-size: 42px;
+            font-weight: 700;
+        }
+        
+        .score-label {
+            font-size: 14px;
+            color: #888;
+        }
+        
+        .score-emoji {
+            font-size: 32px;
+            margin-top: 10px;
+        }
+        
+        .score-trend {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+        
+        .trend-up {
+            color: #51cf66;
+        }
+        
+        .trend-down {
+            color: #ff6b6b;
+        }
+        
+        /* Trend Chart */
+        .trend-chart {
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            padding: 25px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .chart-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .chart-legend {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: #888;
+        }
+        
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+        
+        /* Breakdown */
+        .sentiment-breakdown {
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            padding: 25px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .breakdown-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        
+        .sentiment-bar {
+            margin-bottom: 15px;
+        }
+        
+        .bar-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+        
+        .bar-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .bar-track {
+            height: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+        
+        .bar-fill.positive { background: linear-gradient(90deg, #51cf66, #40c057); }
+        .bar-fill.neutral { background: linear-gradient(90deg, #fab005, #fcc419); }
+        .bar-fill.negative { background: linear-gradient(90deg, #ff6b6b, #fa5252); }
+        
+        /* Channel Grid */
+        .channels-section {
+            margin-bottom: 30px;
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .channel-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        
+        .channel-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        
+        .channel-card:hover {
+            border-color: rgba(102, 126, 234, 0.5);
+            transform: translateY(-2px);
+        }
+        
+        .channel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .channel-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .channel-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+        
+        .channel-icon.email { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .channel-icon.slack { background: linear-gradient(135deg, #4A154B, #611f69); }
+        .channel-icon.teams { background: linear-gradient(135deg, #464775, #5059c9); }
+        .channel-icon.discord { background: linear-gradient(135deg, #5865F2, #7289da); }
+        .channel-icon.chat { background: linear-gradient(135deg, #00b894, #00cec9); }
+        
+        .channel-name {
+            font-weight: 600;
+            font-size: 15px;
+        }
+        
+        .channel-count {
+            font-size: 12px;
+            color: #888;
+        }
+        
+        .channel-score {
+            font-size: 28px;
+            font-weight: 700;
+        }
+        
+        .channel-score.positive { color: #51cf66; }
+        .channel-score.neutral { color: #fab005; }
+        .channel-score.negative { color: #ff6b6b; }
+        
+        .channel-stats {
+            display: flex;
+            justify-content: space-between;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .stat-label {
+            font-size: 11px;
+            color: #888;
+            margin-top: 3px;
+        }
+        
+        /* Contact Sentiment */
+        .contacts-section {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .contact-list {
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            padding: 25px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .contact-item {
+            display: flex;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .contact-item:last-child {
+            border-bottom: none;
+        }
+        
+        .contact-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 600;
+            margin-right: 15px;
+        }
+        
+        .contact-details {
+            flex: 1;
+        }
+        
+        .contact-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .contact-meta {
+            font-size: 12px;
+            color: #888;
+        }
+        
+        .contact-sentiment {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .sentiment-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .sentiment-badge.positive { background: rgba(81, 207, 102, 0.2); color: #51cf66; }
+        .sentiment-badge.neutral { background: rgba(250, 176, 5, 0.2); color: #fab005; }
+        .sentiment-badge.negative { background: rgba(255, 107, 107, 0.2); color: #ff6b6b; }
+        
+        .sentiment-mini-chart {
+            width: 80px;
+            height: 30px;
+        }
+        
+        /* Alerts */
+        .alerts-panel {
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            padding: 25px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .alert-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 12px;
+            margin-bottom: 10px;
+        }
+        
+        .alert-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+        
+        .alert-icon.warning { background: rgba(255, 107, 107, 0.2); }
+        .alert-icon.info { background: rgba(102, 126, 234, 0.2); }
+        .alert-icon.success { background: rgba(81, 207, 102, 0.2); }
+        
+        .alert-content {
+            flex: 1;
+        }
+        
+        .alert-title {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+        
+        .alert-text {
+            font-size: 12px;
+            color: #888;
+        }
+        
+        .alert-time {
+            font-size: 11px;
+            color: #666;
+        }
+        
+        /* Word Cloud */
+        .word-cloud-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .word-cloud {
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            padding: 25px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .cloud-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .cloud-word {
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .cloud-word:hover {
+            transform: scale(1.1);
+        }
+        
+        .cloud-word.positive { background: rgba(81, 207, 102, 0.2); color: #51cf66; }
+        .cloud-word.neutral { background: rgba(250, 176, 5, 0.2); color: #fab005; }
+        .cloud-word.negative { background: rgba(255, 107, 107, 0.2); color: #ff6b6b; }
+        
+        .cloud-word.size-1 { font-size: 11px; }
+        .cloud-word.size-2 { font-size: 13px; }
+        .cloud-word.size-3 { font-size: 15px; }
+        .cloud-word.size-4 { font-size: 18px; }
+        .cloud-word.size-5 { font-size: 22px; }
+        
+        /* Message Feed */
+        .message-feed {
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            padding: 25px;
+            border: 1px solid rgba(255,255,255,0.1);
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .message-item {
+            padding: 15px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 12px;
+            margin-bottom: 10px;
+            border-left: 3px solid;
+        }
+        
+        .message-item.positive { border-color: #51cf66; }
+        .message-item.neutral { border-color: #fab005; }
+        .message-item.negative { border-color: #ff6b6b; }
+        
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .message-source {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        
+        .message-score {
+            font-size: 12px;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 10px;
+        }
+        
+        .message-score.positive { background: rgba(81, 207, 102, 0.2); color: #51cf66; }
+        .message-score.neutral { background: rgba(250, 176, 5, 0.2); color: #fab005; }
+        .message-score.negative { background: rgba(255, 107, 107, 0.2); color: #ff6b6b; }
+        
+        .message-text {
+            font-size: 13px;
+            color: #ccc;
+            line-height: 1.5;
+        }
+        
+        .message-meta {
+            font-size: 11px;
+            color: #666;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <div class="logo-icon">💬</div>
+                <div>
+                    <h1>Sentiment Dashboard</h1>
+                    <span>Track communication sentiment across all channels</span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <div class="time-filter">
+                    <button class="time-btn" onclick="setTimeRange('24h')">24h</button>
+                    <button class="time-btn active" onclick="setTimeRange('7d')">7 days</button>
+                    <button class="time-btn" onclick="setTimeRange('30d')">30 days</button>
+                    <button class="time-btn" onclick="setTimeRange('90d')">90 days</button>
+                </div>
+                <button class="refresh-btn" onclick="refreshData()">
+                    <span>🔄</span> Refresh
+                </button>
+            </div>
+        </header>
+        
+        <!-- Overall Sentiment -->
+        <div class="sentiment-overview">
+            <div class="overall-score">
+                <div class="score-circle">
+                    <div class="score-ring" id="scoreRing" style="--score-color: #51cf66; --score-percent: 72%;">
+                        <div class="score-inner">
+                            <div class="score-value" id="overallScore">72</div>
+                            <div class="score-label">Overall</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="score-emoji" id="scoreEmoji">😊</div>
+                <div class="score-trend trend-up" id="scoreTrend">
+                    <span>↑ 5%</span>
+                    <span>from last period</span>
+                </div>
+            </div>
+            
+            <div class="trend-chart">
+                <div class="chart-header">
+                    <div class="chart-title">Sentiment Trend</div>
+                    <div class="chart-legend">
+                        <div class="legend-item">
+                            <div class="legend-dot" style="background: #51cf66;"></div>
+                            <span>Positive</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-dot" style="background: #fab005;"></div>
+                            <span>Neutral</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-dot" style="background: #ff6b6b;"></div>
+                            <span>Negative</span>
+                        </div>
+                    </div>
+                </div>
+                <canvas id="trendChart" height="180"></canvas>
+            </div>
+            
+            <div class="sentiment-breakdown">
+                <div class="breakdown-title">Sentiment Breakdown</div>
+                
+                <div class="sentiment-bar">
+                    <div class="bar-header">
+                        <span class="bar-label">😊 Positive</span>
+                        <span id="positivePercent">58%</span>
+                    </div>
+                    <div class="bar-track">
+                        <div class="bar-fill positive" id="positiveBar" style="width: 58%;"></div>
+                    </div>
+                </div>
+                
+                <div class="sentiment-bar">
+                    <div class="bar-header">
+                        <span class="bar-label">😐 Neutral</span>
+                        <span id="neutralPercent">28%</span>
+                    </div>
+                    <div class="bar-track">
+                        <div class="bar-fill neutral" id="neutralBar" style="width: 28%;"></div>
+                    </div>
+                </div>
+                
+                <div class="sentiment-bar">
+                    <div class="bar-header">
+                        <span class="bar-label">😟 Negative</span>
+                        <span id="negativePercent">14%</span>
+                    </div>
+                    <div class="bar-track">
+                        <div class="bar-fill negative" id="negativeBar" style="width: 14%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Communication Channels -->
+        <div class="channels-section">
+            <div class="section-header">
+                <div class="section-title">📡 Communication Channels</div>
+            </div>
+            <div class="channel-grid" id="channelGrid"></div>
+        </div>
+        
+        <!-- Contacts & Alerts -->
+        <div class="contacts-section">
+            <div class="contact-list">
+                <div class="chart-header">
+                    <div class="chart-title">👥 Contact Sentiment</div>
+                </div>
+                <div id="contactList"></div>
+            </div>
+            
+            <div class="alerts-panel">
+                <div class="chart-header">
+                    <div class="chart-title">🔔 Sentiment Alerts</div>
+                </div>
+                <div id="alertsList"></div>
+            </div>
+        </div>
+        
+        <!-- Word Clouds & Feed -->
+        <div class="word-cloud-section">
+            <div class="word-cloud">
+                <div class="chart-header">
+                    <div class="chart-title">🔤 Key Phrases</div>
+                </div>
+                <div class="cloud-container" id="wordCloud"></div>
+            </div>
+            
+            <div class="message-feed">
+                <div class="chart-header">
+                    <div class="chart-title">📨 Recent Messages</div>
+                </div>
+                <div id="messageFeed"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Sample Data
+        const channelData = [
+            { id: 'email', name: 'Email', icon: '📧', iconClass: 'email', count: 847, score: 74, positive: 62, neutral: 25, negative: 13 },
+            { id: 'slack', name: 'Slack', icon: '💬', iconClass: 'slack', count: 2341, score: 68, positive: 54, neutral: 32, negative: 14 },
+            { id: 'teams', name: 'Teams', icon: '👥', iconClass: 'teams', count: 1205, score: 71, positive: 58, neutral: 28, negative: 14 },
+            { id: 'discord', name: 'Discord', icon: '🎮', iconClass: 'discord', count: 523, score: 82, positive: 71, neutral: 20, negative: 9 },
+            { id: 'chat', name: 'Live Chat', icon: '💭', iconClass: 'chat', count: 189, score: 65, positive: 48, neutral: 35, negative: 17 }
+        ];
+        
+        const contactData = [
+            { name: 'Sarah Johnson', role: 'Product Manager', messages: 45, score: 85, sentiment: 'positive', initials: 'SJ' },
+            { name: 'Michael Chen', role: 'Engineering Lead', messages: 78, score: 72, sentiment: 'positive', initials: 'MC' },
+            { name: 'Emily Davis', role: 'Customer Success', messages: 34, score: 58, sentiment: 'neutral', initials: 'ED' },
+            { name: 'James Wilson', role: 'Sales Director', messages: 56, score: 45, sentiment: 'negative', initials: 'JW' },
+            { name: 'Lisa Park', role: 'Marketing', messages: 23, score: 91, sentiment: 'positive', initials: 'LP' }
+        ];
+        
+        const alertData = [
+            { type: 'warning', title: 'Declining sentiment detected', text: 'James Wilson communications trending negative over 3 days', time: '2 hours ago' },
+            { type: 'info', title: 'New sentiment pattern', text: 'Increased positive mentions of "product launch"', time: '5 hours ago' },
+            { type: 'success', title: 'Sentiment recovered', text: 'Support channel sentiment improved by 15%', time: '1 day ago' },
+            { type: 'warning', title: 'High-volume negative', text: '12 negative messages from customer support queue', time: '1 day ago' }
+        ];
+        
+        const wordData = [
+            { word: 'great', sentiment: 'positive', size: 5, count: 124 },
+            { word: 'thank you', sentiment: 'positive', size: 4, count: 98 },
+            { word: 'helpful', sentiment: 'positive', size: 4, count: 87 },
+            { word: 'love it', sentiment: 'positive', size: 3, count: 65 },
+            { word: 'excellent', sentiment: 'positive', size: 3, count: 54 },
+            { word: 'okay', sentiment: 'neutral', size: 3, count: 76 },
+            { word: 'waiting', sentiment: 'neutral', size: 2, count: 45 },
+            { word: 'update', sentiment: 'neutral', size: 2, count: 38 },
+            { word: 'issue', sentiment: 'negative', size: 4, count: 67 },
+            { word: 'problem', sentiment: 'negative', size: 3, count: 43 },
+            { word: 'frustrated', sentiment: 'negative', size: 2, count: 28 },
+            { word: 'delay', sentiment: 'negative', size: 2, count: 21 },
+            { word: 'amazing', sentiment: 'positive', size: 3, count: 52 },
+            { word: 'quick', sentiment: 'positive', size: 2, count: 41 },
+            { word: 'confused', sentiment: 'negative', size: 2, count: 19 }
+        ];
+        
+        const messageData = [
+            { source: 'Email', from: 'Sarah Johnson', text: 'Thanks for the quick response! The new feature works perfectly.', score: 92, sentiment: 'positive', time: '10 min ago' },
+            { source: 'Slack', from: 'Michael Chen', text: 'The deployment went smoothly. Great teamwork everyone!', score: 88, sentiment: 'positive', time: '25 min ago' },
+            { source: 'Teams', from: 'Emily Davis', text: 'Can someone clarify the timeline? I need more details.', score: 55, sentiment: 'neutral', time: '1 hour ago' },
+            { source: 'Email', from: 'James Wilson', text: 'This is the third time I\'ve had to follow up on this issue.', score: 28, sentiment: 'negative', time: '2 hours ago' },
+            { source: 'Discord', from: 'Lisa Park', text: 'Love the new design updates! 🎉', score: 95, sentiment: 'positive', time: '3 hours ago' }
+        ];
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            renderChannels();
+            renderContacts();
+            renderAlerts();
+            renderWordCloud();
+            renderMessages();
+            initTrendChart();
+            startLiveUpdates();
+        });
+        
+        // Render Functions
+        function renderChannels() {
+            const grid = document.getElementById('channelGrid');
+            grid.innerHTML = channelData.map(channel => {
+                const scoreClass = channel.score >= 70 ? 'positive' : (channel.score >= 50 ? 'neutral' : 'negative');
+                return `
+                    <div class="channel-card" onclick="drillDown('${channel.id}')">
+                        <div class="channel-header">
+                            <div class="channel-info">
+                                <div class="channel-icon ${channel.iconClass}">${channel.icon}</div>
+                                <div>
+                                    <div class="channel-name">${channel.name}</div>
+                                    <div class="channel-count">${channel.count.toLocaleString()} messages</div>
+                                </div>
+                            </div>
+                            <div class="channel-score ${scoreClass}">${channel.score}</div>
+                        </div>
+                        <div class="channel-stats">
+                            <div class="stat-item">
+                                <div class="stat-value" style="color: #51cf66;">${channel.positive}%</div>
+                                <div class="stat-label">Positive</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" style="color: #fab005;">${channel.neutral}%</div>
+                                <div class="stat-label">Neutral</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" style="color: #ff6b6b;">${channel.negative}%</div>
+                                <div class="stat-label">Negative</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function renderContacts() {
+            const list = document.getElementById('contactList');
+            list.innerHTML = contactData.map(contact => `
+                <div class="contact-item">
+                    <div class="contact-avatar">${contact.initials}</div>
+                    <div class="contact-details">
+                        <div class="contact-name">${contact.name}</div>
+                        <div class="contact-meta">${contact.role} • ${contact.messages} messages</div>
+                    </div>
+                    <div class="contact-sentiment">
+                        <span class="sentiment-badge ${contact.sentiment}">${contact.score}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function renderAlerts() {
+            const list = document.getElementById('alertsList');
+            list.innerHTML = alertData.map(alert => `
+                <div class="alert-item">
+                    <div class="alert-icon ${alert.type}">
+                        ${alert.type === 'warning' ? '⚠️' : (alert.type === 'success' ? '✅' : 'ℹ️')}
+                    </div>
+                    <div class="alert-content">
+                        <div class="alert-title">${alert.title}</div>
+                        <div class="alert-text">${alert.text}</div>
+                    </div>
+                    <div class="alert-time">${alert.time}</div>
+                </div>
+            `).join('');
+        }
+        
+        function renderWordCloud() {
+            const cloud = document.getElementById('wordCloud');
+            // Shuffle for visual variety
+            const shuffled = [...wordData].sort(() => Math.random() - 0.5);
+            cloud.innerHTML = shuffled.map(w => `
+                <span class="cloud-word ${w.sentiment} size-${w.size}" title="${w.count} mentions">${w.word}</span>
+            `).join('');
+        }
+        
+        function renderMessages() {
+            const feed = document.getElementById('messageFeed');
+            feed.innerHTML = messageData.map(msg => `
+                <div class="message-item ${msg.sentiment}">
+                    <div class="message-header">
+                        <span class="message-source">
+                            ${getChannelIcon(msg.source)} ${msg.from}
+                        </span>
+                        <span class="message-score ${msg.sentiment}">${msg.score}</span>
+                    </div>
+                    <div class="message-text">${msg.text}</div>
+                    <div class="message-meta">${msg.source} • ${msg.time}</div>
+                </div>
+            `).join('');
+        }
+        
+        function getChannelIcon(source) {
+            const icons = { 'Email': '📧', 'Slack': '💬', 'Teams': '👥', 'Discord': '🎮', 'Live Chat': '💭' };
+            return icons[source] || '📨';
+        }
+        
+        // Trend Chart
+        let trendChart;
+        function initTrendChart() {
+            const ctx = document.getElementById('trendChart').getContext('2d');
+            
+            const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            
+            trendChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Positive',
+                            data: [55, 58, 62, 56, 64, 68, 58],
+                            borderColor: '#51cf66',
+                            backgroundColor: 'rgba(81, 207, 102, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Neutral',
+                            data: [30, 28, 25, 32, 26, 22, 28],
+                            borderColor: '#fab005',
+                            backgroundColor: 'rgba(250, 176, 5, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Negative',
+                            data: [15, 14, 13, 12, 10, 10, 14],
+                            borderColor: '#ff6b6b',
+                            backgroundColor: 'rgba(255, 107, 107, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: { color: '#888' }
+                        },
+                        y: {
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: { color: '#888' },
+                            max: 80,
+                            min: 0
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Time Range Filter
+        function setTimeRange(range) {
+            document.querySelectorAll('.time-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            refreshData();
+        }
+        
+        // Refresh
+        function refreshData() {
+            // Simulate refresh with random variations
+            const newScore = 65 + Math.floor(Math.random() * 25);
+            document.getElementById('overallScore').textContent = newScore;
+            
+            const scoreColor = newScore >= 70 ? '#51cf66' : (newScore >= 50 ? '#fab005' : '#ff6b6b');
+            const emoji = newScore >= 70 ? '😊' : (newScore >= 50 ? '😐' : '😟');
+            
+            document.getElementById('scoreRing').style.setProperty('--score-color', scoreColor);
+            document.getElementById('scoreRing').style.setProperty('--score-percent', newScore + '%');
+            document.getElementById('scoreEmoji').textContent = emoji;
+            
+            renderWordCloud(); // Shuffle words
+        }
+        
+        // Live Updates
+        function startLiveUpdates() {
+            setInterval(() => {
+                // Subtle score fluctuation
+                const currentScore = parseInt(document.getElementById('overallScore').textContent);
+                const delta = Math.floor(Math.random() * 3) - 1; // -1, 0, or 1
+                const newScore = Math.max(0, Math.min(100, currentScore + delta));
+                document.getElementById('overallScore').textContent = newScore;
+            }, 5000);
+        }
+        
+        // Drill down (placeholder)
+        function drillDown(channelId) {
+            console.log('Drill down into:', channelId);
+            alert(`Opening detailed view for ${channelId}... (Feature in progress)`);
+        }
+    </script>
+</body>
+</html>

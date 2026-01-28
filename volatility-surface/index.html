@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Volatility Surface Monitor</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg: #0d1117;
+            --surface: #161b22;
+            --surface-elevated: #1c2128;
+            --border: #30363d;
+            --border-subtle: #21262d;
+            --text: #e6edf3;
+            --text-secondary: #c9d1d9;
+            --text-muted: #8b949e;
+            --accent: #58a6ff;
+            --accent-hover: #79b8ff;
+            --error: #f85149;
+            --success: #3fb950;
+            --warning: #f0c020;
+            --purple: #a371f7;
+            --orange: #f0883e;
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        header {
+            padding: 14px 20px;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .logo { font-size: 26px; }
+
+        header h1 { font-size: 18px; font-weight: 600; }
+
+        .header-actions {
+            margin-left: auto;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .ticker-input {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 14px;
+            color: var(--text);
+            font-size: 14px;
+            width: 120px;
+            text-transform: uppercase;
+        }
+
+        .ticker-input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .btn {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 14px;
+            color: var(--text-muted);
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 150ms ease;
+        }
+
+        .btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            min-height: calc(100vh - 52px);
+        }
+
+        .sidebar {
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            padding: 16px;
+            overflow-y: auto;
+        }
+
+        .sidebar h3 {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            margin-top: 20px;
+        }
+
+        .sidebar h3:first-child { margin-top: 0; }
+
+        .main-content {
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        .stat-card .label {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .stat-card .value {
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .stat-card .delta {
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        .delta.positive { color: var(--success); }
+        .delta.negative { color: var(--error); }
+        .delta.neutral { color: var(--text-muted); }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .card-title { font-size: 16px; font-weight: 600; }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        /* IV Percentile Gauge */
+        .gauge-container {
+            position: relative;
+            height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .gauge {
+            width: 200px;
+            height: 100px;
+            position: relative;
+        }
+
+        .gauge-bg {
+            position: absolute;
+            width: 200px;
+            height: 100px;
+            border-radius: 100px 100px 0 0;
+            background: linear-gradient(90deg, var(--success) 0%, var(--warning) 50%, var(--error) 100%);
+            overflow: hidden;
+        }
+
+        .gauge-fill {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 160px;
+            height: 80px;
+            background: var(--surface);
+            border-radius: 80px 80px 0 0;
+            transform: translateX(-50%);
+        }
+
+        .gauge-value {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 36px;
+            font-weight: 700;
+        }
+
+        .gauge-label {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        /* Skew Indicator */
+        .skew-indicator {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: var(--surface-elevated);
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+
+        .skew-bar {
+            flex: 1;
+            height: 8px;
+            background: var(--bg);
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .skew-marker {
+            position: absolute;
+            top: -4px;
+            width: 16px;
+            height: 16px;
+            background: var(--accent);
+            border-radius: 50%;
+            transform: translateX(-50%);
+            border: 2px solid var(--surface);
+        }
+
+        .skew-label {
+            min-width: 80px;
+            font-size: 12px;
+        }
+
+        .skew-value {
+            min-width: 60px;
+            text-align: right;
+            font-family: monospace;
+            font-size: 13px;
+        }
+
+        /* Term Structure */
+        .term-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .term-exp {
+            min-width: 80px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .term-bar-bg {
+            flex: 1;
+            height: 20px;
+            background: var(--bg);
+            border-radius: 4px;
+            position: relative;
+            margin: 0 12px;
+        }
+
+        .term-bar {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 300ms ease;
+        }
+
+        .term-value {
+            min-width: 50px;
+            text-align: right;
+            font-family: monospace;
+            font-size: 13px;
+        }
+
+        /* Surface Heatmap */
+        .surface-grid {
+            display: grid;
+            grid-template-columns: 60px repeat(7, 1fr);
+            gap: 2px;
+            font-size: 11px;
+        }
+
+        .surface-cell {
+            padding: 8px 4px;
+            text-align: center;
+            border-radius: 4px;
+        }
+
+        .surface-header {
+            background: var(--surface-elevated);
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .surface-row-header {
+            background: var(--surface-elevated);
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Watchlist */
+        .watchlist-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border-subtle);
+            cursor: pointer;
+        }
+
+        .watchlist-item:hover {
+            background: var(--surface-elevated);
+            margin: 0 -16px;
+            padding: 10px 16px;
+        }
+
+        .watchlist-ticker {
+            font-weight: 600;
+            color: var(--accent);
+            min-width: 60px;
+        }
+
+        .watchlist-iv {
+            flex: 1;
+            text-align: right;
+            font-family: monospace;
+        }
+
+        .watchlist-pct {
+            min-width: 50px;
+            text-align: right;
+            font-size: 11px;
+        }
+
+        /* Alert Badge */
+        .alert-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .alert-high { background: rgba(248, 81, 73, 0.15); color: var(--error); }
+        .alert-elevated { background: rgba(240, 136, 62, 0.15); color: var(--orange); }
+        .alert-normal { background: rgba(63, 185, 80, 0.15); color: var(--success); }
+        .alert-low { background: rgba(88, 166, 255, 0.15); color: var(--accent); }
+
+        @media (max-width: 1024px) {
+            .grid-2 { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 768px) {
+            .container { grid-template-columns: 1fr; }
+            .sidebar { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <span class="logo">📊</span>
+        <h1>Volatility Surface Monitor</h1>
+        <div class="header-actions">
+            <input type="text" class="ticker-input" id="tickerInput" value="SPY" placeholder="Ticker">
+            <button class="btn btn-primary" onclick="loadTicker()">Load</button>
+            <button class="btn" onclick="exportData()">📥 Export</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <aside class="sidebar">
+            <h3>📋 Watchlist</h3>
+            <div id="watchlist"></div>
+
+            <h3>🚨 Alerts</h3>
+            <div id="alerts"></div>
+
+            <h3>📈 Market Regime</h3>
+            <div id="marketRegime"></div>
+        </aside>
+
+        <main class="main-content">
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="label">Current IV (ATM)</div>
+                    <div class="value" id="currentIV">24.5%</div>
+                    <div class="delta neutral" id="ivChange">+1.2% from yesterday</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">IV Percentile</div>
+                    <div class="value" id="ivPercentile">45th</div>
+                    <div class="delta neutral">52-week rank</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">Put/Call Skew</div>
+                    <div class="value" id="pcSkew">1.12</div>
+                    <div class="delta negative" id="skewDelta">puts elevated</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">Term Structure</div>
+                    <div class="value" id="termStructure">Contango</div>
+                    <div class="delta positive" id="termDelta">normal state</div>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">📊 IV Percentile Gauge</span>
+                    </div>
+                    <div class="gauge-container">
+                        <div class="gauge">
+                            <div class="gauge-bg"></div>
+                            <div class="gauge-fill"></div>
+                            <div class="gauge-value" id="gaugeValue">45</div>
+                            <div class="gauge-label">52-Week Percentile</div>
+                        </div>
+                    </div>
+                    <div style="text-align: center; margin-top: 20px; font-size: 12px; color: var(--text-muted);">
+                        <span style="color: var(--success);">●</span> Low (0-25) 
+                        <span style="color: var(--warning);">●</span> Normal (25-75) 
+                        <span style="color: var(--error);">●</span> High (75-100)
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">📈 Put/Call Skew</span>
+                    </div>
+                    <div id="skewIndicators"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">📉 Term Structure (IV by Expiration)</span>
+                    <select id="termView" onchange="updateTermChart()" style="background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 6px; color: var(--text); font-size: 12px;">
+                        <option value="bar">Bar Chart</option>
+                        <option value="line">Line Chart</option>
+                    </select>
+                </div>
+                <div class="chart-container">
+                    <canvas id="termChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">🎨 Volatility Surface Heatmap</span>
+                    <span style="font-size: 11px; color: var(--text-muted);">IV % by Strike & Expiration</span>
+                </div>
+                <div class="surface-grid" id="surfaceGrid"></div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">📈 Historical IV vs Price</span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="historyChart"></canvas>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Sample volatility data
+        let volData = {
+            ticker: "SPY",
+            lastPrice: 483.50,
+            lastUpdated: new Date().toISOString(),
+            atm: {
+                iv: 24.5,
+                change: 1.2,
+                percentile: 45
+            },
+            skew: {
+                putCall: 1.12,
+                delta25: 1.15,
+                delta10: 1.28
+            },
+            termStructure: [
+                { exp: "1W", iv: 18.5, dte: 7 },
+                { exp: "2W", iv: 20.2, dte: 14 },
+                { exp: "1M", iv: 22.8, dte: 30 },
+                { exp: "2M", iv: 24.5, dte: 60 },
+                { exp: "3M", iv: 25.2, dte: 90 },
+                { exp: "6M", iv: 26.1, dte: 180 },
+                { exp: "1Y", iv: 27.5, dte: 365 }
+            ],
+            surface: {
+                strikes: ["90%", "95%", "97%", "ATM", "103%", "105%", "110%"],
+                expirations: ["1W", "2W", "1M", "2M", "3M"],
+                ivs: [
+                    [32.5, 28.2, 25.8, 24.5, 26.1, 28.5, 35.2],  // 1W
+                    [30.1, 26.5, 23.8, 22.2, 24.5, 27.2, 33.8],  // 2W
+                    [28.5, 25.2, 22.5, 21.5, 23.2, 25.8, 31.5],  // 1M
+                    [27.2, 24.5, 22.1, 21.2, 22.8, 24.5, 29.8],  // 2M
+                    [26.5, 24.1, 21.8, 21.0, 22.5, 24.1, 28.5]   // 3M
+                ]
+            },
+            history: {
+                dates: ["Nov", "Dec", "Jan", "Feb", "Mar", "Apr"],
+                ivs: [18.5, 22.3, 19.8, 24.5, 21.2, 24.5],
+                prices: [440, 455, 468, 475, 480, 483.5]
+            },
+            watchlist: [
+                { ticker: "SPY", iv: 24.5, percentile: 45, alert: "normal" },
+                { ticker: "QQQ", iv: 28.2, percentile: 55, alert: "normal" },
+                { ticker: "NVDA", iv: 52.3, percentile: 78, alert: "elevated" },
+                { ticker: "TSLA", iv: 65.8, percentile: 85, alert: "high" },
+                { ticker: "AAPL", iv: 22.1, percentile: 32, alert: "low" },
+                { ticker: "META", iv: 38.5, percentile: 62, alert: "normal" }
+            ],
+            alerts: [
+                { ticker: "TSLA", type: "high", message: "IV at 85th percentile" },
+                { ticker: "NVDA", type: "elevated", message: "Unusual put skew detected" },
+                { ticker: "SPY", type: "normal", message: "Term structure inverted" }
+            ]
+        };
+
+        let termChart, historyChart;
+
+        function init() {
+            renderStats();
+            renderSkewIndicators();
+            renderTermChart();
+            renderSurface();
+            renderHistoryChart();
+            renderWatchlist();
+            renderAlerts();
+            renderMarketRegime();
+        }
+
+        function renderStats() {
+            document.getElementById('currentIV').textContent = volData.atm.iv + '%';
+            document.getElementById('ivChange').textContent = (volData.atm.change >= 0 ? '+' : '') + volData.atm.change + '% from yesterday';
+            document.getElementById('ivChange').className = 'delta ' + (volData.atm.change >= 0 ? 'negative' : 'positive');
+
+            document.getElementById('ivPercentile').textContent = volData.atm.percentile + 'th';
+            document.getElementById('gaugeValue').textContent = volData.atm.percentile;
+
+            document.getElementById('pcSkew').textContent = volData.skew.putCall.toFixed(2);
+            const skewClass = volData.skew.putCall > 1.1 ? 'negative' : volData.skew.putCall < 0.9 ? 'positive' : 'neutral';
+            document.getElementById('skewDelta').className = 'delta ' + skewClass;
+            document.getElementById('skewDelta').textContent = volData.skew.putCall > 1.1 ? 'puts elevated' : volData.skew.putCall < 0.9 ? 'calls elevated' : 'balanced';
+
+            const isContango = volData.termStructure[0].iv < volData.termStructure[volData.termStructure.length - 1].iv;
+            document.getElementById('termStructure').textContent = isContango ? 'Contango' : 'Backwardation';
+            document.getElementById('termDelta').textContent = isContango ? 'normal state' : 'elevated near-term fear';
+            document.getElementById('termDelta').className = 'delta ' + (isContango ? 'positive' : 'negative');
+        }
+
+        function renderSkewIndicators() {
+            const container = document.getElementById('skewIndicators');
+            const skews = [
+                { label: '25Δ Put/Call', value: volData.skew.delta25, mid: 1.0 },
+                { label: '10Δ Put/Call', value: volData.skew.delta10, mid: 1.0 },
+                { label: 'ATM Skew', value: volData.skew.putCall, mid: 1.0 }
+            ];
+
+            container.innerHTML = skews.map(s => {
+                const pos = Math.min(100, Math.max(0, ((s.value - 0.7) / 0.6) * 100));
+                const color = s.value > 1.15 ? 'var(--error)' : s.value < 0.9 ? 'var(--success)' : 'var(--accent)';
+                return `
+                    <div class="skew-indicator">
+                        <span class="skew-label">${s.label}</span>
+                        <div class="skew-bar">
+                            <div class="skew-marker" style="left: ${pos}%; background: ${color};"></div>
+                        </div>
+                        <span class="skew-value" style="color: ${color}">${s.value.toFixed(2)}</span>
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML += `
+                <div style="display: flex; justify-content: space-between; font-size: 10px; color: var(--text-muted); margin-top: 8px;">
+                    <span>← Calls Elevated</span>
+                    <span>Balanced</span>
+                    <span>Puts Elevated →</span>
+                </div>
+            `;
+        }
+
+        function renderTermChart() {
+            const ctx = document.getElementById('termChart').getContext('2d');
+            
+            termChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: volData.termStructure.map(t => t.exp),
+                    datasets: [{
+                        label: 'Implied Volatility %',
+                        data: volData.termStructure.map(t => t.iv),
+                        backgroundColor: volData.termStructure.map((t, i, arr) => {
+                            if (i === 0) return 'rgba(88, 166, 255, 0.7)';
+                            return t.iv < arr[i-1].iv ? 'rgba(248, 81, 73, 0.7)' : 'rgba(63, 185, 80, 0.7)';
+                        }),
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            grid: { color: '#30363d' },
+                            ticks: { color: '#8b949e', callback: v => v + '%' }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#8b949e' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateTermChart() {
+            const view = document.getElementById('termView').value;
+            termChart.config.type = view === 'line' ? 'line' : 'bar';
+            if (view === 'line') {
+                termChart.data.datasets[0].borderColor = '#58a6ff';
+                termChart.data.datasets[0].backgroundColor = 'rgba(88, 166, 255, 0.1)';
+                termChart.data.datasets[0].fill = true;
+                termChart.data.datasets[0].tension = 0.4;
+            }
+            termChart.update();
+        }
+
+        function renderSurface() {
+            const container = document.getElementById('surfaceGrid');
+            const { strikes, expirations, ivs } = volData.surface;
+
+            // Find min/max for color scaling
+            const allIVs = ivs.flat();
+            const minIV = Math.min(...allIVs);
+            const maxIV = Math.max(...allIVs);
+
+            function getColor(iv) {
+                const ratio = (iv - minIV) / (maxIV - minIV);
+                if (ratio < 0.25) return 'rgba(63, 185, 80, 0.3)';
+                if (ratio < 0.5) return 'rgba(88, 166, 255, 0.3)';
+                if (ratio < 0.75) return 'rgba(240, 192, 32, 0.3)';
+                return 'rgba(248, 81, 73, 0.3)';
+            }
+
+            let html = '<div class="surface-cell surface-header"></div>';
+            strikes.forEach(s => {
+                html += `<div class="surface-cell surface-header">${s}</div>`;
+            });
+
+            expirations.forEach((exp, i) => {
+                html += `<div class="surface-cell surface-row-header">${exp}</div>`;
+                ivs[i].forEach(iv => {
+                    html += `<div class="surface-cell" style="background: ${getColor(iv)}">${iv.toFixed(1)}</div>`;
+                });
+            });
+
+            container.innerHTML = html;
+        }
+
+        function renderHistoryChart() {
+            const ctx = document.getElementById('historyChart').getContext('2d');
+
+            historyChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: volData.history.dates,
+                    datasets: [
+                        {
+                            label: 'IV %',
+                            data: volData.history.ivs,
+                            borderColor: '#a371f7',
+                            backgroundColor: 'rgba(163, 113, 247, 0.1)',
+                            fill: true,
+                            tension: 0.4,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'Price',
+                            data: volData.history.prices,
+                            borderColor: '#58a6ff',
+                            backgroundColor: 'transparent',
+                            tension: 0.4,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: {
+                            labels: { color: '#8b949e' }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            position: 'left',
+                            grid: { color: '#30363d' },
+                            ticks: { color: '#a371f7', callback: v => v + '%' }
+                        },
+                        y1: {
+                            type: 'linear',
+                            position: 'right',
+                            grid: { display: false },
+                            ticks: { color: '#58a6ff', callback: v => '$' + v }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#8b949e' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderWatchlist() {
+            const container = document.getElementById('watchlist');
+            container.innerHTML = volData.watchlist.map(w => `
+                <div class="watchlist-item" onclick="loadTickerData('${w.ticker}')">
+                    <span class="watchlist-ticker">${w.ticker}</span>
+                    <span class="watchlist-iv">${w.iv.toFixed(1)}%</span>
+                    <span class="watchlist-pct ${w.percentile > 70 ? 'negative' : w.percentile < 30 ? 'positive' : ''}">${w.percentile}th</span>
+                </div>
+            `).join('');
+        }
+
+        function renderAlerts() {
+            const container = document.getElementById('alerts');
+            container.innerHTML = volData.alerts.map(a => `
+                <div style="padding: 10px 0; border-bottom: 1px solid var(--border-subtle);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                        <span style="font-weight: 600; color: var(--accent);">${a.ticker}</span>
+                        <span class="alert-badge alert-${a.type}">${a.type}</span>
+                    </div>
+                    <div style="font-size: 12px; color: var(--text-muted);">${a.message}</div>
+                </div>
+            `).join('');
+        }
+
+        function renderMarketRegime() {
+            const container = document.getElementById('marketRegime');
+            const vix = 18.5;
+            const regime = vix < 15 ? 'Low Vol' : vix < 20 ? 'Normal' : vix < 30 ? 'Elevated' : 'High Fear';
+            const color = vix < 15 ? 'var(--success)' : vix < 20 ? 'var(--accent)' : vix < 30 ? 'var(--warning)' : 'var(--error)';
+
+            container.innerHTML = `
+                <div style="text-align: center; padding: 16px; background: var(--surface-elevated); border-radius: 8px;">
+                    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;">VIX</div>
+                    <div style="font-size: 32px; font-weight: 700; color: ${color};">${vix.toFixed(1)}</div>
+                    <div style="font-size: 13px; color: ${color}; margin-top: 4px;">${regime}</div>
+                </div>
+                <div style="margin-top: 12px; font-size: 11px; color: var(--text-muted); text-align: center;">
+                    VIX 52w Range: 11.8 - 28.5
+                </div>
+            `;
+        }
+
+        function loadTicker() {
+            const ticker = document.getElementById('tickerInput').value.toUpperCase();
+            loadTickerData(ticker);
+        }
+
+        function loadTickerData(ticker) {
+            document.getElementById('tickerInput').value = ticker;
+            // In production, fetch real data here
+            console.log('Loading:', ticker);
+            // For now, just update the display
+            volData.ticker = ticker;
+            init();
+        }
+
+        function exportData() {
+            const data = {
+                ticker: volData.ticker,
+                exported: new Date().toISOString(),
+                atm: volData.atm,
+                skew: volData.skew,
+                termStructure: volData.termStructure
+            };
+
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `vol_surface_${volData.ticker}_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+        }
+
+        // Initialize
+        init();
+    </script>
+</body>
+</html>

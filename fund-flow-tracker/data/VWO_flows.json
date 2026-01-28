@@ -1,0 +1,175 @@
+{
+  "ticker": "VWO",
+  "name": "Vanguard FTSE Emerging",
+  "category": "Emerging Markets",
+  "current_aum_billions": 73.68,
+  "period_days": 30,
+  "flows": [
+    {
+      "date": "2025-12-29",
+      "flow_millions": -928.27,
+      "flow_pct": -1.16,
+      "aum_billions": 79.07,
+      "shares_outstanding_change_pct": -1.102
+    },
+    {
+      "date": "2025-12-30",
+      "flow_millions": -508.45,
+      "flow_pct": -0.643,
+      "aum_billions": 78.56,
+      "shares_outstanding_change_pct": -0.611
+    },
+    {
+      "date": "2025-12-31",
+      "flow_millions": -557.46,
+      "flow_pct": -0.71,
+      "aum_billions": 78.01,
+      "shares_outstanding_change_pct": -0.674
+    },
+    {
+      "date": "2026-01-01",
+      "flow_millions": -676.63,
+      "flow_pct": -0.867,
+      "aum_billions": 77.33,
+      "shares_outstanding_change_pct": -0.824
+    },
+    {
+      "date": "2026-01-02",
+      "flow_millions": -507.08,
+      "flow_pct": -0.656,
+      "aum_billions": 76.82,
+      "shares_outstanding_change_pct": -0.623
+    },
+    {
+      "date": "2026-01-05",
+      "flow_millions": 117.71,
+      "flow_pct": 0.153,
+      "aum_billions": 76.94,
+      "shares_outstanding_change_pct": 0.146
+    },
+    {
+      "date": "2026-01-06",
+      "flow_millions": -55.84,
+      "flow_pct": -0.073,
+      "aum_billions": 76.88,
+      "shares_outstanding_change_pct": -0.069
+    },
+    {
+      "date": "2026-01-07",
+      "flow_millions": -329.31,
+      "flow_pct": -0.428,
+      "aum_billions": 76.55,
+      "shares_outstanding_change_pct": -0.407
+    },
+    {
+      "date": "2026-01-08",
+      "flow_millions": 296.23,
+      "flow_pct": 0.387,
+      "aum_billions": 76.85,
+      "shares_outstanding_change_pct": 0.368
+    },
+    {
+      "date": "2026-01-09",
+      "flow_millions": -275.42,
+      "flow_pct": -0.358,
+      "aum_billions": 76.58,
+      "shares_outstanding_change_pct": -0.34
+    },
+    {
+      "date": "2026-01-12",
+      "flow_millions": -415.89,
+      "flow_pct": -0.543,
+      "aum_billions": 76.16,
+      "shares_outstanding_change_pct": -0.516
+    },
+    {
+      "date": "2026-01-13",
+      "flow_millions": -527.08,
+      "flow_pct": -0.692,
+      "aum_billions": 75.63,
+      "shares_outstanding_change_pct": -0.657
+    },
+    {
+      "date": "2026-01-14",
+      "flow_millions": -241.09,
+      "flow_pct": -0.319,
+      "aum_billions": 75.39,
+      "shares_outstanding_change_pct": -0.303
+    },
+    {
+      "date": "2026-01-15",
+      "flow_millions": 88.72,
+      "flow_pct": 0.118,
+      "aum_billions": 75.48,
+      "shares_outstanding_change_pct": 0.112
+    },
+    {
+      "date": "2026-01-16",
+      "flow_millions": -158.4,
+      "flow_pct": -0.21,
+      "aum_billions": 75.32,
+      "shares_outstanding_change_pct": -0.199
+    },
+    {
+      "date": "2026-01-19",
+      "flow_millions": -718.17,
+      "flow_pct": -0.953,
+      "aum_billions": 74.6,
+      "shares_outstanding_change_pct": -0.906
+    },
+    {
+      "date": "2026-01-20",
+      "flow_millions": 343.0,
+      "flow_pct": 0.46,
+      "aum_billions": 74.95,
+      "shares_outstanding_change_pct": 0.437
+    },
+    {
+      "date": "2026-01-21",
+      "flow_millions": -731.12,
+      "flow_pct": -0.976,
+      "aum_billions": 74.22,
+      "shares_outstanding_change_pct": -0.927
+    },
+    {
+      "date": "2026-01-22",
+      "flow_millions": 142.53,
+      "flow_pct": 0.192,
+      "aum_billions": 74.36,
+      "shares_outstanding_change_pct": 0.182
+    },
+    {
+      "date": "2026-01-23",
+      "flow_millions": -270.86,
+      "flow_pct": -0.364,
+      "aum_billions": 74.09,
+      "shares_outstanding_change_pct": -0.346
+    },
+    {
+      "date": "2026-01-26",
+      "flow_millions": -375.35,
+      "flow_pct": -0.507,
+      "aum_billions": 73.71,
+      "shares_outstanding_change_pct": -0.481
+    },
+    {
+      "date": "2026-01-27",
+      "flow_millions": -34.27,
+      "flow_pct": -0.046,
+      "aum_billions": 73.68,
+      "shares_outstanding_change_pct": -0.044
+    }
+  ],
+  "summary": {
+    "total_flow_millions": -6322.5,
+    "avg_daily_flow_millions": -287.39,
+    "positive_days": 5,
+    "negative_days": 17,
+    "flow_momentum": "OUTFLOW",
+    "flow_streak": {
+      "type": "OUTFLOW",
+      "days": 3
+    }
+  },
+  "fetched_at": "2026-01-27T21:27:27.407836"
+}

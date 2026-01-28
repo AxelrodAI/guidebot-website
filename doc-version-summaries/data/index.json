@@ -1,0 +1,42 @@
+{
+  "files": {
+    "0230bd2679e6": {
+      "path": "C:\\Users\\getlu\\OneDrive\\Desktop\\guidebot-website\\doc-version-summaries\\version_tracker.py",
+      "name": "version_tracker.py",
+      "type": "python",
+      "created": "2026-01-27T21:34:15.518260",
+      "updated": "2026-01-27T21:34:15.518260",
+      "versions": [
+        {
+          "version": 1,
+          "hash": "f32a0f19eeba2830",
+          "timestamp": "2026-01-27T21:34:15.518260",
+          "size": 30744,
+          "lines_added": 877,
+          "lines_removed": 0,
+          "similarity": 0,
+          "summary": "Initial version of version_tracker.py"
+        }
+      ]
+    },
+    "dafb6d94979f": {
+      "path": "C:\\Users\\getlu\\clawd\\AGENTS.md",
+      "name": "Agents Config",
+      "type": "markdown",
+      "created": "2026-01-27T21:34:19.130457",
+      "updated": "2026-01-27T21:34:19.130457",
+      "versions": [
+        {
+          "version": 1,
+          "hash": "d935b55093df53bf",
+          "timestamp": "2026-01-27T21:34:19.130457",
+          "size": 7877,
+          "lines_added": 195,
+          "lines_removed": 0,
+          "similarity": 0,
+          "summary": "Initial version of AGENTS.md"
+        }
+      ]
+    }
+  }
+}

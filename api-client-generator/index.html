@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Client Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+            color: #e8e8e8;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 30px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(90deg, #10b981, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #888;
+            font-size: 1.1rem;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+
+        @media (max-width: 1000px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 25px;
+        }
+
+        .panel h2 {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            background: rgba(0,0,0,0.3);
+            color: white;
+            font-size: 0.95rem;
+            font-family: inherit;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #10b981;
+        }
+
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+            font-family: 'Monaco', 'Menlo', monospace;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(90deg, #10b981, #06b6d4);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .code-output {
+            background: #0d1117;
+            border-radius: 8px;
+            padding: 20px;
+            overflow: auto;
+            max-height: 500px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.85rem;
+            line-height: 1.6;
+        }
+
+        .code-output pre {
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .tab-bar {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 10px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background: transparent;
+            border: none;
+            color: #888;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .tab.active {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+
+        .tab:hover:not(.active) {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .endpoint-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .endpoint-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            background: rgba(255,255,255,0.02);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .endpoint-item:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .method-badge {
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .method-get { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        .method-post { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+        .method-put { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+        .method-delete { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+        .method-patch { background: rgba(139, 92, 246, 0.2); color: #8b5cf6; }
+
+        .endpoint-path {
+            flex: 1;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.9rem;
+        }
+
+        .auth-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+        }
+
+        .status-bar {
+            display: flex;
+            gap: 20px;
+            padding: 15px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .status-dot.success { background: #10b981; }
+        .status-dot.warning { background: #f59e0b; }
+        .status-dot.error { background: #ef4444; }
+
+        .sample-specs {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .sample-card {
+            padding: 15px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .sample-card:hover {
+            background: rgba(255,255,255,0.05);
+            border-color: #10b981;
+        }
+
+        .sample-card h4 {
+            margin-bottom: 5px;
+        }
+
+        .sample-card p {
+            font-size: 0.8rem;
+            color: #888;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 6px 12px;
+            font-size: 0.8rem;
+        }
+
+        .output-container {
+            position: relative;
+        }
+
+        .language-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: rgba(16, 185, 129, 0.15);
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: #10b981;
+            margin-bottom: 10px;
+        }
+
+        .info-box {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+
+        .info-box strong {
+            color: #3b82f6;
+        }
+
+        /* Syntax highlighting colors */
+        .keyword { color: #c678dd; }
+        .string { color: #98c379; }
+        .comment { color: #5c6370; }
+        .function { color: #61afef; }
+        .number { color: #d19a66; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>⚡ API Client Generator</h1>
+            <p class="subtitle">Generate typed Python & TypeScript clients from OpenAPI specs or cURL commands</p>
+        </header>
+
+        <div class="main-grid">
+            <div class="panel">
+                <h2>📥 Input</h2>
+
+                <div class="tab-bar">
+                    <button class="tab active" data-input="spec">OpenAPI Spec</button>
+                    <button class="tab" data-input="curl">cURL Command</button>
+                    <button class="tab" data-input="url">URL</button>
+                </div>
+
+                <div id="specInput" class="input-section">
+                    <div class="info-box">
+                        <strong>💡 Tip:</strong> Paste your OpenAPI/Swagger JSON spec below, or try one of the sample specs.
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>OpenAPI Specification (JSON)</label>
+                        <textarea id="specText" placeholder='{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "My API",
+    "version": "1.0.0"
+  },
+  "servers": [{"url": "https://api.example.com"}],
+  "paths": {
+    "/users": {
+      "get": {
+        "operationId": "getUsers",
+        "summary": "List all users"
+      }
+    }
+  }
+}'></textarea>
+                    </div>
+
+                    <h4 style="margin-bottom: 10px;">Try a Sample:</h4>
+                    <div class="sample-specs">
+                        <div class="sample-card" onclick="loadSample('petstore')">
+                            <h4>🐕 Pet Store</h4>
+                            <p>Classic Swagger example</p>
+                        </div>
+                        <div class="sample-card" onclick="loadSample('github')">
+                            <h4>🐙 GitHub API</h4>
+                            <p>Repository endpoints</p>
+                        </div>
+                        <div class="sample-card" onclick="loadSample('weather')">
+                            <h4>🌤️ Weather API</h4>
+                            <p>Simple weather service</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="curlInput" class="input-section" style="display: none;">
+                    <div class="info-box">
+                        <strong>💡 Tip:</strong> Paste a cURL command and we'll auto-detect the endpoint, method, headers, and body.
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>cURL Command</label>
+                        <textarea id="curlText" placeholder='curl -X POST "https://api.example.com/users" \
+  -H "Authorization: Bearer token123" \
+  -H "Content-Type: application/json" \
+  -d "{"name": "John", "email": "john@example.com"}"'></textarea>
+                    </div>
+                </div>
+
+                <div id="urlInput" class="input-section" style="display: none;">
+                    <div class="info-box">
+                        <strong>💡 Tip:</strong> Enter a URL to an OpenAPI spec (JSON or YAML format).
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Spec URL</label>
+                        <input type="url" id="specUrl" placeholder="https://api.example.com/openapi.json">
+                    </div>
+                </div>
+
+                <div class="input-group" style="margin-top: 20px;">
+                    <label>Output Language</label>
+                    <select id="language">
+                        <option value="python">🐍 Python (with type hints)</option>
+                        <option value="typescript">📘 TypeScript (with fetch)</option>
+                    </select>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="generateClient()">⚡ Generate Client</button>
+                    <button class="btn btn-secondary" onclick="previewEndpoints()">👁️ Preview Endpoints</button>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>📤 Output</h2>
+
+                <div class="status-bar" id="statusBar">
+                    <div class="status-item">
+                        <div class="status-dot success"></div>
+                        <span>Ready</span>
+                    </div>
+                </div>
+
+                <div id="endpointPreview" style="display: none;">
+                    <h3 style="margin-bottom: 15px;">Detected Endpoints</h3>
+                    <div class="endpoint-list" id="endpointList"></div>
+                </div>
+
+                <div class="output-container" id="codeOutput">
+                    <span class="language-badge" id="languageBadge">Python</span>
+                    <button class="btn btn-secondary copy-btn" onclick="copyCode()">📋 Copy</button>
+                    <div class="code-output">
+                        <pre id="generatedCode">// Generated code will appear here
+
+// Enter an OpenAPI spec or cURL command
+// and click "Generate Client" to get started.</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample specs
+        const sampleSpecs = {
+            petstore: {
+                "openapi": "3.0.0",
+                "info": {
+                    "title": "Pet Store API",
+                    "version": "1.0.0",
+                    "description": "A sample pet store API"
+                },
+                "servers": [{"url": "https://petstore.example.com/v1"}],
+                "components": {
+                    "securitySchemes": {
+                        "bearerAuth": {
+                            "type": "http",
+                            "scheme": "bearer"
+                        }
+                    }
+                },
+                "security": [{"bearerAuth": []}],
+                "paths": {
+                    "/pets": {
+                        "get": {
+                            "operationId": "listPets",
+                            "summary": "List all pets",
+                            "parameters": [
+                                {"name": "limit", "in": "query", "schema": {"type": "integer"}, "description": "Max items to return"},
+                                {"name": "offset", "in": "query", "schema": {"type": "integer"}, "description": "Offset for pagination"}
+                            ],
+                            "responses": {"200": {"description": "List of pets"}}
+                        },
+                        "post": {
+                            "operationId": "createPet",
+                            "summary": "Create a new pet",
+                            "requestBody": {
+                                "required": true,
+                                "content": {"application/json": {"schema": {"type": "object"}}}
+                            },
+                            "responses": {"201": {"description": "Pet created"}}
+                        }
+                    },
+                    "/pets/{petId}": {
+                        "get": {
+                            "operationId": "getPet",
+                            "summary": "Get a pet by ID",
+                            "parameters": [
+                                {"name": "petId", "in": "path", "required": true, "schema": {"type": "string"}}
+                            ],
+                            "responses": {"200": {"description": "Pet details"}}
+                        },
+                        "delete": {
+                            "operationId": "deletePet",
+                            "summary": "Delete a pet",
+                            "parameters": [
+                                {"name": "petId", "in": "path", "required": true, "schema": {"type": "string"}}
+                            ],
+                            "responses": {"204": {"description": "Pet deleted"}}
+                        }
+                    }
+                }
+            },
+            github: {
+                "openapi": "3.0.0",
+                "info": {
+                    "title": "GitHub API",
+                    "version": "1.0.0"
+                },
+                "servers": [{"url": "https://api.github.com"}],
+                "components": {
+                    "securitySchemes": {
+                        "bearerAuth": {"type": "http", "scheme": "bearer"}
+                    }
+                },
+                "paths": {
+                    "/users/{username}": {
+                        "get": {
+                            "operationId": "getUser",
+                            "summary": "Get a user",
+                            "parameters": [
+                                {"name": "username", "in": "path", "required": true, "schema": {"type": "string"}}
+                            ],
+                            "responses": {"200": {"description": "User info"}}
+                        }
+                    },
+                    "/users/{username}/repos": {
+                        "get": {
+                            "operationId": "listUserRepos",
+                            "summary": "List user repositories",
+                            "parameters": [
+                                {"name": "username", "in": "path", "required": true, "schema": {"type": "string"}},
+                                {"name": "sort", "in": "query", "schema": {"type": "string", "enum": ["created", "updated", "pushed", "full_name"]}},
+                                {"name": "per_page", "in": "query", "schema": {"type": "integer"}}
+                            ],
+                            "responses": {"200": {"description": "List of repos"}}
+                        }
+                    },
+                    "/repos/{owner}/{repo}": {
+                        "get": {
+                            "operationId": "getRepo",
+                            "summary": "Get a repository",
+                            "parameters": [
+                                {"name": "owner", "in": "path", "required": true, "schema": {"type": "string"}},
+                                {"name": "repo", "in": "path", "required": true, "schema": {"type": "string"}}
+                            ],
+                            "responses": {"200": {"description": "Repository info"}}
+                        }
+                    }
+                }
+            },
+            weather: {
+                "openapi": "3.0.0",
+                "info": {
+                    "title": "Weather API",
+                    "version": "1.0.0"
+                },
+                "servers": [{"url": "https://api.weather.example.com"}],
+                "components": {
+                    "securitySchemes": {
+                        "apiKey": {"type": "apiKey", "in": "header", "name": "X-API-Key"}
+                    }
+                },
+                "security": [{"apiKey": []}],
+                "paths": {
+                    "/current": {
+                        "get": {
+                            "operationId": "getCurrentWeather",
+                            "summary": "Get current weather",
+                            "parameters": [
+                                {"name": "city", "in": "query", "required": true, "schema": {"type": "string"}},
+                                {"name": "units", "in": "query", "schema": {"type": "string", "enum": ["metric", "imperial"]}}
+                            ],
+                            "responses": {"200": {"description": "Current weather"}}
+                        }
+                    },
+                    "/forecast": {
+                        "get": {
+                            "operationId": "getForecast",
+                            "summary": "Get weather forecast",
+                            "parameters": [
+                                {"name": "city", "in": "query", "required": true, "schema": {"type": "string"}},
+                                {"name": "days", "in": "query", "schema": {"type": "integer"}}
+                            ],
+                            "responses": {"200": {"description": "Weather forecast"}}
+                        }
+                    }
+                }
+            }
+        };
+
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.input-section').forEach(s => s.style.display = 'none');
+                
+                tab.classList.add('active');
+                const inputType = tab.dataset.input;
+                document.getElementById(inputType + 'Input').style.display = 'block';
+            });
+        });
+
+        function loadSample(name) {
+            const spec = sampleSpecs[name];
+            document.getElementById('specText').value = JSON.stringify(spec, null, 2);
+            updateStatus('success', `Loaded ${name} sample spec`);
+        }
+
+        function getActiveInput() {
+            const activeTab = document.querySelector('.tab.active').dataset.input;
+            
+            if (activeTab === 'spec') {
+                return { type: 'spec', value: document.getElementById('specText').value };
+            } else if (activeTab === 'curl') {
+                return { type: 'curl', value: document.getElementById('curlText').value };
+            } else {
+                return { type: 'url', value: document.getElementById('specUrl').value };
+            }
+        }
+
+        function generateClient() {
+            const input = getActiveInput();
+            const language = document.getElementById('language').value;
+            
+            if (!input.value.trim()) {
+                updateStatus('error', 'Please provide input');
+                return;
+            }
+
+            try {
+                let spec;
+                
+                if (input.type === 'spec') {
+                    spec = JSON.parse(input.value);
+                } else if (input.type === 'curl') {
+                    spec = parseCurl(input.value);
+                } else {
+                    updateStatus('warning', 'URL loading not implemented in browser demo');
+                    return;
+                }
+
+                const apiSpec = parseOpenAPI(spec);
+                let code;
+
+                if (language === 'python') {
+                    code = generatePythonClient(apiSpec);
+                    document.getElementById('languageBadge').textContent = '🐍 Python';
+                } else {
+                    code = generateTypeScriptClient(apiSpec);
+                    document.getElementById('languageBadge').textContent = '📘 TypeScript';
+                }
+
+                document.getElementById('generatedCode').textContent = code;
+                document.getElementById('endpointPreview').style.display = 'none';
+                document.getElementById('codeOutput').style.display = 'block';
+                updateStatus('success', `Generated ${apiSpec.endpoints.length} method(s)`);
+
+            } catch (e) {
+                updateStatus('error', 'Parse error: ' + e.message);
+            }
+        }
+
+        function previewEndpoints() {
+            const input = getActiveInput();
+            
+            if (!input.value.trim()) {
+                updateStatus('error', 'Please provide input');
+                return;
+            }
+
+            try {
+                let spec;
+                
+                if (input.type === 'spec') {
+                    spec = JSON.parse(input.value);
+                } else if (input.type === 'curl') {
+                    spec = parseCurl(input.value);
+                } else {
+                    return;
+                }
+
+                const apiSpec = parseOpenAPI(spec);
+                
+                const list = document.getElementById('endpointList');
+                list.innerHTML = apiSpec.endpoints.map(ep => `
+                    <div class="endpoint-item">
+                        <span class="method-badge method-${ep.method.toLowerCase()}">${ep.method}</span>
+                        <span class="endpoint-path">${ep.path}</span>
+                        ${ep.authRequired ? '<span class="auth-badge">🔒 Auth</span>' : ''}
+                    </div>
+                `).join('');
+
+                document.getElementById('endpointPreview').style.display = 'block';
+                document.getElementById('codeOutput').style.display = 'none';
+                updateStatus('success', `Found ${apiSpec.endpoints.length} endpoint(s)`);
+
+            } catch (e) {
+                updateStatus('error', 'Parse error: ' + e.message);
+            }
+        }
+
+        function updateStatus(type, message) {
+            const bar = document.getElementById('statusBar');
+            bar.innerHTML = `
+                <div class="status-item">
+                    <div class="status-dot ${type}"></div>
+                    <span>${message}</span>
+                </div>
+            `;
+        }
+
+        function copyCode() {
+            const code = document.getElementById('generatedCode').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                updateStatus('success', 'Copied to clipboard!');
+            });
+        }
+
+        // Simple OpenAPI parser
+        function parseOpenAPI(spec) {
+            const info = spec.info || {};
+            const servers = spec.servers || [];
+            const baseUrl = servers[0]?.url || '';
+            
+            let authType = '';
+            let authName = '';
+            
+            const securitySchemes = spec.components?.securitySchemes || spec.securityDefinitions || {};
+            for (const [name, scheme] of Object.entries(securitySchemes)) {
+                if (scheme.type === 'http' && scheme.scheme === 'bearer') {
+                    authType = 'bearer';
+                    authName = 'Authorization';
+                } else if (scheme.type === 'apiKey') {
+                    authType = 'api_key';
+                    authName = scheme.name || 'X-API-Key';
+                }
+            }
+
+            const endpoints = [];
+            const paths = spec.paths || {};
+            
+            for (const [path, methods] of Object.entries(paths)) {
+                for (const [method, op] of Object.entries(methods)) {
+                    if (['get', 'post', 'put', 'patch', 'delete'].includes(method)) {
+                        endpoints.push({
+                            method: method.toUpperCase(),
+                            path,
+                            operationId: op.operationId || `${method}_${path.replace(/\//g, '_')}`,
+                            summary: op.summary || '',
+                            parameters: op.parameters || [],
+                            requestBody: op.requestBody,
+                            authRequired: Boolean(op.security || spec.security)
+                        });
+                    }
+                }
+            }
+
+            return {
+                title: info.title || 'API',
+                version: info.version || '1.0.0',
+                baseUrl,
+                authType,
+                authName,
+                endpoints
+            };
+        }
+
+        function parseCurl(cmd) {
+            const urlMatch = cmd.match(/curl\s+(?:.*?\s+)?['"]?(https?:\/\/[^\s'"]+)['"]?/);
+            const url = urlMatch ? urlMatch[1] : '';
+            const parsed = new URL(url);
+            
+            let method = 'GET';
+            const methodMatch = cmd.match(/-X\s+(\w+)/);
+            if (methodMatch) method = methodMatch[1].toUpperCase();
+            else if (cmd.includes('-d') || cmd.includes('--data')) method = 'POST';
+
+            let authType = '';
+            let authName = '';
+            const headerMatches = cmd.matchAll(/-H\s+['"]([^'"]+)['"]/g);
+            for (const match of headerMatches) {
+                const [name, value] = match[1].split(':').map(s => s.trim());
+                if (name.toLowerCase() === 'authorization') {
+                    if (value.toLowerCase().startsWith('bearer')) {
+                        authType = 'bearer';
+                        authName = 'Authorization';
+                    }
+                } else if (name.toLowerCase().includes('api-key')) {
+                    authType = 'api_key';
+                    authName = name;
+                }
+            }
+
+            return {
+                openapi: '3.0.0',
+                info: { title: 'Parsed API', version: '1.0.0' },
+                servers: [{ url: `${parsed.protocol}//${parsed.host}` }],
+                components: authType ? {
+                    securitySchemes: {
+                        auth: authType === 'bearer' 
+                            ? { type: 'http', scheme: 'bearer' }
+                            : { type: 'apiKey', in: 'header', name: authName }
+                    }
+                } : {},
+                security: authType ? [{ auth: [] }] : [],
+                paths: {
+                    [parsed.pathname]: {
+                        [method.toLowerCase()]: {
+                            operationId: `${method.toLowerCase()}_${parsed.pathname.replace(/\//g, '_')}`,
+                            summary: `${method} ${parsed.pathname}`,
+                            responses: { '200': { description: 'Success' } }
+                        }
+                    }
+                }
+            };
+        }
+
+        // Code generators
+        function generatePythonClient(spec) {
+            let code = `"""
+${spec.title} API Client
+Version: ${spec.version}
+
+Auto-generated Python client with type hints.
+"""
+
+import requests
+from typing import Optional, List, Dict, Any
+from dataclasses import dataclass
+
+
+@dataclass
+class APIResponse:
+    """Standard API response wrapper."""
+    status_code: int
+    data: Any
+    headers: Dict[str, str]
+    success: bool
+
+
+class ${toPascalCase(spec.title)}Client:
+    """
+    ${spec.title} API Client
+    Base URL: ${spec.baseUrl}
+    """
+
+    def __init__(
+        self,
+        base_url: str = "${spec.baseUrl}",`;
+
+            if (spec.authType === 'bearer') {
+                code += `
+        token: Optional[str] = None,`;
+            } else if (spec.authType === 'api_key') {
+                code += `
+        api_key: Optional[str] = None,`;
+            }
+
+            code += `
+        timeout: int = 30
+    ):
+        self.base_url = base_url.rstrip("/")
+        self.timeout = timeout
+        self.session = requests.Session()`;
+
+            if (spec.authType === 'bearer') {
+                code += `
+        if token:
+            self.session.headers["Authorization"] = f"Bearer {token}"`;
+            } else if (spec.authType === 'api_key') {
+                code += `
+        if api_key:
+            self.session.headers["${spec.authName}"] = api_key`;
+            }
+
+            code += `
+
+    def _request(
+        self,
+        method: str,
+        path: str,
+        params: Optional[Dict] = None,
+        json_data: Optional[Dict] = None
+    ) -> APIResponse:
+        """Make an API request."""
+        url = f"{self.base_url}{path}"
+        
+        response = self.session.request(
+            method=method,
+            url=url,
+            params=params,
+            json=json_data,
+            timeout=self.timeout
+        )
+        
+        try:
+            data = response.json()
+        except ValueError:
+            data = response.text
+        
+        return APIResponse(
+            status_code=response.status_code,
+            data=data,
+            headers=dict(response.headers),
+            success=response.ok
+        )
+`;
+
+            for (const ep of spec.endpoints) {
+                code += generatePythonMethod(ep);
+            }
+
+            code += `
+
+# Example usage:
+# client = ${toPascalCase(spec.title)}Client(`;
+            if (spec.authType === 'bearer') code += `token="your-token"`;
+            else if (spec.authType === 'api_key') code += `api_key="your-key"`;
+            code += `)
+# response = client.${toSnakeCase(spec.endpoints[0]?.operationId || 'method')}()
+# print(response.data)`;
+
+            return code;
+        }
+
+        function generatePythonMethod(ep) {
+            const methodName = toSnakeCase(ep.operationId);
+            const pathParams = (ep.parameters || []).filter(p => p.in === 'path');
+            const queryParams = (ep.parameters || []).filter(p => p.in === 'query');
+            
+            let params = [];
+            pathParams.forEach(p => params.push(`${toSnakeCase(p.name)}: str`));
+            queryParams.forEach(p => {
+                const required = p.required;
+                params.push(`${toSnakeCase(p.name)}: Optional[str] = None`);
+            });
+            if (ep.requestBody) params.push('body: Dict[str, Any]');
+
+            let code = `
+    def ${methodName}(self${params.length ? ', ' + params.join(', ') : ''}) -> APIResponse:
+        """
+        ${ep.summary || ep.operationId}
+        ${ep.method} ${ep.path}
+        """
+        path = f"${ep.path.replace(/\{(\w+)\}/g, '{$1}')}"`;
+
+            if (queryParams.length) {
+                code += `
+        params = {}`;
+                queryParams.forEach(p => {
+                    const snake = toSnakeCase(p.name);
+                    code += `
+        if ${snake} is not None:
+            params["${p.name}"] = ${snake}`;
+                });
+            }
+
+            const paramsArg = queryParams.length ? ', params=params' : '';
+            const bodyArg = ep.requestBody ? ', json_data=body' : '';
+
+            code += `
+        return self._request("${ep.method}", path${paramsArg}${bodyArg})
+`;
+            return code;
+        }
+
+        function generateTypeScriptClient(spec) {
+            let code = `/**
+ * ${spec.title} API Client
+ * Version: ${spec.version}
+ * 
+ * Auto-generated TypeScript client with fetch API.
+ */
+
+interface APIResponse<T = any> {
+  statusCode: number;
+  data: T;
+  headers: Record<string, string>;
+  success: boolean;
+}
+
+export class ${toPascalCase(spec.title)}Client {
+  private baseUrl: string;
+  private defaultHeaders: Record<string, string>;
+
+  constructor(
+    baseUrl: string = "${spec.baseUrl}",`;
+
+            if (spec.authType === 'bearer') {
+                code += `
+    token?: string,`;
+            } else if (spec.authType === 'api_key') {
+                code += `
+    apiKey?: string,`;
+            }
+
+            code += `
+  ) {
+    this.baseUrl = baseUrl.replace(/\\/$/, "");
+    this.defaultHeaders = {
+      "Content-Type": "application/json",`;
+
+            if (spec.authType === 'bearer') {
+                code += `
+      ...(token ? { Authorization: \`Bearer \${token}\` } : {}),`;
+            } else if (spec.authType === 'api_key') {
+                code += `
+      ...(apiKey ? { "${spec.authName}": apiKey } : {}),`;
+            }
+
+            code += `
+    };
+  }
+
+  private async request<T>(
+    method: string,
+    path: string,
+    params?: Record<string, any>,
+    body?: any
+  ): Promise<APIResponse<T>> {
+    const url = new URL(\`\${this.baseUrl}\${path}\`);
+    
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          url.searchParams.append(key, String(value));
+        }
+      });
+    }
+
+    const response = await fetch(url.toString(), {
+      method,
+      headers: this.defaultHeaders,
+      body: body ? JSON.stringify(body) : undefined,
+    });
+
+    let data: T;
+    try {
+      data = await response.json();
+    } catch {
+      data = await response.text() as any;
+    }
+
+    return {
+      statusCode: response.status,
+      data,
+      headers: Object.fromEntries(response.headers.entries()),
+      success: response.ok,
+    };
+  }
+`;
+
+            for (const ep of spec.endpoints) {
+                code += generateTypeScriptMethod(ep);
+            }
+
+            code += `}
+
+// Example usage:
+// const client = new ${toPascalCase(spec.title)}Client(
+//   "${spec.baseUrl}",`;
+            if (spec.authType === 'bearer') code += `
+//   "your-token"`;
+            else if (spec.authType === 'api_key') code += `
+//   "your-api-key"`;
+            code += `
+// );
+// const response = await client.${toCamelCase(spec.endpoints[0]?.operationId || 'method')}();
+// console.log(response.data);`;
+
+            return code;
+        }
+
+        function generateTypeScriptMethod(ep) {
+            const methodName = toCamelCase(ep.operationId);
+            const pathParams = (ep.parameters || []).filter(p => p.in === 'path');
+            const queryParams = (ep.parameters || []).filter(p => p.in === 'query');
+            
+            let params = [];
+            pathParams.forEach(p => params.push(`${toCamelCase(p.name)}: string`));
+            queryParams.forEach(p => {
+                const optional = p.required ? '' : '?';
+                params.push(`${toCamelCase(p.name)}${optional}: string`);
+            });
+            if (ep.requestBody) params.push('body: Record<string, any>');
+
+            let code = `
+  /**
+   * ${ep.summary || ep.operationId}
+   * ${ep.method} ${ep.path}
+   */
+  async ${methodName}(${params.join(', ')}): Promise<APIResponse> {
+    const path = \`${ep.path.replace(/\{(\w+)\}/g, '${$1}')}\`;`;
+
+            if (queryParams.length) {
+                code += `
+    const params: Record<string, any> = {};`;
+                queryParams.forEach(p => {
+                    const camel = toCamelCase(p.name);
+                    code += `
+    if (${camel} !== undefined) params["${p.name}"] = ${camel};`;
+                });
+            }
+
+            const paramsArg = queryParams.length ? 'params' : 'undefined';
+            const bodyArg = ep.requestBody ? 'body' : 'undefined';
+
+            code += `
+    return this.request("${ep.method}", path, ${paramsArg}, ${bodyArg});
+  }
+`;
+            return code;
+        }
+
+        // Utility functions
+        function toPascalCase(str) {
+            return str.replace(/[\s\-_]+/g, ' ')
+                      .split(' ')
+                      .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+                      .join('');
+        }
+
+        function toSnakeCase(str) {
+            return str.replace(/([A-Z])/g, '_$1')
+                      .replace(/[\s\-]+/g, '_')
+                      .toLowerCase()
+                      .replace(/^_/, '');
+        }
+
+        function toCamelCase(str) {
+            const words = str.replace(/[\s\-_]+/g, ' ').split(' ');
+            return words[0].toLowerCase() + words.slice(1).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join('');
+        }
+    </script>
+</body>
+</html>

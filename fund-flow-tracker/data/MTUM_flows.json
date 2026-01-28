@@ -1,0 +1,175 @@
+{
+  "ticker": "MTUM",
+  "name": "iShares MSCI USA Momentum",
+  "category": "Momentum Factor",
+  "current_aum_billions": 11.84,
+  "period_days": 30,
+  "flows": [
+    {
+      "date": "2025-12-29",
+      "flow_millions": 11.91,
+      "flow_pct": 0.099,
+      "aum_billions": 12.01,
+      "shares_outstanding_change_pct": 0.094
+    },
+    {
+      "date": "2025-12-30",
+      "flow_millions": 58.43,
+      "flow_pct": 0.486,
+      "aum_billions": 12.07,
+      "shares_outstanding_change_pct": 0.462
+    },
+    {
+      "date": "2025-12-31",
+      "flow_millions": 7.81,
+      "flow_pct": 0.065,
+      "aum_billions": 12.08,
+      "shares_outstanding_change_pct": 0.061
+    },
+    {
+      "date": "2026-01-01",
+      "flow_millions": 40.17,
+      "flow_pct": 0.333,
+      "aum_billions": 12.12,
+      "shares_outstanding_change_pct": 0.316
+    },
+    {
+      "date": "2026-01-02",
+      "flow_millions": -36.88,
+      "flow_pct": -0.304,
+      "aum_billions": 12.08,
+      "shares_outstanding_change_pct": -0.289
+    },
+    {
+      "date": "2026-01-05",
+      "flow_millions": 13.45,
+      "flow_pct": 0.111,
+      "aum_billions": 12.09,
+      "shares_outstanding_change_pct": 0.106
+    },
+    {
+      "date": "2026-01-06",
+      "flow_millions": -77.97,
+      "flow_pct": -0.645,
+      "aum_billions": 12.02,
+      "shares_outstanding_change_pct": -0.612
+    },
+    {
+      "date": "2026-01-07",
+      "flow_millions": -21.57,
+      "flow_pct": -0.18,
+      "aum_billions": 12.0,
+      "shares_outstanding_change_pct": -0.171
+    },
+    {
+      "date": "2026-01-08",
+      "flow_millions": 36.98,
+      "flow_pct": 0.308,
+      "aum_billions": 12.03,
+      "shares_outstanding_change_pct": 0.293
+    },
+    {
+      "date": "2026-01-09",
+      "flow_millions": -24.89,
+      "flow_pct": -0.207,
+      "aum_billions": 12.01,
+      "shares_outstanding_change_pct": -0.197
+    },
+    {
+      "date": "2026-01-12",
+      "flow_millions": 64.78,
+      "flow_pct": 0.54,
+      "aum_billions": 12.07,
+      "shares_outstanding_change_pct": 0.513
+    },
+    {
+      "date": "2026-01-13",
+      "flow_millions": -86.44,
+      "flow_pct": -0.716,
+      "aum_billions": 11.99,
+      "shares_outstanding_change_pct": -0.68
+    },
+    {
+      "date": "2026-01-14",
+      "flow_millions": -63.13,
+      "flow_pct": -0.527,
+      "aum_billions": 11.92,
+      "shares_outstanding_change_pct": -0.5
+    },
+    {
+      "date": "2026-01-15",
+      "flow_millions": 38.42,
+      "flow_pct": 0.322,
+      "aum_billions": 11.96,
+      "shares_outstanding_change_pct": 0.306
+    },
+    {
+      "date": "2026-01-16",
+      "flow_millions": -68.79,
+      "flow_pct": -0.575,
+      "aum_billions": 11.89,
+      "shares_outstanding_change_pct": -0.546
+    },
+    {
+      "date": "2026-01-19",
+      "flow_millions": -54.93,
+      "flow_pct": -0.462,
+      "aum_billions": 11.84,
+      "shares_outstanding_change_pct": -0.439
+    },
+    {
+      "date": "2026-01-20",
+      "flow_millions": 15.19,
+      "flow_pct": 0.128,
+      "aum_billions": 11.85,
+      "shares_outstanding_change_pct": 0.122
+    },
+    {
+      "date": "2026-01-21",
+      "flow_millions": 60.73,
+      "flow_pct": 0.512,
+      "aum_billions": 11.91,
+      "shares_outstanding_change_pct": 0.487
+    },
+    {
+      "date": "2026-01-22",
+      "flow_millions": -57.99,
+      "flow_pct": -0.487,
+      "aum_billions": 11.86,
+      "shares_outstanding_change_pct": -0.462
+    },
+    {
+      "date": "2026-01-23",
+      "flow_millions": 73.32,
+      "flow_pct": 0.618,
+      "aum_billions": 11.93,
+      "shares_outstanding_change_pct": 0.588
+    },
+    {
+      "date": "2026-01-26",
+      "flow_millions": -101.55,
+      "flow_pct": -0.851,
+      "aum_billions": 11.83,
+      "shares_outstanding_change_pct": -0.809
+    },
+    {
+      "date": "2026-01-27",
+      "flow_millions": 11.36,
+      "flow_pct": 0.096,
+      "aum_billions": 11.84,
+      "shares_outstanding_change_pct": 0.091
+    }
+  ],
+  "summary": {
+    "total_flow_millions": -161.59,
+    "avg_daily_flow_millions": -7.35,
+    "positive_days": 12,
+    "negative_days": 10,
+    "flow_momentum": "OUTFLOW",
+    "flow_streak": {
+      "type": "INFLOW",
+      "days": 1
+    }
+  },
+  "fetched_at": "2026-01-27T21:27:27.423964"
+}

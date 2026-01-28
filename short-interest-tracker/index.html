@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Short Interest Tracker | Portfolio Analytics</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --border-color: #30363d;
+            --text-primary: #f0f6fc;
+            --text-secondary: #8b949e;
+            --accent-blue: #58a6ff;
+            --accent-green: #3fb950;
+            --accent-red: #f85149;
+            --accent-yellow: #d29922;
+            --accent-purple: #a371f7;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header h1 span.icon {
+            font-size: 28px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background: var(--bg-secondary);
+            border-color: var(--text-secondary);
+        }
+
+        .btn-primary {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+        }
+
+        .btn-primary:hover {
+            background: #4c9aed;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .stat-card .label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .stat-card .value {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .stat-card .change {
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .change.positive { color: var(--accent-green); }
+        .change.negative { color: var(--accent-red); }
+        .change.neutral { color: var(--text-secondary); }
+
+        /* Main Grid */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 24px;
+        }
+
+        /* Table */
+        .table-container {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .table-header h2 {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .table-filters {
+            display: flex;
+            gap: 12px;
+        }
+
+        .filter-select {
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            font-size: 13px;
+        }
+
+        .search-input {
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            font-size: 13px;
+            width: 180px;
+        }
+
+        .search-input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background: var(--bg-tertiary);
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+        }
+
+        th:hover {
+            color: var(--text-primary);
+        }
+
+        th.sorted::after {
+            content: ' ▼';
+            font-size: 10px;
+        }
+
+        th.sorted.asc::after {
+            content: ' ▲';
+        }
+
+        tr:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .ticker {
+            font-weight: 600;
+            color: var(--accent-blue);
+        }
+
+        .ticker-cell {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ticker-logo {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            background: var(--bg-tertiary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .si-bar {
+            width: 100px;
+            height: 8px;
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .si-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+
+        .si-low { background: var(--accent-green); }
+        .si-medium { background: var(--accent-yellow); }
+        .si-high { background: var(--accent-red); }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-alert { background: rgba(248, 81, 73, 0.2); color: var(--accent-red); }
+        .badge-watch { background: rgba(210, 153, 34, 0.2); color: var(--accent-yellow); }
+        .badge-normal { background: rgba(63, 185, 80, 0.2); color: var(--accent-green); }
+        .badge-threshold { background: rgba(163, 113, 247, 0.2); color: var(--accent-purple); }
+
+        /* Sidebar */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .sidebar-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .sidebar-card-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sidebar-card-header h3 {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .sidebar-card-body {
+            padding: 16px 20px;
+        }
+
+        /* Alert Feed */
+        .alert-feed {
+            max-height: 280px;
+            overflow-y: auto;
+        }
+
+        .alert-item {
+            display: flex;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .alert-item:last-child {
+            border-bottom: none;
+        }
+
+        .alert-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .alert-icon.spike { background: rgba(248, 81, 73, 0.2); }
+        .alert-icon.dtc { background: rgba(210, 153, 34, 0.2); }
+        .alert-icon.threshold { background: rgba(163, 113, 247, 0.2); }
+
+        .alert-content {
+            flex: 1;
+        }
+
+        .alert-title {
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .alert-meta {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* Chart */
+        .chart-container {
+            padding: 20px;
+        }
+
+        .chart-placeholder {
+            height: 200px;
+            background: var(--bg-tertiary);
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chart-lines {
+            position: absolute;
+            inset: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .chart-line {
+            height: 1px;
+            background: var(--border-color);
+        }
+
+        .chart-bars {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            height: 160px;
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+        }
+
+        .chart-bar {
+            flex: 1;
+            background: var(--accent-blue);
+            border-radius: 3px 3px 0 0;
+            opacity: 0.8;
+            transition: all 0.3s;
+        }
+
+        .chart-bar:hover {
+            opacity: 1;
+        }
+
+        .chart-bar.highlighted {
+            background: var(--accent-red);
+        }
+
+        /* Settings */
+        .settings-group {
+            margin-bottom: 16px;
+        }
+
+        .settings-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .settings-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .settings-input {
+            width: 100%;
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+
+        .toggle-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+        }
+
+        .toggle-row label {
+            font-size: 13px;
+        }
+
+        .toggle {
+            width: 40px;
+            height: 22px;
+            background: var(--bg-tertiary);
+            border-radius: 11px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .toggle.active {
+            background: var(--accent-green);
+        }
+
+        .toggle::after {
+            content: '';
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.2s;
+        }
+
+        .toggle.active::after {
+            transform: translateX(18px);
+        }
+
+        /* Threshold List Section */
+        .threshold-list {
+            padding: 0;
+        }
+
+        .threshold-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .threshold-item:last-child {
+            border-bottom: none;
+        }
+
+        .threshold-ticker {
+            font-weight: 600;
+            color: var(--accent-purple);
+        }
+
+        .threshold-days {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .table-filters {
+                flex-wrap: wrap;
+            }
+        }
+
+        /* Animation */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .pulsing {
+            animation: pulse 2s infinite;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--border-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>
+                <span class="icon">📊</span>
+                Short Interest Tracker
+            </h1>
+            <div class="header-actions">
+                <button class="btn" onclick="refreshData()">
+                    🔄 Refresh
+                </button>
+                <button class="btn" onclick="exportData()">
+                    📥 Export
+                </button>
+                <button class="btn btn-primary" onclick="openAlertSettings()">
+                    ⚙️ Alert Settings
+                </button>
+            </div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="label">Portfolio Avg SI %</div>
+                <div class="value" id="avgSI">14.2%</div>
+                <div class="change positive">↑ 1.8% vs last week</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Stocks SI &gt; 20%</div>
+                <div class="value" id="highSI">7</div>
+                <div class="change negative">↑ 2 new this week</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Avg Days to Cover</div>
+                <div class="value" id="avgDTC">3.8</div>
+                <div class="change neutral">↔ Unchanged</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">On Threshold List</div>
+                <div class="value" id="thresholdCount">4</div>
+                <div class="change negative">↑ 1 added</div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-grid">
+            <!-- Table -->
+            <div class="table-container">
+                <div class="table-header">
+                    <h2>Portfolio Short Interest</h2>
+                    <div class="table-filters">
+                        <input type="text" class="search-input" placeholder="Search ticker..." id="searchInput" oninput="filterTable()">
+                        <select class="filter-select" id="statusFilter" onchange="filterTable()">
+                            <option value="all">All Status</option>
+                            <option value="alert">Alert</option>
+                            <option value="watch">Watch</option>
+                            <option value="normal">Normal</option>
+                            <option value="threshold">Threshold</option>
+                        </select>
+                        <select class="filter-select" id="sortField" onchange="sortTable()">
+                            <option value="si">Sort by SI %</option>
+                            <option value="dtc">Sort by DTC</option>
+                            <option value="change">Sort by Δ WoW</option>
+                            <option value="ticker">Sort by Ticker</option>
+                        </select>
+                    </div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Ticker</th>
+                            <th>Company</th>
+                            <th onclick="sortBy('si')">SI % Float</th>
+                            <th onclick="sortBy('dtc')">Days to Cover</th>
+                            <th onclick="sortBy('change')">Δ WoW</th>
+                            <th>SI Shares</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="stockTable">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <!-- Alert Feed -->
+                <div class="sidebar-card">
+                    <div class="sidebar-card-header">
+                        <h3>🔔 Recent Alerts</h3>
+                        <span class="badge badge-alert">5 new</span>
+                    </div>
+                    <div class="alert-feed" id="alertFeed">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- SI Trend Chart -->
+                <div class="sidebar-card">
+                    <div class="sidebar-card-header">
+                        <h3>📈 SI Trend (Selected)</h3>
+                        <select class="filter-select" id="chartTicker" onchange="updateChart()">
+                            <option value="GME">GME</option>
+                            <option value="AMC">AMC</option>
+                            <option value="CVNA">CVNA</option>
+                            <option value="BBBY">BBBY</option>
+                        </select>
+                    </div>
+                    <div class="chart-container">
+                        <div class="chart-placeholder">
+                            <div class="chart-lines">
+                                <div class="chart-line"></div>
+                                <div class="chart-line"></div>
+                                <div class="chart-line"></div>
+                                <div class="chart-line"></div>
+                            </div>
+                            <div class="chart-bars" id="chartBars">
+                                <!-- Populated by JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Threshold List -->
+                <div class="sidebar-card">
+                    <div class="sidebar-card-header">
+                        <h3>⚠️ Threshold List</h3>
+                    </div>
+                    <div class="threshold-list" id="thresholdList">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Alert Settings -->
+                <div class="sidebar-card">
+                    <div class="sidebar-card-header">
+                        <h3>⚙️ Alert Thresholds</h3>
+                    </div>
+                    <div class="sidebar-card-body">
+                        <div class="settings-group">
+                            <div class="settings-label">SI % Jump Alert (WoW)</div>
+                            <input type="number" class="settings-input" value="20" id="siJumpThreshold"> %
+                        </div>
+                        <div class="settings-group">
+                            <div class="settings-label">Days to Cover Alert</div>
+                            <input type="number" class="settings-input" value="5" id="dtcThreshold"> days
+                        </div>
+                        <div class="toggle-row">
+                            <label>Threshold List Alerts</label>
+                            <div class="toggle active" onclick="this.classList.toggle('active')"></div>
+                        </div>
+                        <div class="toggle-row">
+                            <label>Email Notifications</label>
+                            <div class="toggle active" onclick="this.classList.toggle('active')"></div>
+                        </div>
+                        <div class="toggle-row">
+                            <label>Push Notifications</label>
+                            <div class="toggle" onclick="this.classList.toggle('active')"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mock data - In production, this would come from FINRA/exchange APIs
+        const stockData = [
+            { ticker: 'GME', company: 'GameStop Corp', si: 24.3, dtc: 7.2, change: 32.5, shares: '62.4M', status: 'alert', threshold: true },
+            { ticker: 'AMC', company: 'AMC Entertainment', si: 21.7, dtc: 5.8, change: 18.2, shares: '98.2M', status: 'alert', threshold: true },
+            { ticker: 'CVNA', company: 'Carvana Co', si: 38.2, dtc: 8.1, change: 45.3, shares: '41.6M', status: 'alert', threshold: true },
+            { ticker: 'BBBY', company: 'Bed Bath & Beyond', si: 42.8, dtc: 9.4, change: -5.2, shares: '28.3M', status: 'threshold', threshold: true },
+            { ticker: 'RIVN', company: 'Rivian Automotive', si: 18.4, dtc: 4.2, change: 12.8, shares: '124.5M', status: 'watch', threshold: false },
+            { ticker: 'LCID', company: 'Lucid Group', si: 15.2, dtc: 3.8, change: 8.4, shares: '88.7M', status: 'watch', threshold: false },
+            { ticker: 'SPCE', company: 'Virgin Galactic', si: 28.9, dtc: 6.3, change: 22.1, shares: '52.1M', status: 'alert', threshold: false },
+            { ticker: 'PLTR', company: 'Palantir Tech', si: 8.2, dtc: 2.4, change: -3.1, shares: '142.8M', status: 'normal', threshold: false },
+            { ticker: 'SOFI', company: 'SoFi Technologies', si: 12.6, dtc: 3.1, change: 5.8, shares: '76.4M', status: 'watch', threshold: false },
+            { ticker: 'COIN', company: 'Coinbase Global', si: 11.4, dtc: 2.8, change: -8.2, shares: '18.9M', status: 'normal', threshold: false },
+            { ticker: 'SNOW', company: 'Snowflake Inc', si: 6.8, dtc: 1.9, change: 2.1, shares: '21.4M', status: 'normal', threshold: false },
+            { ticker: 'MSTR', company: 'MicroStrategy', si: 19.7, dtc: 5.2, change: 28.4, shares: '3.2M', status: 'alert', threshold: false },
+            { ticker: 'UPST', company: 'Upstart Holdings', si: 35.2, dtc: 7.8, change: 15.6, shares: '24.8M', status: 'alert', threshold: false },
+            { ticker: 'AFRM', company: 'Affirm Holdings', si: 14.8, dtc: 3.5, change: 6.2, shares: '35.2M', status: 'watch', threshold: false },
+            { ticker: 'HOOD', company: 'Robinhood Markets', si: 9.2, dtc: 2.2, change: -12.4, shares: '71.3M', status: 'normal', threshold: false },
+        ];
+
+        const alerts = [
+            { type: 'spike', ticker: 'CVNA', title: 'SI jumped 45.3% WoW', time: '2 hours ago', icon: '📈' },
+            { type: 'spike', ticker: 'GME', title: 'SI jumped 32.5% WoW', time: '4 hours ago', icon: '📈' },
+            { type: 'dtc', ticker: 'BBBY', title: 'DTC reached 9.4 days', time: '6 hours ago', icon: '⏱️' },
+            { type: 'threshold', ticker: 'AMC', title: 'Added to threshold list', time: '1 day ago', icon: '⚠️' },
+            { type: 'spike', ticker: 'MSTR', title: 'SI jumped 28.4% WoW', time: '1 day ago', icon: '📈' },
+        ];
+
+        const thresholdStocks = stockData.filter(s => s.threshold);
+
+        const chartData = {
+            'GME': [45, 52, 48, 62, 58, 72, 68, 75, 82, 78, 85, 92],
+            'AMC': [35, 42, 38, 45, 52, 48, 55, 62, 58, 65, 72, 68],
+            'CVNA': [25, 32, 45, 52, 62, 78, 85, 92, 88, 95, 100, 98],
+            'BBBY': [85, 82, 78, 72, 68, 65, 72, 78, 82, 88, 92, 95],
+        };
+
+        // Render table
+        function renderTable(data = stockData) {
+            const tbody = document.getElementById('stockTable');
+            tbody.innerHTML = data.map(stock => `
+                <tr>
+                    <td>
+                        <div class="ticker-cell">
+                            <div class="ticker-logo">${stock.ticker.substring(0, 2)}</div>
+                            <span class="ticker">${stock.ticker}</span>
+                        </div>
+                    </td>
+                    <td>${stock.company}</td>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <span>${stock.si.toFixed(1)}%</span>
+                            <div class="si-bar">
+                                <div class="si-bar-fill ${getSIClass(stock.si)}" style="width: ${Math.min(stock.si * 2, 100)}%"></div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>${stock.dtc.toFixed(1)}</td>
+                    <td class="${stock.change >= 0 ? 'change positive' : 'change negative'}">
+                        ${stock.change >= 0 ? '↑' : '↓'} ${Math.abs(stock.change).toFixed(1)}%
+                    </td>
+                    <td>${stock.shares}</td>
+                    <td><span class="badge badge-${stock.status}">${stock.status}</span></td>
+                </tr>
+            `).join('');
+        }
+
+        function getSIClass(si) {
+            if (si < 15) return 'si-low';
+            if (si < 25) return 'si-medium';
+            return 'si-high';
+        }
+
+        // Render alerts
+        function renderAlerts() {
+            const feed = document.getElementById('alertFeed');
+            feed.innerHTML = alerts.map(alert => `
+                <div class="alert-item">
+                    <div class="alert-icon ${alert.type}">${alert.icon}</div>
+                    <div class="alert-content">
+                        <div class="alert-title"><strong>${alert.ticker}</strong> - ${alert.title}</div>
+                        <div class="alert-meta">${alert.time}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render threshold list
+        function renderThresholdList() {
+            const list = document.getElementById('thresholdList');
+            list.innerHTML = thresholdStocks.map(stock => `
+                <div class="threshold-item">
+                    <div>
+                        <span class="threshold-ticker">${stock.ticker}</span>
+                        <span style="color: var(--text-secondary); margin-left: 8px;">${stock.si.toFixed(1)}% SI</span>
+                    </div>
+                    <div class="threshold-days">${stock.dtc.toFixed(1)} DTC</div>
+                </div>
+            `).join('');
+        }
+
+        // Render chart
+        function updateChart() {
+            const ticker = document.getElementById('chartTicker').value;
+            const data = chartData[ticker] || chartData['GME'];
+            const bars = document.getElementById('chartBars');
+            const max = Math.max(...data);
+            
+            bars.innerHTML = data.map((val, i) => {
+                const height = (val / max) * 100;
+                const isHighlighted = i >= data.length - 3 && val > data[i-1];
+                return `<div class="chart-bar ${isHighlighted ? 'highlighted' : ''}" style="height: ${height}%" title="Week ${i+1}: ${val}%"></div>`;
+            }).join('');
+        }
+
+        // Filter table
+        function filterTable() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const status = document.getElementById('statusFilter').value;
+            
+            let filtered = stockData.filter(stock => {
+                const matchesSearch = stock.ticker.toLowerCase().includes(search) || 
+                                     stock.company.toLowerCase().includes(search);
+                const matchesStatus = status === 'all' || stock.status === status;
+                return matchesSearch && matchesStatus;
+            });
+            
+            renderTable(filtered);
+        }
+
+        // Sort table
+        function sortTable() {
+            const field = document.getElementById('sortField').value;
+            let sorted = [...stockData];
+            
+            switch(field) {
+                case 'si':
+                    sorted.sort((a, b) => b.si - a.si);
+                    break;
+                case 'dtc':
+                    sorted.sort((a, b) => b.dtc - a.dtc);
+                    break;
+                case 'change':
+                    sorted.sort((a, b) => b.change - a.change);
+                    break;
+                case 'ticker':
+                    sorted.sort((a, b) => a.ticker.localeCompare(b.ticker));
+                    break;
+            }
+            
+            renderTable(sorted);
+        }
+
+        // Actions
+        function refreshData() {
+            // Simulate refresh
+            document.querySelector('.btn').innerHTML = '🔄 Refreshing...';
+            setTimeout(() => {
+                document.querySelector('.btn').innerHTML = '🔄 Refresh';
+                // In production: fetch new data from FINRA API
+            }, 1500);
+        }
+
+        function exportData() {
+            // Generate CSV
+            const csv = [
+                ['Ticker', 'Company', 'SI %', 'Days to Cover', 'Change WoW', 'SI Shares', 'Status'],
+                ...stockData.map(s => [s.ticker, s.company, s.si, s.dtc, s.change, s.shares, s.status])
+            ].map(row => row.join(',')).join('\n');
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'short_interest_data.csv';
+            a.click();
+        }
+
+        function openAlertSettings() {
+            alert('Alert settings panel - would open modal in production');
+        }
+
+        // Initialize
+        renderTable();
+        renderAlerts();
+        renderThresholdList();
+        updateChart();
+
+        // Auto-refresh simulation
+        setInterval(() => {
+            // Simulate real-time updates
+            stockData.forEach(stock => {
+                stock.si += (Math.random() - 0.5) * 0.2;
+                stock.dtc += (Math.random() - 0.5) * 0.1;
+            });
+        }, 30000);
+    </script>
+</body>
+</html>

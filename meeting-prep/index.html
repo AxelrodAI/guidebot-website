@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Meeting Prep - Clawdbot</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e8e8e8;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 30px; padding: 20px;
+            background: rgba(255,255,255,0.05); border-radius: 16px;
+        }
+        h1 { font-size: 28px; display: flex; align-items: center; gap: 12px; }
+        h1 span { font-size: 36px; }
+        .status-badge {
+            padding: 8px 16px; border-radius: 20px;
+            background: #10b981; color: white; font-weight: 600;
+        }
+        .meeting-selector {
+            background: rgba(255,255,255,0.05); border-radius: 16px;
+            padding: 20px; margin-bottom: 20px;
+        }
+        .meeting-selector h2 { font-size: 18px; margin-bottom: 15px; color: #a5b4fc; }
+        .meetings-list { display: flex; gap: 15px; flex-wrap: wrap; }
+        .meeting-card {
+            background: rgba(255,255,255,0.08); border-radius: 12px;
+            padding: 15px 20px; cursor: pointer; transition: all 0.3s;
+            border: 2px solid transparent; min-width: 280px;
+        }
+        .meeting-card:hover { background: rgba(255,255,255,0.12); }
+        .meeting-card.active { border-color: #6366f1; background: rgba(99,102,241,0.2); }
+        .meeting-time { color: #f59e0b; font-weight: 600; font-size: 14px; }
+        .meeting-title { font-size: 16px; margin: 5px 0; }
+        .meeting-attendees { color: #9ca3af; font-size: 13px; }
+        
+        .main-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media (max-width: 1000px) { .main-grid { grid-template-columns: 1fr; } }
+        
+        .panel {
+            background: rgba(255,255,255,0.05); border-radius: 16px;
+            padding: 20px; height: fit-content;
+        }
+        .panel h3 {
+            font-size: 16px; color: #a5b4fc; margin-bottom: 15px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        
+        .attendee-list { display: flex; flex-direction: column; gap: 12px; }
+        .attendee {
+            background: rgba(255,255,255,0.05); border-radius: 10px;
+            padding: 15px; display: flex; gap: 12px; align-items: flex-start;
+        }
+        .attendee-avatar {
+            width: 45px; height: 45px; border-radius: 50%;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 16px; flex-shrink: 0;
+        }
+        .attendee-info { flex: 1; }
+        .attendee-name { font-weight: 600; font-size: 15px; }
+        .attendee-role { color: #9ca3af; font-size: 13px; margin: 2px 0; }
+        .attendee-notes { color: #6ee7b7; font-size: 12px; margin-top: 5px; }
+        
+        .doc-list { display: flex; flex-direction: column; gap: 10px; }
+        .doc-item {
+            background: rgba(255,255,255,0.05); border-radius: 8px;
+            padding: 12px 15px; display: flex; align-items: center; gap: 12px;
+        }
+        .doc-icon { font-size: 24px; }
+        .doc-name { font-size: 14px; flex: 1; }
+        .doc-date { color: #9ca3af; font-size: 12px; }
+        
+        .email-list { display: flex; flex-direction: column; gap: 10px; }
+        .email-item {
+            background: rgba(255,255,255,0.05); border-radius: 8px; padding: 12px 15px;
+        }
+        .email-subject { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+        .email-preview { color: #9ca3af; font-size: 13px; }
+        .email-from { color: #a5b4fc; font-size: 12px; margin-top: 5px; }
+        
+        .action-items { display: flex; flex-direction: column; gap: 8px; }
+        .action-item {
+            background: rgba(255,255,255,0.05); border-radius: 8px;
+            padding: 12px 15px; display: flex; align-items: center; gap: 10px;
+        }
+        .action-checkbox {
+            width: 20px; height: 20px; border-radius: 4px;
+            border: 2px solid #6366f1; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .action-checkbox.done { background: #6366f1; }
+        .action-checkbox.done::after { content: '✓'; color: white; font-size: 12px; }
+        .action-text { flex: 1; font-size: 14px; }
+        .action-text.done { text-decoration: line-through; color: #6b7280; }
+        
+        .notes-section textarea {
+            width: 100%; height: 150px; background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1); border-radius: 10px;
+            color: #e8e8e8; padding: 15px; font-size: 14px; resize: vertical;
+        }
+        .notes-section textarea:focus { outline: none; border-color: #6366f1; }
+        
+        .prep-score {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            border-radius: 16px; padding: 25px; text-align: center;
+            grid-column: span 2;
+        }
+        @media (max-width: 1000px) { .prep-score { grid-column: span 1; } }
+        .prep-score h3 { color: white; justify-content: center; }
+        .score-value { font-size: 64px; font-weight: 700; margin: 15px 0; }
+        .score-label { color: rgba(255,255,255,0.8); }
+        .score-items { display: flex; justify-content: center; gap: 30px; margin-top: 20px; }
+        .score-item { text-align: center; }
+        .score-item-value { font-size: 24px; font-weight: 600; }
+        .score-item-label { font-size: 12px; color: rgba(255,255,255,0.7); }
+        
+        .btn {
+            background: #6366f1; color: white; border: none;
+            padding: 12px 24px; border-radius: 8px; cursor: pointer;
+            font-weight: 600; transition: all 0.3s;
+        }
+        .btn:hover { background: #4f46e5; transform: translateY(-2px); }
+        .btn-outline {
+            background: transparent; border: 2px solid #6366f1;
+            color: #6366f1;
+        }
+        .btn-outline:hover { background: rgba(99,102,241,0.2); }
+        .actions { display: flex; gap: 10px; margin-top: 15px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><span>📋</span> Smart Meeting Prep</h1>
+            <div class="status-badge">✓ Auto-Gathering Intel</div>
+        </header>
+
+        <div class="meeting-selector">
+            <h2>📅 Upcoming Meetings</h2>
+            <div class="meetings-list" id="meetingsList"></div>
+        </div>
+
+        <div class="main-grid">
+            <div class="panel">
+                <h3>👥 Attendees</h3>
+                <div class="attendee-list" id="attendeeList"></div>
+            </div>
+
+            <div class="panel">
+                <h3>📄 Related Documents</h3>
+                <div class="doc-list" id="docList"></div>
+            </div>
+
+            <div class="panel">
+                <h3>📧 Recent Email Threads</h3>
+                <div class="email-list" id="emailList"></div>
+            </div>
+
+            <div class="panel">
+                <h3>✅ Pre-Meeting Actions</h3>
+                <div class="action-items" id="actionList"></div>
+            </div>
+
+            <div class="panel notes-section" style="grid-column: span 2;">
+                <h3>📝 Meeting Notes & Context</h3>
+                <textarea id="meetingNotes" placeholder="Auto-generated context and your notes will appear here..."></textarea>
+                <div class="actions">
+                    <button class="btn" onclick="generateBriefing()">🤖 Generate AI Briefing</button>
+                    <button class="btn btn-outline" onclick="exportPrep()">📤 Export Prep Kit</button>
+                </div>
+            </div>
+
+            <div class="prep-score">
+                <h3>🎯 Meeting Preparation Score</h3>
+                <div class="score-value" id="prepScore">85%</div>
+                <div class="score-label">You're well prepared for this meeting</div>
+                <div class="score-items">
+                    <div class="score-item">
+                        <div class="score-item-value" id="attendeeCount">4</div>
+                        <div class="score-item-label">Attendees Researched</div>
+                    </div>
+                    <div class="score-item">
+                        <div class="score-item-value" id="docCount">6</div>
+                        <div class="score-item-label">Docs Gathered</div>
+                    </div>
+                    <div class="score-item">
+                        <div class="score-item-value" id="emailCount">8</div>
+                        <div class="score-item-label">Emails Analyzed</div>
+                    </div>
+                    <div class="score-item">
+                        <div class="score-item-value" id="actionsDone">3/5</div>
+                        <div class="score-item-label">Actions Complete</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const meetings = [
+            { id: 1, time: 'Today 2:00 PM', title: 'Q4 Planning Review', attendees: ['Sarah Chen', 'Mike Ross', 'Lisa Park'], type: 'review' },
+            { id: 2, time: 'Today 4:30 PM', title: '1:1 with Alex Thompson', attendees: ['Alex Thompson'], type: '1on1' },
+            { id: 3, time: 'Tomorrow 10:00 AM', title: 'Product Roadmap Discussion', attendees: ['Product Team', 'Engineering Leads'], type: 'planning' },
+            { id: 4, time: 'Tomorrow 3:00 PM', title: 'Investor Update Call', attendees: ['John Smith (Acme VC)', 'Board Members'], type: 'external' }
+        ];
+
+        const attendeeData = {
+            1: [
+                { name: 'Sarah Chen', role: 'VP of Engineering', initials: 'SC', notes: 'Last met 3 days ago. Discussed infra budget concerns.' },
+                { name: 'Mike Ross', role: 'Product Manager', initials: 'MR', notes: 'Sent feature spec last week. Awaiting your feedback.' },
+                { name: 'Lisa Park', role: 'Design Lead', initials: 'LP', notes: 'New to team (2 months). Previously at Stripe.' }
+            ],
+            2: [
+                { name: 'Alex Thompson', role: 'Senior Engineer', initials: 'AT', notes: 'Performance review due. Working on Auth system refactor.' }
+            ],
+            3: [
+                { name: 'Product Team', role: '5 members', initials: 'PT', notes: 'Recent focus: mobile app improvements.' },
+                { name: 'Engineering Leads', role: '3 members', initials: 'EL', notes: 'Capacity planning discussions ongoing.' }
+            ],
+            4: [
+                { name: 'John Smith', role: 'Partner, Acme VC', initials: 'JS', notes: 'Board member since Series A. Focus on growth metrics.' },
+                { name: 'Board Members', role: '3 members', initials: 'BM', notes: 'Quarterly update cadence. Last meeting was Oct 15.' }
+            ]
+        };
+
+        const documents = [
+            { icon: '📊', name: 'Q4 OKRs Spreadsheet', date: 'Updated 2 days ago' },
+            { icon: '📑', name: 'Engineering Roadmap 2024', date: 'Updated 1 week ago' },
+            { icon: '📈', name: 'Performance Metrics Dashboard', date: 'Live' },
+            { icon: '📝', name: 'Last Meeting Notes', date: 'Nov 15, 2024' },
+            { icon: '💰', name: 'Budget Allocation Doc', date: 'Updated yesterday' },
+            { icon: '🎯', name: 'Team Goals Tracker', date: 'Updated today' }
+        ];
+
+        const emails = [
+            { subject: 'Re: Q4 Planning - Initial Thoughts', preview: 'I think we should prioritize the API redesign...', from: 'Sarah Chen' },
+            { subject: 'Updated timeline for infrastructure work', preview: 'Given the recent discussions, here is the revised...', from: 'Mike Ross' },
+            { subject: 'Design review feedback', preview: 'Thanks for the feedback on the mockups. I have incorporated...', from: 'Lisa Park' },
+            { subject: 'FW: Customer feedback summary', preview: 'Sharing the latest NPS results and key themes...', from: 'Support Team' }
+        ];
+
+        const actions = [
+            { text: 'Review Q4 OKRs document', done: true },
+            { text: 'Check team capacity for next sprint', done: true },
+            { text: 'Prepare budget questions for Sarah', done: true },
+            { text: 'Review Mike\'s feature spec', done: false },
+            { text: 'Pull latest performance metrics', done: false }
+        ];
+
+        let selectedMeeting = 1;
+
+        function renderMeetings() {
+            const list = document.getElementById('meetingsList');
+            list.innerHTML = meetings.map(m => `
+                <div class="meeting-card ${m.id === selectedMeeting ? 'active' : ''}" onclick="selectMeeting(${m.id})">
+                    <div class="meeting-time">${m.time}</div>
+                    <div class="meeting-title">${m.title}</div>
+                    <div class="meeting-attendees">👥 ${m.attendees.join(', ')}</div>
+                </div>
+            `).join('');
+        }
+
+        function selectMeeting(id) {
+            selectedMeeting = id;
+            renderMeetings();
+            renderAttendees();
+            updateNotes();
+        }
+
+        function renderAttendees() {
+            const list = document.getElementById('attendeeList');
+            const attendees = attendeeData[selectedMeeting] || [];
+            list.innerHTML = attendees.map(a => `
+                <div class="attendee">
+                    <div class="attendee-avatar">${a.initials}</div>
+                    <div class="attendee-info">
+                        <div class="attendee-name">${a.name}</div>
+                        <div class="attendee-role">${a.role}</div>
+                        <div class="attendee-notes">💡 ${a.notes}</div>
+                    </div>
+                </div>
+            `).join('');
+            document.getElementById('attendeeCount').textContent = attendees.length;
+        }
+
+        function renderDocuments() {
+            const list = document.getElementById('docList');
+            list.innerHTML = documents.map(d => `
+                <div class="doc-item">
+                    <div class="doc-icon">${d.icon}</div>
+                    <div class="doc-name">${d.name}</div>
+                    <div class="doc-date">${d.date}</div>
+                </div>
+            `).join('');
+            document.getElementById('docCount').textContent = documents.length;
+        }
+
+        function renderEmails() {
+            const list = document.getElementById('emailList');
+            list.innerHTML = emails.map(e => `
+                <div class="email-item">
+                    <div class="email-subject">${e.subject}</div>
+                    <div class="email-preview">${e.preview}</div>
+                    <div class="email-from">From: ${e.from}</div>
+                </div>
+            `).join('');
+            document.getElementById('emailCount').textContent = emails.length;
+        }
+
+        function renderActions() {
+            const list = document.getElementById('actionList');
+            list.innerHTML = actions.map((a, i) => `
+                <div class="action-item">
+                    <div class="action-checkbox ${a.done ? 'done' : ''}" onclick="toggleAction(${i})"></div>
+                    <div class="action-text ${a.done ? 'done' : ''}">${a.text}</div>
+                </div>
+            `).join('');
+            const done = actions.filter(a => a.done).length;
+            document.getElementById('actionsDone').textContent = `${done}/${actions.length}`;
+            updatePrepScore();
+        }
+
+        function toggleAction(index) {
+            actions[index].done = !actions[index].done;
+            renderActions();
+        }
+
+        function updatePrepScore() {
+            const actionsDone = actions.filter(a => a.done).length / actions.length;
+            const hasAttendees = (attendeeData[selectedMeeting]?.length || 0) > 0 ? 1 : 0;
+            const score = Math.round((actionsDone * 0.4 + hasAttendees * 0.3 + 0.3) * 100);
+            document.getElementById('prepScore').textContent = score + '%';
+        }
+
+        function updateNotes() {
+            const meeting = meetings.find(m => m.id === selectedMeeting);
+            const attendees = attendeeData[selectedMeeting] || [];
+            const notes = `📋 ${meeting.title}
+⏰ ${meeting.time}
+
+👥 ATTENDEES:
+${attendees.map(a => `• ${a.name} (${a.role})\n  Context: ${a.notes}`).join('\n')}
+
+📌 KEY TOPICS TO COVER:
+• Review progress on current initiatives
+• Discuss blockers and dependencies
+• Align on next steps and owners
+
+💡 AI-SUGGESTED TALKING POINTS:
+• Budget implications of Q4 priorities
+• Timeline adjustments based on team feedback
+• Cross-functional dependencies to address
+`;
+            document.getElementById('meetingNotes').value = notes;
+        }
+
+        function generateBriefing() {
+            const meeting = meetings.find(m => m.id === selectedMeeting);
+            const briefing = `🤖 AI-GENERATED BRIEFING
+
+MEETING: ${meeting.title}
+TIME: ${meeting.time}
+
+EXECUTIVE SUMMARY:
+This meeting focuses on strategic planning with key stakeholders. Based on recent email threads and document activity, the main concerns are:
+1. Budget allocation for Q4 initiatives
+2. Engineering capacity constraints
+3. Timeline adjustments for key deliverables
+
+RECOMMENDED APPROACH:
+• Start with a quick status round (5 min)
+• Deep dive on the top 2 priorities (20 min)
+• Identify blockers and assign owners (10 min)
+• Align on next steps (5 min)
+
+KEY METRICS TO REFERENCE:
+• Sprint velocity: 85 points/sprint (trending up)
+• Team utilization: 92% (near capacity)
+• Open blockers: 3 critical, 7 medium
+
+POTENTIAL QUESTIONS TO EXPECT:
+• "What's the realistic timeline for the API redesign?"
+• "How do we handle the budget shortfall?"
+• "Can we defer any Q4 commitments?"
+
+SUGGESTED RESPONSES:
+Prepare data-backed answers using the gathered documents.
+`;
+            document.getElementById('meetingNotes').value = briefing;
+        }
+
+        function exportPrep() {
+            const meeting = meetings.find(m => m.id === selectedMeeting);
+            const data = {
+                meeting: meeting,
+                attendees: attendeeData[selectedMeeting],
+                documents: documents,
+                emails: emails,
+                actions: actions,
+                notes: document.getElementById('meetingNotes').value,
+                exportedAt: new Date().toISOString()
+            };
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `meeting-prep-${meeting.id}.json`;
+            a.click();
+        }
+
+        // Initialize
+        renderMeetings();
+        renderAttendees();
+        renderDocuments();
+        renderEmails();
+        renderActions();
+        updateNotes();
+    </script>
+</body>
+</html>

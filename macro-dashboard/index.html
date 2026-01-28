@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Macro Economic Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0f1a;
+            min-height: 100vh;
+            color: #fff;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 25px;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logo-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #00d9a5 0%, #00b894 100%);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        
+        .logo h1 {
+            font-size: 22px;
+            font-weight: 700;
+        }
+        
+        .logo span {
+            font-size: 13px;
+            color: #888;
+        }
+        
+        .header-controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .country-select {
+            padding: 10px 15px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        
+        .last-update {
+            font-size: 12px;
+            color: #888;
+        }
+        
+        /* Key Metrics Row */
+        .key-metrics {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .metric-card {
+            background: rgba(255,255,255,0.03);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.08);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+        }
+        
+        .metric-card.growth::before { background: linear-gradient(90deg, #00d9a5, #00b894); }
+        .metric-card.inflation::before { background: linear-gradient(90deg, #ff6b6b, #fa5252); }
+        .metric-card.employment::before { background: linear-gradient(90deg, #667eea, #764ba2); }
+        .metric-card.rates::before { background: linear-gradient(90deg, #ffd43b, #fab005); }
+        .metric-card.trade::before { background: linear-gradient(90deg, #339af0, #228be6); }
+        .metric-card.consumer::before { background: linear-gradient(90deg, #ff922b, #fd7e14); }
+        
+        .metric-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+        
+        .metric-name {
+            font-size: 12px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .metric-icon {
+            font-size: 18px;
+        }
+        
+        .metric-value {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .metric-change {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 13px;
+        }
+        
+        .change-up { color: #51cf66; }
+        .change-down { color: #ff6b6b; }
+        .change-neutral { color: #888; }
+        
+        .metric-period {
+            font-size: 11px;
+            color: #666;
+            margin-top: 8px;
+        }
+        
+        /* Main Grid */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        
+        /* Chart Card */
+        .chart-card {
+            background: rgba(255,255,255,0.03);
+            border-radius: 16px;
+            padding: 25px;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .chart-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .chart-tabs {
+            display: flex;
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            padding: 3px;
+        }
+        
+        .chart-tab {
+            padding: 6px 12px;
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 12px;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+        
+        .chart-tab.active {
+            background: #00d9a5;
+            color: #000;
+        }
+        
+        /* Indicator Table */
+        .indicator-table {
+            background: rgba(255,255,255,0.03);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        
+        .table-header {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            font-size: 11px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .table-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            align-items: center;
+            font-size: 13px;
+        }
+        
+        .table-row:hover {
+            background: rgba(255,255,255,0.02);
+        }
+        
+        .indicator-name {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .indicator-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        
+        .indicator-dot.up { background: #51cf66; }
+        .indicator-dot.down { background: #ff6b6b; }
+        .indicator-dot.stable { background: #fab005; }
+        
+        .next-release {
+            font-size: 11px;
+            color: #888;
+        }
+        
+        .release-date {
+            display: block;
+            color: #00d9a5;
+        }
+        
+        /* Economic Calendar */
+        .calendar-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .calendar-card {
+            background: rgba(255,255,255,0.03);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        
+        .calendar-event {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: rgba(255,255,255,0.02);
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border-left: 3px solid;
+        }
+        
+        .calendar-event.high { border-color: #ff6b6b; }
+        .calendar-event.medium { border-color: #fab005; }
+        .calendar-event.low { border-color: #51cf66; }
+        
+        .event-time {
+            width: 70px;
+            text-align: center;
+        }
+        
+        .event-date {
+            font-size: 11px;
+            color: #888;
+        }
+        
+        .event-hour {
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .event-details {
+            flex: 1;
+            margin-left: 15px;
+        }
+        
+        .event-name {
+            font-weight: 500;
+            margin-bottom: 3px;
+        }
+        
+        .event-info {
+            font-size: 12px;
+            color: #888;
+        }
+        
+        .event-impact {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        
+        .event-impact.high { background: rgba(255, 107, 107, 0.2); color: #ff6b6b; }
+        .event-impact.medium { background: rgba(250, 176, 5, 0.2); color: #fab005; }
+        .event-impact.low { background: rgba(81, 207, 102, 0.2); color: #51cf66; }
+        
+        /* Yield Curve */
+        .yield-section {
+            background: rgba(255,255,255,0.03);
+            border-radius: 16px;
+            padding: 25px;
+            border: 1px solid rgba(255,255,255,0.08);
+            margin-bottom: 25px;
+        }
+        
+        .yield-grid {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .yield-item {
+            text-align: center;
+            padding: 15px 10px;
+            background: rgba(255,255,255,0.02);
+            border-radius: 10px;
+        }
+        
+        .yield-tenor {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 8px;
+        }
+        
+        .yield-rate {
+            font-size: 20px;
+            font-weight: 700;
+        }
+        
+        .yield-change {
+            font-size: 11px;
+            margin-top: 5px;
+        }
+        
+        /* Bottom Grid */
+        .bottom-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+        
+        .sector-card {
+            background: rgba(255,255,255,0.03);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        
+        .sector-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .sector-item:last-child {
+            border-bottom: none;
+        }
+        
+        .sector-name {
+            font-size: 13px;
+        }
+        
+        .sector-value {
+            font-weight: 600;
+        }
+        
+        /* Mini Chart */
+        .mini-chart {
+            width: 60px;
+            height: 25px;
+        }
+        
+        /* Status Indicators */
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .status-item {
+            text-align: center;
+            padding: 10px;
+            background: rgba(255,255,255,0.02);
+            border-radius: 8px;
+        }
+        
+        .status-label {
+            font-size: 10px;
+            color: #888;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+        
+        .status-value {
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .status-value.expansion { color: #51cf66; }
+        .status-value.contraction { color: #ff6b6b; }
+        .status-value.neutral { color: #fab005; }
+        
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 20px 0;
+            color: #666;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <div class="logo-icon">📊</div>
+                <div>
+                    <h1>Macro Dashboard</h1>
+                    <span>Economic Indicators at a Glance</span>
+                </div>
+            </div>
+            <div class="header-controls">
+                <select class="country-select" id="countrySelect" onchange="changeCountry()">
+                    <option value="US">🇺🇸 United States</option>
+                    <option value="EU">🇪🇺 Eurozone</option>
+                    <option value="UK">🇬🇧 United Kingdom</option>
+                    <option value="JP">🇯🇵 Japan</option>
+                    <option value="CN">🇨🇳 China</option>
+                </select>
+                <div class="last-update">
+                    Last update: <span id="updateTime">Jan 27, 2026 09:30 AM</span>
+                </div>
+            </div>
+        </header>
+        
+        <!-- Key Metrics -->
+        <div class="key-metrics">
+            <div class="metric-card growth">
+                <div class="metric-header">
+                    <div class="metric-name">GDP Growth</div>
+                    <div class="metric-icon">📈</div>
+                </div>
+                <div class="metric-value" id="gdpValue">2.8%</div>
+                <div class="metric-change change-up">
+                    <span>↑ 0.3%</span>
+                    <span>vs prior</span>
+                </div>
+                <div class="metric-period">Q3 2025 YoY</div>
+            </div>
+            
+            <div class="metric-card inflation">
+                <div class="metric-header">
+                    <div class="metric-name">CPI Inflation</div>
+                    <div class="metric-icon">🔥</div>
+                </div>
+                <div class="metric-value" id="cpiValue">3.2%</div>
+                <div class="metric-change change-down">
+                    <span>↓ 0.4%</span>
+                    <span>vs prior</span>
+                </div>
+                <div class="metric-period">Dec 2025 YoY</div>
+            </div>
+            
+            <div class="metric-card employment">
+                <div class="metric-header">
+                    <div class="metric-name">Unemployment</div>
+                    <div class="metric-icon">👷</div>
+                </div>
+                <div class="metric-value" id="unemployValue">3.7%</div>
+                <div class="metric-change change-neutral">
+                    <span>→ 0.0%</span>
+                    <span>vs prior</span>
+                </div>
+                <div class="metric-period">Dec 2025</div>
+            </div>
+            
+            <div class="metric-card rates">
+                <div class="metric-header">
+                    <div class="metric-name">Fed Funds Rate</div>
+                    <div class="metric-icon">🏦</div>
+                </div>
+                <div class="metric-value" id="rateValue">4.50%</div>
+                <div class="metric-change change-neutral">
+                    <span>→ 0bp</span>
+                    <span>vs prior</span>
+                </div>
+                <div class="metric-period">Current</div>
+            </div>
+            
+            <div class="metric-card trade">
+                <div class="metric-header">
+                    <div class="metric-name">Trade Balance</div>
+                    <div class="metric-icon">🚢</div>
+                </div>
+                <div class="metric-value" id="tradeValue">-$78.2B</div>
+                <div class="metric-change change-down">
+                    <span>↓ $5.1B</span>
+                    <span>vs prior</span>
+                </div>
+                <div class="metric-period">Nov 2025</div>
+            </div>
+            
+            <div class="metric-card consumer">
+                <div class="metric-header">
+                    <div class="metric-name">Consumer Conf.</div>
+                    <div class="metric-icon">🛒</div>
+                </div>
+                <div class="metric-value" id="consumerValue">110.7</div>
+                <div class="metric-change change-up">
+                    <span>↑ 4.2</span>
+                    <span>vs prior</span>
+                </div>
+                <div class="metric-period">Dec 2025</div>
+            </div>
+        </div>
+        
+        <!-- Main Grid: Charts + Table -->
+        <div class="main-grid">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div class="chart-title">📉 GDP & Inflation Trend</div>
+                    <div class="chart-tabs">
+                        <button class="chart-tab active" onclick="switchChart('1y')">1Y</button>
+                        <button class="chart-tab" onclick="switchChart('3y')">3Y</button>
+                        <button class="chart-tab" onclick="switchChart('5y')">5Y</button>
+                        <button class="chart-tab" onclick="switchChart('10y')">10Y</button>
+                    </div>
+                </div>
+                <canvas id="mainChart" height="250"></canvas>
+            </div>
+            
+            <div class="indicator-table">
+                <div class="chart-header">
+                    <div class="chart-title">📋 Key Indicators</div>
+                </div>
+                <div class="table-header">
+                    <div>Indicator</div>
+                    <div>Actual</div>
+                    <div>Prior</div>
+                    <div>Next</div>
+                </div>
+                <div id="indicatorRows"></div>
+            </div>
+        </div>
+        
+        <!-- Economic Calendar -->
+        <div class="calendar-section">
+            <div class="calendar-card">
+                <div class="chart-header">
+                    <div class="chart-title">📅 Upcoming Releases</div>
+                </div>
+                <div id="upcomingEvents"></div>
+            </div>
+            
+            <div class="calendar-card">
+                <div class="chart-header">
+                    <div class="chart-title">⚡ Recent Releases</div>
+                </div>
+                <div id="recentEvents"></div>
+            </div>
+        </div>
+        
+        <!-- Yield Curve -->
+        <div class="yield-section">
+            <div class="chart-header">
+                <div class="chart-title">📈 Treasury Yield Curve</div>
+                <div class="chart-tabs">
+                    <button class="chart-tab active">Today</button>
+                    <button class="chart-tab">1W Ago</button>
+                    <button class="chart-tab">1M Ago</button>
+                </div>
+            </div>
+            <div class="yield-grid" id="yieldGrid"></div>
+        </div>
+        
+        <!-- Bottom Grid -->
+        <div class="bottom-grid">
+            <div class="sector-card">
+                <div class="chart-header">
+                    <div class="chart-title">🏭 PMI Readings</div>
+                </div>
+                <div id="pmiList"></div>
+                <div class="status-grid">
+                    <div class="status-item">
+                        <div class="status-label">Mfg PMI</div>
+                        <div class="status-value expansion" id="mfgPmi">52.4</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-label">Svc PMI</div>
+                        <div class="status-value expansion" id="svcPmi">54.1</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-label">Comp PMI</div>
+                        <div class="status-value expansion" id="compPmi">53.5</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-label">Trend</div>
+                        <div class="status-value expansion">↑</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="sector-card">
+                <div class="chart-header">
+                    <div class="chart-title">💵 Currency & Commodities</div>
+                </div>
+                <div id="currencyList"></div>
+            </div>
+            
+            <div class="sector-card">
+                <div class="chart-header">
+                    <div class="chart-title">🏠 Housing & Labor</div>
+                </div>
+                <div id="housingList"></div>
+            </div>
+        </div>
+        
+        <footer>
+            Data for illustrative purposes. Real implementation would connect to FRED, BLS, and other data sources.
+        </footer>
+    </div>
+    
+    <script>
+        // Sample Data
+        const indicators = [
+            { name: 'Nonfarm Payrolls', actual: '+216K', prior: '+199K', next: 'Feb 7', trend: 'up' },
+            { name: 'Core PCE', actual: '2.9%', prior: '3.2%', next: 'Jan 31', trend: 'down' },
+            { name: 'Retail Sales', actual: '+0.6%', prior: '+0.3%', next: 'Feb 14', trend: 'up' },
+            { name: 'ISM Manufacturing', actual: '47.4', prior: '46.7', next: 'Feb 3', trend: 'up' },
+            { name: 'Housing Starts', actual: '1.46M', prior: '1.53M', next: 'Feb 16', trend: 'down' },
+            { name: 'Industrial Prod.', actual: '+0.1%', prior: '+0.2%', next: 'Feb 14', trend: 'down' }
+        ];
+        
+        const upcomingEvents = [
+            { date: 'Jan 29', time: '8:30 AM', name: 'GDP Advance Q4', expected: '2.5%', impact: 'high' },
+            { date: 'Jan 31', time: '8:30 AM', name: 'Core PCE Price Index', expected: '2.9%', impact: 'high' },
+            { date: 'Feb 3', time: '10:00 AM', name: 'ISM Manufacturing PMI', expected: '47.8', impact: 'medium' },
+            { date: 'Feb 5', time: '8:15 AM', name: 'ADP Employment', expected: '+145K', impact: 'medium' }
+        ];
+        
+        const recentEvents = [
+            { date: 'Jan 24', time: '10:00 AM', name: 'Consumer Confidence', actual: '110.7', expected: '106.0', impact: 'medium' },
+            { date: 'Jan 17', time: '8:30 AM', name: 'Housing Starts', actual: '1.46M', expected: '1.48M', impact: 'low' },
+            { date: 'Jan 15', time: '8:30 AM', name: 'Retail Sales', actual: '+0.6%', expected: '+0.4%', impact: 'high' },
+            { date: 'Jan 12', time: '8:30 AM', name: 'CPI YoY', actual: '3.2%', expected: '3.3%', impact: 'high' }
+        ];
+        
+        const yields = [
+            { tenor: '1M', rate: 4.31, change: -0.02 },
+            { tenor: '3M', rate: 4.58, change: +0.01 },
+            { tenor: '6M', rate: 4.62, change: -0.03 },
+            { tenor: '1Y', rate: 4.45, change: -0.05 },
+            { tenor: '2Y', rate: 4.21, change: -0.08 },
+            { tenor: '5Y', rate: 4.05, change: -0.04 },
+            { tenor: '10Y', rate: 4.12, change: -0.02 },
+            { tenor: '30Y', rate: 4.35, change: +0.01 }
+        ];
+        
+        const pmiData = [
+            { name: 'New Orders', value: 52.8, trend: 'up' },
+            { name: 'Production', value: 50.3, trend: 'stable' },
+            { name: 'Employment', value: 48.1, trend: 'down' },
+            { name: 'Prices Paid', value: 56.2, trend: 'up' }
+        ];
+        
+        const currencyData = [
+            { name: 'DXY Index', value: '103.45', change: '+0.2%' },
+            { name: 'EUR/USD', value: '1.0865', change: '-0.1%' },
+            { name: 'Gold (oz)', value: '$2,028', change: '+0.4%' },
+            { name: 'WTI Crude', value: '$76.82', change: '-1.2%' }
+        ];
+        
+        const housingData = [
+            { name: 'Housing Starts', value: '1.46M', change: '-4.6%' },
+            { name: 'Existing Sales', value: '3.78M', change: '-1.0%' },
+            { name: 'New Claims', value: '214K', change: '-9K' },
+            { name: 'Cont. Claims', value: '1.83M', change: '+23K' }
+        ];
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            renderIndicators();
+            renderUpcomingEvents();
+            renderRecentEvents();
+            renderYields();
+            renderPMI();
+            renderCurrency();
+            renderHousing();
+            initMainChart();
+            updateTime();
+        });
+        
+        // Render Functions
+        function renderIndicators() {
+            const container = document.getElementById('indicatorRows');
+            container.innerHTML = indicators.map(ind => `
+                <div class="table-row">
+                    <div class="indicator-name">
+                        <span class="indicator-dot ${ind.trend}"></span>
+                        ${ind.name}
+                    </div>
+                    <div style="font-weight: 600;">${ind.actual}</div>
+                    <div style="color: #888;">${ind.prior}</div>
+                    <div class="next-release">
+                        <span class="release-date">${ind.next}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function renderUpcomingEvents() {
+            const container = document.getElementById('upcomingEvents');
+            container.innerHTML = upcomingEvents.map(evt => `
+                <div class="calendar-event ${evt.impact}">
+                    <div class="event-time">
+                        <div class="event-date">${evt.date}</div>
+                        <div class="event-hour">${evt.time.split(' ')[0]}</div>
+                    </div>
+                    <div class="event-details">
+                        <div class="event-name">${evt.name}</div>
+                        <div class="event-info">Expected: ${evt.expected}</div>
+                    </div>
+                    <span class="event-impact ${evt.impact}">${evt.impact.toUpperCase()}</span>
+                </div>
+            `).join('');
+        }
+        
+        function renderRecentEvents() {
+            const container = document.getElementById('recentEvents');
+            container.innerHTML = recentEvents.map(evt => {
+                const beat = parseFloat(evt.actual) > parseFloat(evt.expected);
+                return `
+                    <div class="calendar-event ${evt.impact}">
+                        <div class="event-time">
+                            <div class="event-date">${evt.date}</div>
+                            <div class="event-hour">${evt.time.split(' ')[0]}</div>
+                        </div>
+                        <div class="event-details">
+                            <div class="event-name">${evt.name}</div>
+                            <div class="event-info">Actual: <strong>${evt.actual}</strong> (exp: ${evt.expected})</div>
+                        </div>
+                        <span class="event-impact ${evt.impact}">${evt.impact.toUpperCase()}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function renderYields() {
+            const container = document.getElementById('yieldGrid');
+            container.innerHTML = yields.map(y => `
+                <div class="yield-item">
+                    <div class="yield-tenor">${y.tenor}</div>
+                    <div class="yield-rate">${y.rate.toFixed(2)}%</div>
+                    <div class="yield-change ${y.change >= 0 ? 'change-up' : 'change-down'}">
+                        ${y.change >= 0 ? '+' : ''}${y.change.toFixed(2)}
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function renderPMI() {
+            const container = document.getElementById('pmiList');
+            container.innerHTML = pmiData.map(p => `
+                <div class="sector-item">
+                    <span class="sector-name">${p.name}</span>
+                    <span class="sector-value ${p.value >= 50 ? 'change-up' : 'change-down'}">${p.value}</span>
+                </div>
+            `).join('');
+        }
+        
+        function renderCurrency() {
+            const container = document.getElementById('currencyList');
+            container.innerHTML = currencyData.map(c => `
+                <div class="sector-item">
+                    <span class="sector-name">${c.name}</span>
+                    <span class="sector-value">${c.value} <small class="${c.change.startsWith('+') ? 'change-up' : 'change-down'}">${c.change}</small></span>
+                </div>
+            `).join('');
+        }
+        
+        function renderHousing() {
+            const container = document.getElementById('housingList');
+            container.innerHTML = housingData.map(h => `
+                <div class="sector-item">
+                    <span class="sector-name">${h.name}</span>
+                    <span class="sector-value">${h.value} <small class="${h.change.startsWith('-') ? 'change-down' : 'change-up'}">${h.change}</small></span>
+                </div>
+            `).join('');
+        }
+        
+        // Main Chart
+        let mainChart;
+        function initMainChart() {
+            const ctx = document.getElementById('mainChart').getContext('2d');
+            
+            const labels = ['Q1 24', 'Q2 24', 'Q3 24', 'Q4 24', 'Q1 25', 'Q2 25', 'Q3 25', 'Q4 25'];
+            
+            mainChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'GDP Growth',
+                            data: [2.2, 2.8, 3.0, 2.5, 2.3, 2.6, 2.8, 2.5],
+                            borderColor: '#00d9a5',
+                            backgroundColor: 'rgba(0, 217, 165, 0.1)',
+                            fill: true,
+                            tension: 0.4,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'CPI Inflation',
+                            data: [3.5, 3.3, 3.1, 3.0, 3.4, 3.2, 3.1, 3.2],
+                            borderColor: '#ff6b6b',
+                            backgroundColor: 'rgba(255, 107, 107, 0.1)',
+                            fill: true,
+                            tension: 0.4,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'Fed Funds',
+                            data: [5.25, 5.25, 5.25, 5.00, 4.75, 4.50, 4.50, 4.50],
+                            borderColor: '#ffd43b',
+                            borderDash: [5, 5],
+                            fill: false,
+                            tension: 0.1,
+                            yAxisID: 'y'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { color: '#888', padding: 20 }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: { color: '#888' }
+                        },
+                        y: {
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: { color: '#888' },
+                            min: 0,
+                            max: 6
+                        }
+                    }
+                }
+            });
+        }
+        
+        function switchChart(range) {
+            document.querySelectorAll('.chart-tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            // Would update chart data based on range
+        }
+        
+        function changeCountry() {
+            const country = document.getElementById('countrySelect').value;
+            console.log('Switching to:', country);
+            // Would fetch country-specific data
+        }
+        
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('updateTime').textContent = now.toLocaleString('en-US', {
+                month: 'short', day: 'numeric', year: 'numeric',
+                hour: 'numeric', minute: '2-digit', hour12: true
+            });
+        }
+    </script>
+</body>
+</html>

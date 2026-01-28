@@ -1,0 +1,7 @@
+{
+  "default_language": "en",
+  "auto_switch": true,
+  "min_confidence": 0.7,
+  "switch_threshold": 2,
+  "current_language": "de"
+}

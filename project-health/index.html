@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Health Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f172a;
+            min-height: 100vh;
+            color: #e2e8f0;
+        }
+        
+        .dashboard {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+        
+        /* Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        
+        .logo h1 {
+            font-size: 24px;
+            font-weight: 700;
+        }
+        
+        .logo span {
+            color: #22c55e;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        
+        .project-selector {
+            padding: 10px 16px;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            color: #e2e8f0;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        
+        .time-range {
+            display: flex;
+            gap: 4px;
+            background: #1e293b;
+            padding: 4px;
+            border-radius: 8px;
+        }
+        
+        .time-btn {
+            padding: 8px 16px;
+            border: none;
+            background: transparent;
+            color: #94a3b8;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        
+        .time-btn.active {
+            background: #334155;
+            color: #fff;
+        }
+        
+        .refresh-btn {
+            padding: 10px 20px;
+            background: #22c55e;
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        /* Health Score Hero */
+        .health-hero {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+        
+        .health-score-card {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border: 1px solid #334155;
+            border-radius: 16px;
+            padding: 32px;
+            text-align: center;
+        }
+        
+        .health-ring {
+            width: 180px;
+            height: 180px;
+            margin: 0 auto 20px;
+            position: relative;
+        }
+        
+        .health-ring svg {
+            transform: rotate(-90deg);
+        }
+        
+        .health-ring circle {
+            fill: none;
+            stroke-width: 12;
+        }
+        
+        .health-ring .bg {
+            stroke: #334155;
+        }
+        
+        .health-ring .progress {
+            stroke: #22c55e;
+            stroke-linecap: round;
+            stroke-dasharray: 502;
+            stroke-dashoffset: 75;
+            transition: stroke-dashoffset 1s ease;
+        }
+        
+        .health-ring .score {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        
+        .health-ring .score-value {
+            font-size: 48px;
+            font-weight: 700;
+            color: #22c55e;
+        }
+        
+        .health-ring .score-label {
+            font-size: 14px;
+            color: #94a3b8;
+        }
+        
+        .health-status {
+            font-size: 20px;
+            font-weight: 600;
+            color: #22c55e;
+            margin-bottom: 8px;
+        }
+        
+        .health-trend {
+            font-size: 14px;
+            color: #94a3b8;
+        }
+        
+        .health-trend .up { color: #22c55e; }
+        .health-trend .down { color: #ef4444; }
+        
+        .health-breakdown {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 16px;
+            padding: 24px;
+        }
+        
+        .breakdown-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        
+        .breakdown-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+        
+        .breakdown-item {
+            background: #0f172a;
+            border-radius: 12px;
+            padding: 20px;
+        }
+        
+        .breakdown-label {
+            font-size: 12px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+        
+        .breakdown-value {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        
+        .breakdown-value.good { color: #22c55e; }
+        .breakdown-value.warn { color: #f59e0b; }
+        .breakdown-value.bad { color: #ef4444; }
+        
+        .breakdown-bar {
+            height: 4px;
+            background: #334155;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        
+        .breakdown-bar-fill {
+            height: 100%;
+            border-radius: 2px;
+            transition: width 0.5s;
+        }
+        
+        .breakdown-bar-fill.good { background: #22c55e; }
+        .breakdown-bar-fill.warn { background: #f59e0b; }
+        .breakdown-bar-fill.bad { background: #ef4444; }
+        
+        /* Metrics Grid */
+        .metrics-section {
+            margin-bottom: 32px;
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+        
+        .metric-card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 20px;
+        }
+        
+        .metric-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        
+        .metric-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+        
+        .metric-icon.blue { background: rgba(59, 130, 246, 0.2); }
+        .metric-icon.green { background: rgba(34, 197, 94, 0.2); }
+        .metric-icon.yellow { background: rgba(245, 158, 11, 0.2); }
+        .metric-icon.red { background: rgba(239, 68, 68, 0.2); }
+        .metric-icon.purple { background: rgba(168, 85, 247, 0.2); }
+        
+        .metric-name {
+            font-size: 14px;
+            color: #94a3b8;
+        }
+        
+        .metric-value {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        
+        .metric-change {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 13px;
+        }
+        
+        .metric-change.up { color: #22c55e; }
+        .metric-change.down { color: #ef4444; }
+        
+        /* Charts Row */
+        .charts-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+        
+        .chart-card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 16px;
+            padding: 24px;
+        }
+        
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .chart-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .chart-legend {
+            display: flex;
+            gap: 16px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: #94a3b8;
+        }
+        
+        .legend-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        
+        .chart-container {
+            height: 250px;
+        }
+        
+        /* Issues & PRs */
+        .lists-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+        
+        .list-card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 16px;
+            padding: 24px;
+        }
+        
+        .list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .list-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .list-badge {
+            padding: 4px 12px;
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .list-badge.warning { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+        .list-badge.success { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
+        
+        .issue-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .issue-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: #0f172a;
+            border-radius: 8px;
+        }
+        
+        .issue-priority {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        
+        .issue-priority.critical { background: #ef4444; }
+        .issue-priority.high { background: #f59e0b; }
+        .issue-priority.medium { background: #3b82f6; }
+        .issue-priority.low { background: #94a3b8; }
+        
+        .issue-content {
+            flex: 1;
+        }
+        
+        .issue-title {
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+        
+        .issue-meta {
+            font-size: 12px;
+            color: #64748b;
+        }
+        
+        .issue-age {
+            padding: 4px 8px;
+            background: #334155;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+        
+        .issue-age.stale { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+        
+        /* Team Activity */
+        .activity-section {
+            margin-bottom: 32px;
+        }
+        
+        .activity-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 16px;
+        }
+        
+        .contributor-card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .contributor-avatar {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            margin: 0 auto 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 600;
+        }
+        
+        .contributor-name {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .contributor-role {
+            font-size: 12px;
+            color: #64748b;
+            margin-bottom: 12px;
+        }
+        
+        .contributor-stats {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+        }
+        
+        .contributor-stat {
+            text-align: center;
+        }
+        
+        .contributor-stat-value {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .contributor-stat-label {
+            font-size: 10px;
+            color: #64748b;
+            text-transform: uppercase;
+        }
+        
+        /* Deploy History */
+        .deploy-section {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 16px;
+            padding: 24px;
+        }
+        
+        .deploy-timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .deploy-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 12px 16px;
+            background: #0f172a;
+            border-radius: 8px;
+        }
+        
+        .deploy-status {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .deploy-status.success { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
+        .deploy-status.failed { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+        .deploy-status.pending { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+        
+        .deploy-info {
+            flex: 1;
+        }
+        
+        .deploy-version {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+        
+        .deploy-meta {
+            font-size: 12px;
+            color: #64748b;
+        }
+        
+        .deploy-env {
+            padding: 4px 10px;
+            background: #334155;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        
+        .deploy-env.production { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
+        .deploy-env.staging { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+        
+        .deploy-time {
+            font-size: 12px;
+            color: #64748b;
+        }
+        
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .health-hero {
+                grid-template-columns: 1fr;
+            }
+            
+            .breakdown-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .metrics-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .charts-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .lists-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .activity-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .breakdown-grid,
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .activity-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <header>
+            <div class="logo">
+                <div class="logo-icon">🏥</div>
+                <h1>Project<span>Health</span></h1>
+            </div>
+            <div class="header-actions">
+                <select class="project-selector" id="projectSelector">
+                    <option value="clawdbot">Clawdbot</option>
+                    <option value="api">API Service</option>
+                    <option value="web">Web Frontend</option>
+                    <option value="mobile">Mobile App</option>
+                </select>
+                <div class="time-range">
+                    <button class="time-btn" onclick="setTimeRange('24h')">24h</button>
+                    <button class="time-btn active" onclick="setTimeRange('7d')">7d</button>
+                    <button class="time-btn" onclick="setTimeRange('30d')">30d</button>
+                    <button class="time-btn" onclick="setTimeRange('90d')">90d</button>
+                </div>
+                <button class="refresh-btn" onclick="refreshData()">
+                    🔄 Refresh
+                </button>
+            </div>
+        </header>
+        
+        <!-- Health Score Hero -->
+        <div class="health-hero">
+            <div class="health-score-card">
+                <div class="health-ring">
+                    <svg width="180" height="180">
+                        <circle class="bg" cx="90" cy="90" r="80"/>
+                        <circle class="progress" cx="90" cy="90" r="80" id="healthRing"/>
+                    </svg>
+                    <div class="score">
+                        <div class="score-value" id="healthScore">85</div>
+                        <div class="score-label">Health Score</div>
+                    </div>
+                </div>
+                <div class="health-status" id="healthStatus">Healthy</div>
+                <div class="health-trend">
+                    <span class="up">↑ 3%</span> from last week
+                </div>
+            </div>
+            
+            <div class="health-breakdown">
+                <div class="breakdown-title">Health Breakdown</div>
+                <div class="breakdown-grid">
+                    <div class="breakdown-item">
+                        <div class="breakdown-label">Code Quality</div>
+                        <div class="breakdown-value good" id="codeQuality">92%</div>
+                        <div class="breakdown-bar">
+                            <div class="breakdown-bar-fill good" style="width: 92%"></div>
+                        </div>
+                    </div>
+                    <div class="breakdown-item">
+                        <div class="breakdown-label">Test Coverage</div>
+                        <div class="breakdown-value good" id="testCoverage">78%</div>
+                        <div class="breakdown-bar">
+                            <div class="breakdown-bar-fill good" style="width: 78%"></div>
+                        </div>
+                    </div>
+                    <div class="breakdown-item">
+                        <div class="breakdown-label">Issue Velocity</div>
+                        <div class="breakdown-value warn" id="issueVelocity">65%</div>
+                        <div class="breakdown-bar">
+                            <div class="breakdown-bar-fill warn" style="width: 65%"></div>
+                        </div>
+                    </div>
+                    <div class="breakdown-item">
+                        <div class="breakdown-label">Deploy Success</div>
+                        <div class="breakdown-value good" id="deploySuccess">98%</div>
+                        <div class="breakdown-bar">
+                            <div class="breakdown-bar-fill good" style="width: 98%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Key Metrics -->
+        <div class="metrics-section">
+            <div class="section-header">
+                <div class="section-title">Key Metrics</div>
+            </div>
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <div class="metric-icon blue">📝</div>
+                        <div class="metric-name">Open Issues</div>
+                    </div>
+                    <div class="metric-value">47</div>
+                    <div class="metric-change down">↓ 12% from last week</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <div class="metric-icon green">🔀</div>
+                        <div class="metric-name">Open PRs</div>
+                    </div>
+                    <div class="metric-value">12</div>
+                    <div class="metric-change up">↑ 3 new today</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <div class="metric-icon purple">💾</div>
+                        <div class="metric-name">Commits (7d)</div>
+                    </div>
+                    <div class="metric-value">156</div>
+                    <div class="metric-change up">↑ 24% vs avg</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <div class="metric-icon yellow">🚀</div>
+                        <div class="metric-name">Deploys (7d)</div>
+                    </div>
+                    <div class="metric-value">8</div>
+                    <div class="metric-change">On schedule</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Charts -->
+        <div class="charts-row">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div class="chart-title">Activity Trend</div>
+                    <div class="chart-legend">
+                        <div class="legend-item">
+                            <div class="legend-dot" style="background: #3b82f6"></div>
+                            <span>Commits</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-dot" style="background: #22c55e"></div>
+                            <span>PRs Merged</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-dot" style="background: #f59e0b"></div>
+                            <span>Issues Closed</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="activityChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div class="chart-title">Issue Distribution</div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="issueChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Issues & PRs -->
+        <div class="lists-row">
+            <div class="list-card">
+                <div class="list-header">
+                    <div class="list-title">Critical Issues</div>
+                    <div class="list-badge">3 Critical</div>
+                </div>
+                <div class="issue-list">
+                    <div class="issue-item">
+                        <div class="issue-priority critical"></div>
+                        <div class="issue-content">
+                            <div class="issue-title">Memory leak in worker process</div>
+                            <div class="issue-meta">#428 • Assigned to @dev1</div>
+                        </div>
+                        <div class="issue-age stale">5d</div>
+                    </div>
+                    <div class="issue-item">
+                        <div class="issue-priority critical"></div>
+                        <div class="issue-content">
+                            <div class="issue-title">API rate limiting not working</div>
+                            <div class="issue-meta">#431 • Assigned to @dev2</div>
+                        </div>
+                        <div class="issue-age">2d</div>
+                    </div>
+                    <div class="issue-item">
+                        <div class="issue-priority high"></div>
+                        <div class="issue-content">
+                            <div class="issue-title">Auth token expiration bug</div>
+                            <div class="issue-meta">#425 • Unassigned</div>
+                        </div>
+                        <div class="issue-age stale">7d</div>
+                    </div>
+                    <div class="issue-item">
+                        <div class="issue-priority medium"></div>
+                        <div class="issue-content">
+                            <div class="issue-title">Dashboard loading slow</div>
+                            <div class="issue-meta">#419 • Assigned to @dev3</div>
+                        </div>
+                        <div class="issue-age">1d</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="list-card">
+                <div class="list-header">
+                    <div class="list-title">Pending PRs</div>
+                    <div class="list-badge warning">4 Waiting Review</div>
+                </div>
+                <div class="issue-list">
+                    <div class="issue-item">
+                        <div class="issue-priority high"></div>
+                        <div class="issue-content">
+                            <div class="issue-title">Add WebSocket reconnection</div>
+                            <div class="issue-meta">#PR-89 • by @dev1 • +342 -28</div>
+                        </div>
+                        <div class="issue-age">3d</div>
+                    </div>
+                    <div class="issue-item">
+                        <div class="issue-priority medium"></div>
+                        <div class="issue-content">
+                            <div class="issue-title">Refactor auth middleware</div>
+                            <div class="issue-meta">#PR-91 • by @dev2 • +156 -89</div>
+                        </div>
+                        <div class="issue-age">2d</div>
+                    </div>
+                    <div class="issue-item">
+                        <div class="issue-priority medium"></div>
+                        <div class="issue-content">
+                            <div class="issue-title">Update dependencies</div>
+                            <div class="issue-meta">#PR-92 • by @bot • +45 -45</div>
+                        </div>
+                        <div class="issue-age">1d</div>
+                    </div>
+                    <div class="issue-item">
+                        <div class="issue-priority low"></div>
+                        <div class="issue-content">
+                            <div class="issue-title">Add dark mode toggle</div>
+                            <div class="issue-meta">#PR-93 • by @dev4 • +89 -12</div>
+                        </div>
+                        <div class="issue-age">4h</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Team Activity -->
+        <div class="activity-section">
+            <div class="section-header">
+                <div class="section-title">Team Activity (7 days)</div>
+            </div>
+            <div class="activity-grid">
+                <div class="contributor-card">
+                    <div class="contributor-avatar">JD</div>
+                    <div class="contributor-name">John Dev</div>
+                    <div class="contributor-role">Lead Engineer</div>
+                    <div class="contributor-stats">
+                        <div class="contributor-stat">
+                            <div class="contributor-stat-value">42</div>
+                            <div class="contributor-stat-label">Commits</div>
+                        </div>
+                        <div class="contributor-stat">
+                            <div class="contributor-stat-value">8</div>
+                            <div class="contributor-stat-label">PRs</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="contributor-card">
+                    <div class="contributor-avatar" style="background: linear-gradient(135deg, #22c55e, #16a34a)">SJ</div>
+                    <div class="contributor-name">Sarah Johnson</div>
+                    <div class="contributor-role">Senior Dev</div>
+                    <div class="contributor-stats">
+                        <div class="contributor-stat">
+                            <div class="contributor-stat-value">38</div>
+                            <div class="contributor-stat-label">Commits</div>
+                        </div>
+                        <div class="contributor-stat">
+                            <div class="contributor-stat-value">5</div>
+                            <div class="contributor-stat-label">PRs</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="contributor-card">
+                    <div class="contributor-avatar" style="background: linear-gradient(135deg, #f59e0b, #d97706)">MK</div>
+                    <div class="contributor-name">Mike Kim</div>
+                    <div class="contributor-role">Full Stack</div>
+                    <div class="contributor-stats">
+                        <div class="contributor-stat">
+                            <div class="contributor-stat-value">31</div>
+                            <div class="contributor-stat-label">Commits</div>
+                        </div>
+                        <div class="contributor-stat">
+                            <div class="contributor-stat-value">4</div>
+                            <div class="contributor-stat-label">PRs</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="contributor-card">
+                    <div class="contributor-avatar" style="background: linear-gradient(135deg, #ef4444, #dc2626)">AL</div>
+                    <div class="contributor-name">Amy Lee</div>
+                    <div class="contributor-role">DevOps</div>
+                    <div class="contributor-stats">
+                        <div class="contributor-stat">
+                            <div class="contributor-stat-value">24</div>
+                            <div class="contributor-stat-label">Commits</div>
+                        </div>
+                        <div class="contributor-stat">
+                            <div class="contributor-stat-value">6</div>
+                            <div class="contributor-stat-label">PRs</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="contributor-card">
+                    <div class="contributor-avatar" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed)">RP</div>
+                    <div class="contributor-name">Ryan Park</div>
+                    <div class="contributor-role">Junior Dev</div>
+                    <div class="contributor-stats">
+                        <div class="contributor-stat">
+                            <div class="contributor-stat-value">21</div>
+                            <div class="contributor-stat-label">Commits</div>
+                        </div>
+                        <div class="contributor-stat">
+                            <div class="contributor-stat-value">2</div>
+                            <div class="contributor-stat-label">PRs</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Deploy History -->
+        <div class="deploy-section">
+            <div class="section-header">
+                <div class="section-title">Recent Deployments</div>
+            </div>
+            <div class="deploy-timeline">
+                <div class="deploy-item">
+                    <div class="deploy-status success">✓</div>
+                    <div class="deploy-info">
+                        <div class="deploy-version">v2.4.1</div>
+                        <div class="deploy-meta">Hotfix: API rate limiting • Amy Lee</div>
+                    </div>
+                    <div class="deploy-env production">production</div>
+                    <div class="deploy-time">2 hours ago</div>
+                </div>
+                <div class="deploy-item">
+                    <div class="deploy-status success">✓</div>
+                    <div class="deploy-info">
+                        <div class="deploy-version">v2.4.1-rc.2</div>
+                        <div class="deploy-meta">Testing rate limit fix</div>
+                    </div>
+                    <div class="deploy-env staging">staging</div>
+                    <div class="deploy-time">5 hours ago</div>
+                </div>
+                <div class="deploy-item">
+                    <div class="deploy-status failed">✗</div>
+                    <div class="deploy-info">
+                        <div class="deploy-version">v2.4.1-rc.1</div>
+                        <div class="deploy-meta">Failed: Test suite timeout</div>
+                    </div>
+                    <div class="deploy-env staging">staging</div>
+                    <div class="deploy-time">8 hours ago</div>
+                </div>
+                <div class="deploy-item">
+                    <div class="deploy-status success">✓</div>
+                    <div class="deploy-info">
+                        <div class="deploy-version">v2.4.0</div>
+                        <div class="deploy-meta">Feature: WebSocket improvements • John Dev</div>
+                    </div>
+                    <div class="deploy-env production">production</div>
+                    <div class="deploy-time">2 days ago</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Initialize Charts
+        document.addEventListener('DOMContentLoaded', () => {
+            initActivityChart();
+            initIssueChart();
+            animateHealthRing();
+        });
+        
+        function initActivityChart() {
+            const ctx = document.getElementById('activityChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'Commits',
+                        data: [18, 24, 32, 28, 35, 12, 7],
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }, {
+                        label: 'PRs Merged',
+                        data: [2, 3, 5, 4, 6, 1, 0],
+                        borderColor: '#22c55e',
+                        backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }, {
+                        label: 'Issues Closed',
+                        data: [5, 7, 8, 6, 9, 3, 2],
+                        borderColor: '#f59e0b',
+                        backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: { color: '#64748b' }
+                        },
+                        y: {
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: { color: '#64748b' }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function initIssueChart() {
+            const ctx = document.getElementById('issueChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Bug', 'Feature', 'Enhancement', 'Docs', 'Other'],
+                    datasets: [{
+                        data: [18, 12, 8, 5, 4],
+                        backgroundColor: [
+                            '#ef4444',
+                            '#3b82f6',
+                            '#22c55e',
+                            '#8b5cf6',
+                            '#64748b'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                color: '#94a3b8',
+                                padding: 12,
+                                font: { size: 12 }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function animateHealthRing() {
+            const score = 85;
+            const circumference = 2 * Math.PI * 80;
+            const offset = circumference - (score / 100) * circumference;
+            
+            setTimeout(() => {
+                document.getElementById('healthRing').style.strokeDashoffset = offset;
+            }, 100);
+        }
+        
+        function setTimeRange(range) {
+            document.querySelectorAll('.time-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            refreshData();
+        }
+        
+        function refreshData() {
+            // Simulate data refresh
+            const score = Math.floor(80 + Math.random() * 15);
+            document.getElementById('healthScore').textContent = score;
+            
+            // Update ring
+            const circumference = 2 * Math.PI * 80;
+            const offset = circumference - (score / 100) * circumference;
+            document.getElementById('healthRing').style.strokeDashoffset = offset;
+            
+            // Update status
+            const status = score >= 80 ? 'Healthy' : score >= 60 ? 'Warning' : 'Critical';
+            const statusEl = document.getElementById('healthStatus');
+            statusEl.textContent = status;
+            statusEl.style.color = score >= 80 ? '#22c55e' : score >= 60 ? '#f59e0b' : '#ef4444';
+        }
+    </script>
+</body>
+</html>

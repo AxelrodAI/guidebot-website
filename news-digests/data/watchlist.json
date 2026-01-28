@@ -1,0 +1,18 @@
+{
+  "tickers": {
+    "AAPL": {
+      "name": "Apple Inc",
+      "added": "2026-01-27T21:33:49.590236",
+      "notes": "",
+      "last_news": null,
+      "news_count": 0
+    },
+    "TSLA": {
+      "name": "Tesla",
+      "added": "2026-01-27T21:33:49.741407",
+      "notes": "",
+      "last_news": null,
+      "news_count": 0
+    }
+  }
+}

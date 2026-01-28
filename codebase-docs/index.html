@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Codebase Documentation Generator - Clawdbot</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a3e 100%);
+            color: #e8e8e8;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 30px; padding: 20px;
+            background: rgba(255,255,255,0.05); border-radius: 16px;
+        }
+        h1 { font-size: 28px; display: flex; align-items: center; gap: 12px; }
+        h1 span { font-size: 36px; }
+        .path-input {
+            display: flex; gap: 10px; flex: 1; max-width: 500px; margin-left: 30px;
+        }
+        .path-input input {
+            flex: 1; padding: 10px 15px; border-radius: 8px;
+            background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1);
+            color: white; font-size: 14px;
+        }
+        .btn {
+            background: #6366f1; color: white; border: none;
+            padding: 10px 20px; border-radius: 8px; cursor: pointer;
+            font-weight: 600; transition: all 0.3s;
+        }
+        .btn:hover { background: #4f46e5; transform: translateY(-2px); }
+        
+        .stats-grid {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px;
+            margin-bottom: 20px;
+        }
+        @media (max-width: 800px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+        .stat-card {
+            background: rgba(255,255,255,0.05); border-radius: 12px;
+            padding: 20px; text-align: center;
+        }
+        .stat-value { font-size: 32px; font-weight: 700; color: #6366f1; }
+        .stat-label { font-size: 13px; color: #9ca3af; margin-top: 5px; }
+        
+        .main-grid { display: grid; grid-template-columns: 300px 1fr; gap: 20px; }
+        @media (max-width: 900px) { .main-grid { grid-template-columns: 1fr; } }
+        
+        .panel {
+            background: rgba(255,255,255,0.05); border-radius: 16px;
+            padding: 20px;
+        }
+        .panel h3 {
+            font-size: 16px; color: #a5b4fc; margin-bottom: 15px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        
+        .languages { display: flex; flex-direction: column; gap: 10px; }
+        .lang-item {
+            display: flex; align-items: center; gap: 10px;
+        }
+        .lang-bar-container {
+            flex: 1; height: 8px; background: rgba(255,255,255,0.1);
+            border-radius: 4px; overflow: hidden;
+        }
+        .lang-bar {
+            height: 100%; border-radius: 4px; transition: width 0.5s;
+        }
+        .lang-name { width: 90px; font-size: 13px; }
+        .lang-pct { width: 50px; text-align: right; font-size: 13px; color: #9ca3af; }
+        
+        .file-tree {
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 13px; line-height: 1.6;
+            max-height: 400px; overflow-y: auto;
+            background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px;
+        }
+        .file-tree .dir { color: #60a5fa; }
+        .file-tree .file { color: #9ca3af; }
+        .file-tree .py { color: #fbbf24; }
+        .file-tree .js { color: #10b981; }
+        
+        .file-list { display: flex; flex-direction: column; gap: 8px; max-height: 500px; overflow-y: auto; }
+        .file-item {
+            background: rgba(255,255,255,0.05); border-radius: 8px;
+            padding: 12px 15px; cursor: pointer; transition: all 0.2s;
+        }
+        .file-item:hover { background: rgba(255,255,255,0.1); }
+        .file-item.active { background: rgba(99,102,241,0.2); border: 1px solid #6366f1; }
+        .file-name { font-weight: 500; font-size: 14px; }
+        .file-meta { font-size: 12px; color: #9ca3af; margin-top: 4px; }
+        
+        .file-details {
+            background: rgba(0,0,0,0.2); border-radius: 8px; padding: 20px;
+        }
+        .file-details h4 { font-size: 18px; margin-bottom: 15px; color: #f0f0f0; }
+        .detail-section { margin-bottom: 15px; }
+        .detail-section h5 { font-size: 14px; color: #a5b4fc; margin-bottom: 8px; }
+        .detail-list { list-style: none; font-size: 13px; }
+        .detail-list li { padding: 4px 0; color: #d1d5db; }
+        .detail-list li::before { content: "→ "; color: #6366f1; }
+        
+        .docstring {
+            background: rgba(99,102,241,0.1); padding: 12px;
+            border-radius: 6px; font-size: 13px; color: #c4b5fd;
+            border-left: 3px solid #6366f1; margin: 10px 0;
+        }
+        
+        .generate-section {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            border-radius: 16px; padding: 25px; margin-top: 20px;
+        }
+        .generate-section h3 { color: white; }
+        .generate-options { display: flex; gap: 15px; margin-top: 15px; flex-wrap: wrap; }
+        .gen-btn {
+            background: rgba(255,255,255,0.2); color: white; border: none;
+            padding: 12px 24px; border-radius: 8px; cursor: pointer;
+            font-weight: 600; transition: all 0.3s; display: flex; align-items: center; gap: 8px;
+        }
+        .gen-btn:hover { background: rgba(255,255,255,0.3); transform: translateY(-2px); }
+        .gen-btn span { font-size: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><span>📚</span> Codebase Documentation Generator</h1>
+            <div class="path-input">
+                <input type="text" id="pathInput" placeholder="Enter project path..." value="C:\Users\getlu\clawd">
+                <button class="btn" onclick="analyzeProject()">🔍 Analyze</button>
+            </div>
+        </header>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="totalFiles">24</div>
+                <div class="stat-label">Total Files</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalLines">3,847</div>
+                <div class="stat-label">Total Lines</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="codeLines">2,912</div>
+                <div class="stat-label">Code Lines</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="projectSize">156 KB</div>
+                <div class="stat-label">Project Size</div>
+            </div>
+        </div>
+
+        <div class="main-grid">
+            <div class="panel">
+                <h3>🗣️ Languages</h3>
+                <div class="languages" id="languagesList"></div>
+            </div>
+
+            <div class="panel">
+                <h3>📂 Project Structure</h3>
+                <div class="file-tree" id="fileTree"></div>
+            </div>
+        </div>
+
+        <div class="main-grid" style="margin-top: 20px;">
+            <div class="panel">
+                <h3>📄 Files</h3>
+                <div class="file-list" id="fileList"></div>
+            </div>
+
+            <div class="panel">
+                <h3>🔍 File Details</h3>
+                <div class="file-details" id="fileDetails">
+                    <p style="color: #9ca3af;">Select a file to view details...</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="generate-section">
+            <h3>🚀 Generate Documentation</h3>
+            <div class="generate-options">
+                <button class="gen-btn" onclick="generateReadme()">
+                    <span>📝</span> README.md
+                </button>
+                <button class="gen-btn" onclick="generateApiDocs()">
+                    <span>📖</span> API Reference
+                </button>
+                <button class="gen-btn" onclick="generateFullDocs()">
+                    <span>📚</span> Full Documentation
+                </button>
+                <button class="gen-btn" onclick="exportAnalysis()">
+                    <span>💾</span> Export Analysis
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample analysis data (would come from Python backend in production)
+        const sampleAnalysis = {
+            summary: {
+                total_files: 24,
+                total_lines: 3847,
+                total_code_lines: 2912,
+                total_size_bytes: 159744,
+                languages: {
+                    'Python': { files: 12, lines: 2400 },
+                    'JavaScript': { files: 5, lines: 800 },
+                    'TypeScript': { files: 4, lines: 450 },
+                    'JSON': { files: 3, lines: 197 }
+                }
+            },
+            files: [
+                {
+                    path: 'src/main.py',
+                    language: 'Python',
+                    stats: { total_lines: 450, code_lines: 380, comment_lines: 50, blank_lines: 20 },
+                    details: {
+                        module_docstring: 'Main application entry point. Handles CLI arguments and orchestrates the documentation generation pipeline.',
+                        classes: [
+                            { name: 'DocGenerator', docstring: 'Main documentation generator class.', methods: [
+                                { name: '__init__', args: ['config'], docstring: 'Initialize with configuration.' },
+                                { name: 'analyze', args: ['path'], docstring: 'Analyze a directory.' },
+                                { name: 'generate', args: ['output_dir'], docstring: 'Generate documentation.' }
+                            ]}
+                        ],
+                        functions: [
+                            { name: 'main', args: [], docstring: 'Entry point.' },
+                            { name: 'parse_args', args: [], docstring: 'Parse CLI arguments.' }
+                        ],
+                        imports: ['os', 'sys', 'argparse', 'pathlib']
+                    }
+                },
+                {
+                    path: 'src/analyzer.py',
+                    language: 'Python',
+                    stats: { total_lines: 320, code_lines: 270, comment_lines: 30, blank_lines: 20 },
+                    details: {
+                        module_docstring: 'Code analysis module. Extracts structure and metadata from source files.',
+                        classes: [
+                            { name: 'CodeAnalyzer', docstring: 'Analyzes source code files.', methods: [
+                                { name: 'analyze_file', args: ['filepath'], docstring: 'Analyze single file.' },
+                                { name: 'extract_functions', args: [], docstring: 'Extract function definitions.' }
+                            ]}
+                        ],
+                        functions: [
+                            { name: 'get_file_stats', args: ['path'], docstring: 'Get line counts for a file.' }
+                        ],
+                        imports: ['ast', 're', 'typing']
+                    }
+                },
+                {
+                    path: 'src/generators/readme.py',
+                    language: 'Python',
+                    stats: { total_lines: 180, code_lines: 150, comment_lines: 20, blank_lines: 10 },
+                    details: {
+                        module_docstring: 'README generator. Creates markdown README from analysis.',
+                        functions: [
+                            { name: 'generate_readme', args: ['analysis'], docstring: 'Generate README.md content.' },
+                            { name: 'format_table', args: ['data'], docstring: 'Format data as markdown table.' }
+                        ]
+                    }
+                },
+                {
+                    path: 'src/generators/api_docs.py',
+                    language: 'Python',
+                    stats: { total_lines: 220, code_lines: 185, comment_lines: 25, blank_lines: 10 },
+                    details: {
+                        module_docstring: 'API documentation generator.',
+                        functions: [
+                            { name: 'generate_api_docs', args: ['analysis'], docstring: 'Generate API reference.' },
+                            { name: 'format_function', args: ['func'], docstring: 'Format function documentation.' }
+                        ]
+                    }
+                },
+                {
+                    path: 'src/utils.py',
+                    language: 'Python',
+                    stats: { total_lines: 95, code_lines: 75, comment_lines: 15, blank_lines: 5 },
+                    details: {
+                        module_docstring: 'Utility functions.',
+                        functions: [
+                            { name: 'should_ignore', args: ['path'], docstring: 'Check if path should be ignored.' },
+                            { name: 'format_size', args: ['bytes'], docstring: 'Format byte size as human readable.' }
+                        ]
+                    }
+                }
+            ],
+            structure: `📁 project/
+├── 📁 src/
+│   ├── 🐍 main.py
+│   ├── 🐍 analyzer.py
+│   ├── 🐍 utils.py
+│   └── 📁 generators/
+│       ├── 🐍 readme.py
+│       └── 🐍 api_docs.py
+├── 📁 tests/
+│   ├── 🐍 test_analyzer.py
+│   └── 🐍 test_generators.py
+├── 📁 docs/
+│   └── 📄 README.md
+├── 📜 package.json
+├── 📄 pyproject.toml
+└── 📄 README.md`
+        };
+
+        const langColors = {
+            'Python': '#3776ab',
+            'JavaScript': '#f7df1e',
+            'TypeScript': '#3178c6',
+            'JSON': '#5a5a5a',
+            'React JSX': '#61dafb',
+            'React TSX': '#61dafb'
+        };
+
+        function renderStats() {
+            const s = sampleAnalysis.summary;
+            document.getElementById('totalFiles').textContent = s.total_files;
+            document.getElementById('totalLines').textContent = s.total_lines.toLocaleString();
+            document.getElementById('codeLines').textContent = s.total_code_lines.toLocaleString();
+            document.getElementById('projectSize').textContent = (s.total_size_bytes / 1024).toFixed(0) + ' KB';
+        }
+
+        function renderLanguages() {
+            const container = document.getElementById('languagesList');
+            const langs = sampleAnalysis.summary.languages;
+            const totalLines = Object.values(langs).reduce((sum, l) => sum + l.lines, 0);
+            
+            container.innerHTML = Object.entries(langs)
+                .sort((a, b) => b[1].lines - a[1].lines)
+                .map(([name, stats]) => {
+                    const pct = (stats.lines / totalLines * 100).toFixed(1);
+                    const color = langColors[name] || '#6366f1';
+                    return `
+                        <div class="lang-item">
+                            <span class="lang-name">${name}</span>
+                            <div class="lang-bar-container">
+                                <div class="lang-bar" style="width: ${pct}%; background: ${color};"></div>
+                            </div>
+                            <span class="lang-pct">${pct}%</span>
+                        </div>
+                    `;
+                }).join('');
+        }
+
+        function renderStructure() {
+            document.getElementById('fileTree').innerHTML = sampleAnalysis.structure
+                .replace(/📁/g, '<span class="dir">📁</span>')
+                .replace(/🐍/g, '<span class="py">🐍</span>')
+                .replace(/📜/g, '<span class="js">📜</span>')
+                .replace(/📄/g, '<span class="file">📄</span>');
+        }
+
+        function renderFileList() {
+            const container = document.getElementById('fileList');
+            container.innerHTML = sampleAnalysis.files.map((f, i) => `
+                <div class="file-item" onclick="selectFile(${i})">
+                    <div class="file-name">${f.path}</div>
+                    <div class="file-meta">${f.language} • ${f.stats.total_lines} lines • ${f.stats.code_lines} code</div>
+                </div>
+            `).join('');
+        }
+
+        function selectFile(index) {
+            document.querySelectorAll('.file-item').forEach((el, i) => {
+                el.classList.toggle('active', i === index);
+            });
+            
+            const file = sampleAnalysis.files[index];
+            const details = file.details;
+            
+            let html = `<h4>${file.path}</h4>`;
+            
+            if (details.module_docstring) {
+                html += `<div class="docstring">${details.module_docstring}</div>`;
+            }
+            
+            html += `
+                <div class="detail-section">
+                    <h5>📊 Statistics</h5>
+                    <ul class="detail-list">
+                        <li>Total Lines: ${file.stats.total_lines}</li>
+                        <li>Code Lines: ${file.stats.code_lines}</li>
+                        <li>Comments: ${file.stats.comment_lines}</li>
+                        <li>Blank: ${file.stats.blank_lines}</li>
+                    </ul>
+                </div>
+            `;
+            
+            if (details.imports && details.imports.length) {
+                html += `
+                    <div class="detail-section">
+                        <h5>📦 Imports</h5>
+                        <ul class="detail-list">
+                            ${details.imports.map(i => `<li>${i}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+            
+            if (details.classes && details.classes.length) {
+                html += `<div class="detail-section"><h5>🏛️ Classes</h5>`;
+                for (const cls of details.classes) {
+                    html += `<p style="font-weight: 600; margin: 10px 0 5px;">class ${cls.name}</p>`;
+                    if (cls.docstring) {
+                        html += `<div class="docstring" style="margin-left: 15px; font-size: 12px;">${cls.docstring}</div>`;
+                    }
+                    if (cls.methods && cls.methods.length) {
+                        html += `<ul class="detail-list" style="margin-left: 15px;">`;
+                        for (const m of cls.methods) {
+                            html += `<li>${m.name}(${m.args ? m.args.join(', ') : ''})</li>`;
+                        }
+                        html += `</ul>`;
+                    }
+                }
+                html += `</div>`;
+            }
+            
+            if (details.functions && details.functions.length) {
+                html += `
+                    <div class="detail-section">
+                        <h5>⚡ Functions</h5>
+                        <ul class="detail-list">
+                            ${details.functions.map(f => 
+                                `<li>${f.name}(${f.args ? f.args.join(', ') : ''})${f.docstring ? ' - ' + f.docstring : ''}</li>`
+                            ).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+            
+            document.getElementById('fileDetails').innerHTML = html;
+        }
+
+        function analyzeProject() {
+            const path = document.getElementById('pathInput').value;
+            alert(`Would analyze: ${path}\n\nRun: python doc_generator.py analyze -d "${path}"`);
+        }
+
+        function generateReadme() {
+            alert('README.md generated!\n\nRun: python doc_generator.py readme -d <path>');
+        }
+
+        function generateApiDocs() {
+            alert('API documentation generated!\n\nRun: python doc_generator.py generate -d <path>');
+        }
+
+        function generateFullDocs() {
+            alert('Full documentation generated!\n\nRun: python doc_generator.py generate -d <path> -o docs');
+        }
+
+        function exportAnalysis() {
+            const blob = new Blob([JSON.stringify(sampleAnalysis, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'analysis.json';
+            a.click();
+        }
+
+        // Initialize
+        renderStats();
+        renderLanguages();
+        renderStructure();
+        renderFileList();
+    </script>
+</body>
+</html>

@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auto-Updating Dashboard Builder</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        
+        .logo h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        .logo span {
+            color: #667eea;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 24px;
+        }
+        
+        .sidebar {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 20px;
+            height: fit-content;
+        }
+        
+        .sidebar-section {
+            margin-bottom: 24px;
+        }
+        
+        .sidebar-section h3 {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 12px;
+        }
+        
+        .widget-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .widget-item {
+            padding: 12px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            cursor: grab;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .widget-item:hover {
+            background: rgba(102, 126, 234, 0.2);
+            transform: translateX(4px);
+        }
+        
+        .widget-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+        
+        .widget-icon.chart { background: rgba(102, 126, 234, 0.3); }
+        .widget-icon.metric { background: rgba(16, 185, 129, 0.3); }
+        .widget-icon.table { background: rgba(245, 158, 11, 0.3); }
+        .widget-icon.list { background: rgba(239, 68, 68, 0.3); }
+        
+        .dashboard-area {
+            background: rgba(255,255,255,0.02);
+            border-radius: 16px;
+            padding: 20px;
+            min-height: 600px;
+        }
+        
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .dashboard-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .dashboard-title input {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 20px;
+            font-weight: 600;
+            width: 300px;
+        }
+        
+        .dashboard-title input:focus {
+            outline: none;
+            border-bottom: 2px solid #667eea;
+        }
+        
+        .refresh-controls {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .refresh-interval {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.05);
+            padding: 8px 16px;
+            border-radius: 8px;
+        }
+        
+        .refresh-interval select {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        
+        .refresh-interval select option {
+            background: #302b63;
+        }
+        
+        .live-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(16, 185, 129, 0.2);
+            border-radius: 8px;
+        }
+        
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+        
+        .dashboard-widget {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .dashboard-widget.large {
+            grid-column: span 2;
+        }
+        
+        .dashboard-widget.tall {
+            grid-row: span 2;
+        }
+        
+        .widget-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .widget-title {
+            font-size: 14px;
+            color: rgba(255,255,255,0.7);
+        }
+        
+        .widget-menu {
+            cursor: pointer;
+            opacity: 0.5;
+            transition: opacity 0.3s;
+        }
+        
+        .widget-menu:hover {
+            opacity: 1;
+        }
+        
+        .metric-value {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        
+        .metric-change {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 14px;
+        }
+        
+        .metric-change.up { color: #10b981; }
+        .metric-change.down { color: #ef4444; }
+        
+        .chart-container {
+            height: 200px;
+            position: relative;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .data-table th,
+        .data-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .data-table th {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.5);
+        }
+        
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        
+        .status-badge.success { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        .status-badge.warning { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+        .status-badge.error { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+        
+        .activity-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+        }
+        
+        .activity-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .activity-content {
+            flex: 1;
+        }
+        
+        .activity-title {
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+        
+        .activity-time {
+            font-size: 12px;
+            color: rgba(255,255,255,0.5);
+        }
+        
+        .last-updated {
+            text-align: center;
+            padding: 16px;
+            color: rgba(255,255,255,0.5);
+            font-size: 12px;
+        }
+        
+        .config-panel {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 400px;
+            height: 100vh;
+            background: #1a1a2e;
+            padding: 24px;
+            transition: right 0.3s ease;
+            z-index: 100;
+            overflow-y: auto;
+        }
+        
+        .config-panel.open {
+            right: 0;
+        }
+        
+        .config-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        
+        .config-group {
+            margin-bottom: 24px;
+        }
+        
+        .config-group label {
+            display: block;
+            font-size: 12px;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 8px;
+        }
+        
+        .config-group input,
+        .config-group select {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+        }
+        
+        .data-source-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .data-source-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+        }
+        
+        .export-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 24px;
+        }
+        
+        .countdown-ring {
+            width: 40px;
+            height: 40px;
+            position: relative;
+        }
+        
+        .countdown-ring svg {
+            transform: rotate(-90deg);
+        }
+        
+        .countdown-ring circle {
+            fill: none;
+            stroke-width: 3;
+        }
+        
+        .countdown-ring .bg {
+            stroke: rgba(255,255,255,0.1);
+        }
+        
+        .countdown-ring .progress {
+            stroke: #667eea;
+            stroke-dasharray: 100;
+            stroke-dashoffset: 0;
+            transition: stroke-dashoffset 1s linear;
+        }
+        
+        .countdown-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 10px;
+            font-weight: 600;
+        }
+        
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                display: none;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .dashboard-widget.large {
+                grid-column: span 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <div class="logo-icon">📊</div>
+                <h1>Auto<span>Dash</span></h1>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-secondary" onclick="toggleConfig()">
+                    ⚙️ Configure
+                </button>
+                <button class="btn btn-secondary" onclick="exportDashboard()">
+                    📤 Export
+                </button>
+                <button class="btn btn-primary" onclick="addWidget()">
+                    ➕ Add Widget
+                </button>
+            </div>
+        </header>
+        
+        <div class="main-content">
+            <aside class="sidebar">
+                <div class="sidebar-section">
+                    <h3>Widgets</h3>
+                    <div class="widget-list">
+                        <div class="widget-item" draggable="true" data-type="metric">
+                            <div class="widget-icon metric">📈</div>
+                            <span>Metric Card</span>
+                        </div>
+                        <div class="widget-item" draggable="true" data-type="line-chart">
+                            <div class="widget-icon chart">📉</div>
+                            <span>Line Chart</span>
+                        </div>
+                        <div class="widget-item" draggable="true" data-type="bar-chart">
+                            <div class="widget-icon chart">📊</div>
+                            <span>Bar Chart</span>
+                        </div>
+                        <div class="widget-item" draggable="true" data-type="pie-chart">
+                            <div class="widget-icon chart">🥧</div>
+                            <span>Pie Chart</span>
+                        </div>
+                        <div class="widget-item" draggable="true" data-type="table">
+                            <div class="widget-icon table">📋</div>
+                            <span>Data Table</span>
+                        </div>
+                        <div class="widget-item" draggable="true" data-type="activity">
+                            <div class="widget-icon list">📝</div>
+                            <span>Activity Feed</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="sidebar-section">
+                    <h3>Data Sources</h3>
+                    <div class="widget-list">
+                        <div class="widget-item">
+                            <div class="widget-icon chart">🔗</div>
+                            <span>REST API</span>
+                        </div>
+                        <div class="widget-item">
+                            <div class="widget-icon metric">📡</div>
+                            <span>WebSocket</span>
+                        </div>
+                        <div class="widget-item">
+                            <div class="widget-icon table">🗄️</div>
+                            <span>Database</span>
+                        </div>
+                        <div class="widget-item">
+                            <div class="widget-icon list">📁</div>
+                            <span>JSON File</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="sidebar-section">
+                    <h3>Templates</h3>
+                    <div class="widget-list">
+                        <div class="widget-item" onclick="loadTemplate('sales')">
+                            <div class="widget-icon metric">💰</div>
+                            <span>Sales Dashboard</span>
+                        </div>
+                        <div class="widget-item" onclick="loadTemplate('devops')">
+                            <div class="widget-icon chart">🖥️</div>
+                            <span>DevOps Monitor</span>
+                        </div>
+                        <div class="widget-item" onclick="loadTemplate('social')">
+                            <div class="widget-icon list">👥</div>
+                            <span>Social Analytics</span>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+            
+            <main class="dashboard-area">
+                <div class="dashboard-header">
+                    <div class="dashboard-title">
+                        <input type="text" value="My Auto-Updating Dashboard" id="dashboardName">
+                        <span style="font-size: 12px; color: rgba(255,255,255,0.5);">✏️</span>
+                    </div>
+                    <div class="refresh-controls">
+                        <div class="refresh-interval">
+                            <span>⏱️</span>
+                            <select id="refreshInterval" onchange="updateRefreshInterval()">
+                                <option value="5">5 seconds</option>
+                                <option value="10">10 seconds</option>
+                                <option value="30" selected>30 seconds</option>
+                                <option value="60">1 minute</option>
+                                <option value="300">5 minutes</option>
+                            </select>
+                        </div>
+                        <div class="countdown-ring" id="countdownRing">
+                            <svg width="40" height="40">
+                                <circle class="bg" cx="20" cy="20" r="16"/>
+                                <circle class="progress" cx="20" cy="20" r="16" id="countdownProgress"/>
+                            </svg>
+                            <span class="countdown-text" id="countdownText">30</span>
+                        </div>
+                        <div class="live-indicator">
+                            <span class="live-dot"></span>
+                            <span>Live</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="dashboard-grid" id="dashboardGrid">
+                    <!-- Metric Cards Row -->
+                    <div class="dashboard-widget">
+                        <div class="widget-header">
+                            <span class="widget-title">Total Users</span>
+                            <span class="widget-menu">⋯</span>
+                        </div>
+                        <div class="metric-value" id="metricUsers">12,847</div>
+                        <div class="metric-change up">
+                            <span>↑</span>
+                            <span id="metricUsersChange">+12.5%</span>
+                            <span style="color: rgba(255,255,255,0.5);">vs last week</span>
+                        </div>
+                    </div>
+                    
+                    <div class="dashboard-widget">
+                        <div class="widget-header">
+                            <span class="widget-title">Revenue</span>
+                            <span class="widget-menu">⋯</span>
+                        </div>
+                        <div class="metric-value" id="metricRevenue">$84,230</div>
+                        <div class="metric-change up">
+                            <span>↑</span>
+                            <span id="metricRevenueChange">+8.3%</span>
+                            <span style="color: rgba(255,255,255,0.5);">vs last week</span>
+                        </div>
+                    </div>
+                    
+                    <div class="dashboard-widget">
+                        <div class="widget-header">
+                            <span class="widget-title">Active Sessions</span>
+                            <span class="widget-menu">⋯</span>
+                        </div>
+                        <div class="metric-value" id="metricSessions">1,423</div>
+                        <div class="metric-change down">
+                            <span>↓</span>
+                            <span id="metricSessionsChange">-2.1%</span>
+                            <span style="color: rgba(255,255,255,0.5);">vs last hour</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Line Chart -->
+                    <div class="dashboard-widget large">
+                        <div class="widget-header">
+                            <span class="widget-title">Traffic Over Time</span>
+                            <span class="widget-menu">⋯</span>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="lineChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- Pie Chart -->
+                    <div class="dashboard-widget">
+                        <div class="widget-header">
+                            <span class="widget-title">Traffic Sources</span>
+                            <span class="widget-menu">⋯</span>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="pieChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- Data Table -->
+                    <div class="dashboard-widget large">
+                        <div class="widget-header">
+                            <span class="widget-title">Top Endpoints</span>
+                            <span class="widget-menu">⋯</span>
+                        </div>
+                        <table class="data-table" id="dataTable">
+                            <thead>
+                                <tr>
+                                    <th>Endpoint</th>
+                                    <th>Requests</th>
+                                    <th>Avg Response</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>/api/users</td>
+                                    <td>45,230</td>
+                                    <td>124ms</td>
+                                    <td><span class="status-badge success">Healthy</span></td>
+                                </tr>
+                                <tr>
+                                    <td>/api/products</td>
+                                    <td>32,847</td>
+                                    <td>89ms</td>
+                                    <td><span class="status-badge success">Healthy</span></td>
+                                </tr>
+                                <tr>
+                                    <td>/api/orders</td>
+                                    <td>28,103</td>
+                                    <td>156ms</td>
+                                    <td><span class="status-badge warning">Slow</span></td>
+                                </tr>
+                                <tr>
+                                    <td>/api/analytics</td>
+                                    <td>15,892</td>
+                                    <td>342ms</td>
+                                    <td><span class="status-badge error">Critical</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Activity Feed -->
+                    <div class="dashboard-widget">
+                        <div class="widget-header">
+                            <span class="widget-title">Recent Activity</span>
+                            <span class="widget-menu">⋯</span>
+                        </div>
+                        <div class="activity-list" id="activityList">
+                            <div class="activity-item">
+                                <div class="activity-icon" style="background: rgba(16, 185, 129, 0.2);">✓</div>
+                                <div class="activity-content">
+                                    <div class="activity-title">Deployment successful</div>
+                                    <div class="activity-time">2 minutes ago</div>
+                                </div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="activity-icon" style="background: rgba(245, 158, 11, 0.2);">⚠️</div>
+                                <div class="activity-content">
+                                    <div class="activity-title">High memory usage detected</div>
+                                    <div class="activity-time">15 minutes ago</div>
+                                </div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="activity-icon" style="background: rgba(102, 126, 234, 0.2);">👤</div>
+                                <div class="activity-content">
+                                    <div class="activity-title">New user signup spike</div>
+                                    <div class="activity-time">32 minutes ago</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="last-updated">
+                    Last updated: <span id="lastUpdated">Just now</span>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <!-- Config Panel -->
+    <div class="config-panel" id="configPanel">
+        <div class="config-header">
+            <h2>Dashboard Settings</h2>
+            <button class="btn btn-secondary" onclick="toggleConfig()">✕</button>
+        </div>
+        
+        <div class="config-group">
+            <label>Dashboard Name</label>
+            <input type="text" id="configName" value="My Auto-Updating Dashboard">
+        </div>
+        
+        <div class="config-group">
+            <label>Default Refresh Interval</label>
+            <select id="configInterval">
+                <option value="5">5 seconds</option>
+                <option value="10">10 seconds</option>
+                <option value="30" selected>30 seconds</option>
+                <option value="60">1 minute</option>
+                <option value="300">5 minutes</option>
+            </select>
+        </div>
+        
+        <div class="config-group">
+            <label>Data Sources</label>
+            <div class="data-source-list">
+                <div class="data-source-item">
+                    <span>🔗 REST API</span>
+                    <span style="color: #10b981;">Connected</span>
+                </div>
+                <div class="data-source-item">
+                    <span>📡 WebSocket</span>
+                    <span style="color: #10b981;">Connected</span>
+                </div>
+                <div class="data-source-item">
+                    <span>🗄️ Database</span>
+                    <span style="color: rgba(255,255,255,0.5);">Not configured</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="config-group">
+            <label>API Endpoint</label>
+            <input type="text" placeholder="https://api.example.com/data">
+        </div>
+        
+        <div class="config-group">
+            <label>Authentication</label>
+            <select>
+                <option>None</option>
+                <option>API Key</option>
+                <option>Bearer Token</option>
+                <option>Basic Auth</option>
+            </select>
+        </div>
+        
+        <div class="export-options">
+            <button class="btn btn-secondary" onclick="exportHTML()">📄 Export HTML</button>
+            <button class="btn btn-secondary" onclick="exportJSON()">📋 Export JSON</button>
+            <button class="btn btn-secondary" onclick="shareLink()">🔗 Share Link</button>
+            <button class="btn btn-secondary" onclick="embedCode()">📝 Embed Code</button>
+        </div>
+    </div>
+    
+    <script>
+        // Dashboard state
+        let refreshInterval = 30;
+        let countdown = 30;
+        let countdownTimer;
+        let charts = {};
+        
+        // Initialize charts
+        function initCharts() {
+            // Line Chart
+            const lineCtx = document.getElementById('lineChart').getContext('2d');
+            charts.line = new Chart(lineCtx, {
+                type: 'line',
+                data: {
+                    labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00'],
+                    datasets: [{
+                        label: 'Page Views',
+                        data: [1200, 1900, 3000, 5000, 4200, 3800],
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }, {
+                        label: 'Unique Visitors',
+                        data: [800, 1200, 2000, 3500, 2800, 2500],
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: 'rgba(255,255,255,0.7)' }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: 'rgba(255,255,255,0.1)' },
+                            ticks: { color: 'rgba(255,255,255,0.5)' }
+                        },
+                        y: {
+                            grid: { color: 'rgba(255,255,255,0.1)' },
+                            ticks: { color: 'rgba(255,255,255,0.5)' }
+                        }
+                    }
+                }
+            });
+            
+            // Pie Chart
+            const pieCtx = document.getElementById('pieChart').getContext('2d');
+            charts.pie = new Chart(pieCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Direct', 'Search', 'Social', 'Referral'],
+                    datasets: [{
+                        data: [35, 30, 20, 15],
+                        backgroundColor: ['#667eea', '#10b981', '#f59e0b', '#ef4444'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { 
+                                color: 'rgba(255,255,255,0.7)',
+                                padding: 10,
+                                font: { size: 11 }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Update data with random variations
+        function updateData() {
+            // Update metrics
+            const users = Math.floor(12000 + Math.random() * 2000);
+            const revenue = Math.floor(80000 + Math.random() * 10000);
+            const sessions = Math.floor(1300 + Math.random() * 300);
+            
+            document.getElementById('metricUsers').textContent = users.toLocaleString();
+            document.getElementById('metricRevenue').textContent = '$' + revenue.toLocaleString();
+            document.getElementById('metricSessions').textContent = sessions.toLocaleString();
+            
+            // Update chart data
+            charts.line.data.datasets[0].data = charts.line.data.datasets[0].data.map(
+                v => v + Math.floor((Math.random() - 0.5) * 500)
+            );
+            charts.line.data.datasets[1].data = charts.line.data.datasets[1].data.map(
+                v => v + Math.floor((Math.random() - 0.5) * 300)
+            );
+            charts.line.update('none');
+            
+            charts.pie.data.datasets[0].data = [
+                35 + Math.floor(Math.random() * 10 - 5),
+                30 + Math.floor(Math.random() * 10 - 5),
+                20 + Math.floor(Math.random() * 10 - 5),
+                15 + Math.floor(Math.random() * 10 - 5)
+            ];
+            charts.pie.update('none');
+            
+            // Update timestamp
+            document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString();
+            
+            // Flash effect on updated widgets
+            document.querySelectorAll('.dashboard-widget').forEach(widget => {
+                widget.style.boxShadow = '0 0 20px rgba(102, 126, 234, 0.3)';
+                setTimeout(() => widget.style.boxShadow = '', 500);
+            });
+        }
+        
+        // Countdown timer
+        function startCountdown() {
+            clearInterval(countdownTimer);
+            countdown = refreshInterval;
+            updateCountdownDisplay();
+            
+            countdownTimer = setInterval(() => {
+                countdown--;
+                updateCountdownDisplay();
+                
+                if (countdown <= 0) {
+                    updateData();
+                    countdown = refreshInterval;
+                }
+            }, 1000);
+        }
+        
+        function updateCountdownDisplay() {
+            document.getElementById('countdownText').textContent = countdown;
+            const progress = document.getElementById('countdownProgress');
+            const circumference = 2 * Math.PI * 16;
+            progress.style.strokeDasharray = circumference;
+            progress.style.strokeDashoffset = circumference * (1 - countdown / refreshInterval);
+        }
+        
+        function updateRefreshInterval() {
+            refreshInterval = parseInt(document.getElementById('refreshInterval').value);
+            startCountdown();
+        }
+        
+        // UI functions
+        function toggleConfig() {
+            document.getElementById('configPanel').classList.toggle('open');
+        }
+        
+        function addWidget() {
+            alert('Widget picker would open here. Drag widgets from the sidebar to add them!');
+        }
+        
+        function exportDashboard() {
+            const config = {
+                name: document.getElementById('dashboardName').value,
+                refreshInterval: refreshInterval,
+                widgets: ['metric-users', 'metric-revenue', 'metric-sessions', 'line-chart', 'pie-chart', 'data-table', 'activity-feed'],
+                createdAt: new Date().toISOString()
+            };
+            console.log('Dashboard config:', config);
+            alert('Dashboard exported! Check console for config.');
+        }
+        
+        function exportHTML() {
+            alert('Standalone HTML file would be generated with embedded data and auto-refresh!');
+        }
+        
+        function exportJSON() {
+            alert('Dashboard configuration exported as JSON!');
+        }
+        
+        function shareLink() {
+            alert('Shareable link generated: https://autodash.app/d/abc123');
+        }
+        
+        function embedCode() {
+            alert('<iframe src="https://autodash.app/embed/abc123"></iframe>');
+        }
+        
+        function loadTemplate(type) {
+            alert(`Loading ${type} template...`);
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            initCharts();
+            startCountdown();
+        });
+    </script>
+</body>
+</html>

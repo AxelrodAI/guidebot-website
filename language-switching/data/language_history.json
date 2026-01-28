@@ -28,5 +28,35 @@
     "text_sample": "Ahora estoy hablando en español",
     "timestamp": "2026-01-27T21:20:08.739163",
     "using_langdetect": false
+  },
+  {
+    "language_code": "fr",
+    "language_name": "French",
+    "confidence": 1.0,
+    "all_detected": [
+      {
+        "code": "fr",
+        "name": "French",
+        "confidence": 1.0
+      }
+    ],
+    "text_sample": "Bonjour, comment allez-vous?",
+    "timestamp": "2026-01-27T21:27:29.078188",
+    "using_langdetect": false
+  },
+  {
+    "language_code": "de",
+    "language_name": "German",
+    "confidence": 1.0,
+    "all_detected": [
+      {
+        "code": "de",
+        "name": "German",
+        "confidence": 1.0
+      }
+    ],
+    "text_sample": "Hallo, wie geht es Ihnen?",
+    "timestamp": "2026-01-27T21:27:44.006166",
+    "using_langdetect": false
   }
 ]

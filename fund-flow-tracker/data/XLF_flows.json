@@ -1,0 +1,175 @@
+{
+  "ticker": "XLF",
+  "name": "Financial Select SPDR",
+  "category": "Financials",
+  "current_aum_billions": 40.26,
+  "period_days": 30,
+  "flows": [
+    {
+      "date": "2025-12-29",
+      "flow_millions": 314.73,
+      "flow_pct": 0.787,
+      "aum_billions": 40.31,
+      "shares_outstanding_change_pct": 0.747
+    },
+    {
+      "date": "2025-12-30",
+      "flow_millions": 161.35,
+      "flow_pct": 0.4,
+      "aum_billions": 40.48,
+      "shares_outstanding_change_pct": 0.38
+    },
+    {
+      "date": "2025-12-31",
+      "flow_millions": 51.55,
+      "flow_pct": 0.127,
+      "aum_billions": 40.53,
+      "shares_outstanding_change_pct": 0.121
+    },
+    {
+      "date": "2026-01-01",
+      "flow_millions": -68.04,
+      "flow_pct": -0.168,
+      "aum_billions": 40.46,
+      "shares_outstanding_change_pct": -0.159
+    },
+    {
+      "date": "2026-01-02",
+      "flow_millions": -112.24,
+      "flow_pct": -0.277,
+      "aum_billions": 40.35,
+      "shares_outstanding_change_pct": -0.264
+    },
+    {
+      "date": "2026-01-05",
+      "flow_millions": 84.87,
+      "flow_pct": 0.21,
+      "aum_billions": 40.43,
+      "shares_outstanding_change_pct": 0.2
+    },
+    {
+      "date": "2026-01-06",
+      "flow_millions": -340.18,
+      "flow_pct": -0.841,
+      "aum_billions": 40.09,
+      "shares_outstanding_change_pct": -0.799
+    },
+    {
+      "date": "2026-01-07",
+      "flow_millions": -90.12,
+      "flow_pct": -0.225,
+      "aum_billions": 40.0,
+      "shares_outstanding_change_pct": -0.214
+    },
+    {
+      "date": "2026-01-08",
+      "flow_millions": 39.54,
+      "flow_pct": 0.099,
+      "aum_billions": 40.04,
+      "shares_outstanding_change_pct": 0.094
+    },
+    {
+      "date": "2026-01-09",
+      "flow_millions": -265.09,
+      "flow_pct": -0.662,
+      "aum_billions": 39.78,
+      "shares_outstanding_change_pct": -0.629
+    },
+    {
+      "date": "2026-01-12",
+      "flow_millions": -303.05,
+      "flow_pct": -0.762,
+      "aum_billions": 39.47,
+      "shares_outstanding_change_pct": -0.724
+    },
+    {
+      "date": "2026-01-13",
+      "flow_millions": 266.37,
+      "flow_pct": 0.675,
+      "aum_billions": 39.74,
+      "shares_outstanding_change_pct": 0.641
+    },
+    {
+      "date": "2026-01-14",
+      "flow_millions": 698.17,
+      "flow_pct": 1.757,
+      "aum_billions": 40.44,
+      "shares_outstanding_change_pct": 1.669
+    },
+    {
+      "date": "2026-01-15",
+      "flow_millions": -447.42,
+      "flow_pct": -1.106,
+      "aum_billions": 39.99,
+      "shares_outstanding_change_pct": -1.051
+    },
+    {
+      "date": "2026-01-16",
+      "flow_millions": 110.32,
+      "flow_pct": 0.276,
+      "aum_billions": 40.1,
+      "shares_outstanding_change_pct": 0.262
+    },
+    {
+      "date": "2026-01-19",
+      "flow_millions": -138.67,
+      "flow_pct": -0.346,
+      "aum_billions": 39.96,
+      "shares_outstanding_change_pct": -0.329
+    },
+    {
+      "date": "2026-01-20",
+      "flow_millions": 101.78,
+      "flow_pct": 0.255,
+      "aum_billions": 40.06,
+      "shares_outstanding_change_pct": 0.242
+    },
+    {
+      "date": "2026-01-21",
+      "flow_millions": -169.88,
+      "flow_pct": -0.424,
+      "aum_billions": 39.89,
+      "shares_outstanding_change_pct": -0.403
+    },
+    {
+      "date": "2026-01-22",
+      "flow_millions": 23.27,
+      "flow_pct": 0.058,
+      "aum_billions": 39.92,
+      "shares_outstanding_change_pct": 0.055
+    },
+    {
+      "date": "2026-01-23",
+      "flow_millions": 47.6,
+      "flow_pct": 0.119,
+      "aum_billions": 39.96,
+      "shares_outstanding_change_pct": 0.113
+    },
+    {
+      "date": "2026-01-26",
+      "flow_millions": -22.31,
+      "flow_pct": -0.056,
+      "aum_billions": 39.94,
+      "shares_outstanding_change_pct": -0.053
+    },
+    {
+      "date": "2026-01-27",
+      "flow_millions": 321.05,
+      "flow_pct": 0.804,
+      "aum_billions": 40.26,
+      "shares_outstanding_change_pct": 0.764
+    }
+  ],
+  "summary": {
+    "total_flow_millions": 263.6,
+    "avg_daily_flow_millions": 11.98,
+    "positive_days": 12,
+    "negative_days": 10,
+    "flow_momentum": "INFLOW",
+    "flow_streak": {
+      "type": "INFLOW",
+      "days": 1
+    }
+  },
+  "fetched_at": "2026-01-27T21:27:27.413505"
+}

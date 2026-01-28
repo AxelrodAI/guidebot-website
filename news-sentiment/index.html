@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>News Sentiment Engine | Guide Bot - AI Equity Research</title>
+    <meta name="description" content="Real-time NLP sentiment scoring with momentum tracking. Aggregate news from multiple sources and detect sentiment shifts.">
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0"></script>
+    
+    <style>
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #111827;
+            --bg-card: #1a2234;
+            --bg-card-hover: #1f2942;
+            --text-primary: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --accent-blue: #3b82f6;
+            --accent-yellow: #f59e0b;
+            --accent-purple: #8b5cf6;
+            --accent-orange: #f97316;
+            --border-color: #374151;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        .container { max-width: 1600px; margin: 0 auto; padding: 20px; }
+        
+        header {
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-card) 100%);
+            border-bottom: 1px solid var(--border-color);
+            padding: 20px 0;
+            margin-bottom: 24px;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .header-title h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-blue) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .header-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        .back-link {
+            color: var(--accent-blue);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+        
+        .back-link:hover { text-decoration: underline; }
+        
+        /* Ticker Input Section */
+        .ticker-input-section {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .input-row {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .ticker-input {
+            flex: 1;
+            min-width: 200px;
+            padding: 12px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
+        
+        .ticker-input:focus {
+            outline: none;
+            border-color: var(--accent-purple);
+        }
+        
+        .analyze-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-blue) 100%);
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, opacity 0.2s;
+        }
+        
+        .analyze-btn:hover { transform: translateY(-2px); opacity: 0.9; }
+        
+        .quick-tickers {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .quick-ticker {
+            padding: 6px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .quick-ticker:hover {
+            border-color: var(--accent-purple);
+            color: var(--text-primary);
+        }
+        
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .stat-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+        }
+        
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+        }
+        
+        .stat-bullish { color: var(--accent-green); }
+        .stat-bearish { color: var(--accent-red); }
+        .stat-neutral { color: var(--text-secondary); }
+        
+        /* Main Content Grid */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+        
+        @media (max-width: 1200px) {
+            .main-grid { grid-template-columns: 1fr; }
+        }
+        
+        .card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        /* Sentiment Gauge */
+        .sentiment-gauge-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 0;
+        }
+        
+        .gauge-wrapper {
+            position: relative;
+            width: 200px;
+            height: 120px;
+            overflow: hidden;
+        }
+        
+        .gauge-background {
+            width: 200px;
+            height: 100px;
+            background: conic-gradient(
+                from 180deg,
+                var(--accent-red) 0deg,
+                var(--accent-yellow) 90deg,
+                var(--accent-green) 180deg
+            );
+            border-radius: 100px 100px 0 0;
+            position: relative;
+        }
+        
+        .gauge-center {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 140px;
+            height: 70px;
+            background: var(--bg-card);
+            border-radius: 70px 70px 0 0;
+        }
+        
+        .gauge-needle {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 4px;
+            height: 80px;
+            background: var(--text-primary);
+            transform-origin: bottom center;
+            transform: translateX(-50%) rotate(0deg);
+            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 2px;
+        }
+        
+        .gauge-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-top: 20px;
+        }
+        
+        .gauge-label {
+            font-size: 1rem;
+            color: var(--text-secondary);
+        }
+        
+        /* Distribution Bar */
+        .distribution-bar {
+            display: flex;
+            height: 24px;
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 16px 0;
+        }
+        
+        .dist-bullish {
+            background: var(--accent-green);
+            transition: width 0.5s;
+        }
+        
+        .dist-neutral {
+            background: var(--text-muted);
+            transition: width 0.5s;
+        }
+        
+        .dist-bearish {
+            background: var(--accent-red);
+            transition: width 0.5s;
+        }
+        
+        .distribution-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+        }
+        
+        .dist-label {
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .dist-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+        
+        /* Headlines */
+        .headline-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .headline-item {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            background: var(--bg-secondary);
+            border-left: 3px solid var(--border-color);
+        }
+        
+        .headline-item.bullish { border-left-color: var(--accent-green); }
+        .headline-item.bearish { border-left-color: var(--accent-red); }
+        .headline-item.neutral { border-left-color: var(--text-muted); }
+        
+        .headline-text {
+            font-size: 0.95rem;
+            margin-bottom: 6px;
+        }
+        
+        .headline-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        
+        .headline-score {
+            font-weight: 600;
+        }
+        
+        .headline-score.positive { color: var(--accent-green); }
+        .headline-score.negative { color: var(--accent-red); }
+        
+        /* Alerts */
+        .alert-item {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .alert-high {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid var(--accent-red);
+        }
+        
+        .alert-medium {
+            background: rgba(245, 158, 11, 0.15);
+            border: 1px solid var(--accent-yellow);
+        }
+        
+        .alert-icon { font-size: 1.5rem; }
+        
+        .alert-content { flex: 1; }
+        
+        .alert-type {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .alert-desc {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+        
+        /* Momentum Chart */
+        .chart-container {
+            height: 250px;
+            margin-top: 16px;
+        }
+        
+        /* Comparison Table */
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .comparison-table th,
+        .comparison-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .comparison-table th {
+            color: var(--text-muted);
+            font-weight: 500;
+            font-size: 0.85rem;
+        }
+        
+        .comparison-table tr:hover {
+            background: var(--bg-card-hover);
+        }
+        
+        .ticker-cell {
+            font-weight: 600;
+            color: var(--accent-blue);
+        }
+        
+        .sentiment-bar {
+            height: 8px;
+            border-radius: 4px;
+            background: var(--bg-secondary);
+            width: 100px;
+            overflow: hidden;
+        }
+        
+        .sentiment-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s;
+        }
+        
+        .sentiment-fill.positive { background: var(--accent-green); }
+        .sentiment-fill.negative { background: var(--accent-red); }
+        
+        /* Footer */
+        footer {
+            margin-top: 40px;
+            padding: 20px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        /* Loading */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+        }
+        
+        .loading.active { display: block; }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border-color);
+            border-top-color: var(--accent-purple);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+        
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="header-title">
+                <div>
+                    <h1>📰 News Sentiment Engine</h1>
+                    <p class="header-subtitle">Real-time NLP sentiment scoring with momentum tracking</p>
+                </div>
+            </div>
+            <a href="../index.html" class="back-link">
+                ← Back to Dashboard
+            </a>
+        </div>
+    </header>
+    
+    <div class="container">
+        <!-- Ticker Input -->
+        <div class="ticker-input-section">
+            <div class="input-row">
+                <input type="text" class="ticker-input" id="tickerInput" placeholder="Enter tickers (e.g., NVDA, AAPL, TSLA)">
+                <button class="analyze-btn" onclick="analyzeMultiple()">🔍 Analyze Sentiment</button>
+            </div>
+            <div class="quick-tickers">
+                <button class="quick-ticker" onclick="analyzeTicker('NVDA')">NVDA</button>
+                <button class="quick-ticker" onclick="analyzeTicker('AAPL')">AAPL</button>
+                <button class="quick-ticker" onclick="analyzeTicker('TSLA')">TSLA</button>
+                <button class="quick-ticker" onclick="analyzeTicker('MSFT')">MSFT</button>
+                <button class="quick-ticker" onclick="analyzeTicker('AMD')">AMD</button>
+                <button class="quick-ticker" onclick="analyzeTicker('META')">META</button>
+                <button class="quick-ticker" onclick="analyzeTicker('GOOGL')">GOOGL</button>
+                <button class="quick-ticker" onclick="analyzeTicker('AMZN')">AMZN</button>
+            </div>
+        </div>
+        
+        <!-- Loading -->
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Analyzing news sentiment...</p>
+        </div>
+        
+        <!-- Stats Grid -->
+        <div class="stats-grid" id="statsGrid" style="display: none;">
+            <div class="stat-card">
+                <div class="stat-label">Sentiment Score</div>
+                <div class="stat-value" id="sentimentScore">—</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Articles Analyzed</div>
+                <div class="stat-value" id="articleCount">—</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Momentum</div>
+                <div class="stat-value" id="momentum">—</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Active Alerts</div>
+                <div class="stat-value" id="alertCount">—</div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-grid" id="mainContent" style="display: none;">
+            <!-- Sentiment Gauge -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">📊 Sentiment Gauge</h3>
+                    <span id="currentTicker" style="color: var(--accent-blue); font-weight: 600;"></span>
+                </div>
+                <div class="sentiment-gauge-container">
+                    <div class="gauge-wrapper">
+                        <div class="gauge-background">
+                            <div class="gauge-center"></div>
+                            <div class="gauge-needle" id="gaugeNeedle"></div>
+                        </div>
+                    </div>
+                    <div class="gauge-value" id="gaugeValue">0.00</div>
+                    <div class="gauge-label" id="gaugeLabel">NEUTRAL</div>
+                </div>
+                <div class="distribution-bar">
+                    <div class="dist-bullish" id="distBullish" style="width: 33%"></div>
+                    <div class="dist-neutral" id="distNeutral" style="width: 34%"></div>
+                    <div class="dist-bearish" id="distBearish" style="width: 33%"></div>
+                </div>
+                <div class="distribution-labels">
+                    <span class="dist-label"><span class="dist-dot" style="background: var(--accent-green)"></span> Bullish <span id="bullishPct">33%</span></span>
+                    <span class="dist-label"><span class="dist-dot" style="background: var(--text-muted)"></span> Neutral <span id="neutralPct">34%</span></span>
+                    <span class="dist-label"><span class="dist-dot" style="background: var(--accent-red)"></span> Bearish <span id="bearishPct">33%</span></span>
+                </div>
+            </div>
+            
+            <!-- Recent Headlines -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">📰 Recent Headlines</h3>
+                </div>
+                <div class="headline-list" id="headlineList">
+                    <!-- Headlines populated by JS -->
+                </div>
+            </div>
+            
+            <!-- Alerts -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">🚨 Sentiment Alerts</h3>
+                </div>
+                <div id="alertList">
+                    <!-- Alerts populated by JS -->
+                </div>
+            </div>
+            
+            <!-- Momentum History -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">📈 Sentiment History</h3>
+                </div>
+                <div class="chart-container">
+                    <canvas id="momentumChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Multi-Ticker Comparison -->
+        <div class="card" id="comparisonCard" style="display: none; margin-top: 24px;">
+            <div class="card-header">
+                <h3 class="card-title">📊 Sentiment Comparison</h3>
+            </div>
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Ticker</th>
+                        <th>Sentiment</th>
+                        <th>Score</th>
+                        <th>Momentum</th>
+                        <th>Articles</th>
+                        <th>Bullish %</th>
+                    </tr>
+                </thead>
+                <tbody id="comparisonBody">
+                    <!-- Comparison rows populated by JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <footer>
+        <p>News Sentiment Engine • Part of the Guide Bot AI Equity Research Suite</p>
+        <p style="margin-top: 8px;">Data sources: Finviz, Yahoo Finance RSS • Sentiment: TextBlob NLP with financial keyword boosting</p>
+    </footer>
+    
+    <script>
+        // Demo data generator
+        function generateSentimentData(ticker) {
+            const baseScore = (Math.random() - 0.5) * 1.2;
+            const score = Math.max(-1, Math.min(1, baseScore));
+            const bullishPct = Math.round(50 + score * 30 + (Math.random() - 0.5) * 20);
+            const bearishPct = Math.round(50 - score * 30 + (Math.random() - 0.5) * 10);
+            const neutralPct = 100 - bullishPct - bearishPct;
+            
+            const headlines = [
+                { text: `${ticker} shares surge on strong earnings outlook`, score: 0.72 },
+                { text: `Analysts raise price targets for ${ticker} after product launch`, score: 0.58 },
+                { text: `${ticker} announces expansion into new markets`, score: 0.35 },
+                { text: `${ticker} trading sideways amid market uncertainty`, score: 0.02 },
+                { text: `Investors cautious on ${ticker} ahead of Fed decision`, score: -0.15 },
+                { text: `${ticker} beats revenue estimates but guides lower`, score: 0.18 },
+                { text: `Competition intensifies for ${ticker} in key segments`, score: -0.28 },
+                { text: `${ticker} CEO discusses AI strategy in investor call`, score: 0.42 }
+            ].sort(() => Math.random() - 0.5).slice(0, 6);
+            
+            const alerts = [];
+            if (Math.abs(score) > 0.4) {
+                alerts.push({
+                    type: 'EXTREME_SENTIMENT',
+                    severity: 'medium',
+                    desc: `${score > 0 ? 'Unusually bullish' : 'Unusually bearish'} sentiment detected (${score.toFixed(2)})`
+                });
+            }
+            if (bullishPct > 65 || bearishPct > 65) {
+                alerts.push({
+                    type: bullishPct > 65 ? 'BULLISH_CONSENSUS' : 'BEARISH_CONSENSUS',
+                    severity: bullishPct > 65 ? 'medium' : 'high',
+                    desc: `${Math.max(bullishPct, bearishPct)}% of articles are ${bullishPct > 65 ? 'bullish' : 'bearish'}`
+                });
+            }
+            
+            const momentum = (Math.random() - 0.5) * 0.3;
+            if (Math.abs(momentum) > 0.15) {
+                alerts.push({
+                    type: 'MOMENTUM_SHIFT',
+                    severity: 'high',
+                    desc: `Sentiment ${momentum > 0 ? 'improving' : 'declining'} (${momentum > 0 ? '+' : ''}${(momentum * 100).toFixed(1)}% shift)`
+                });
+            }
+            
+            // Historical data for chart
+            const history = [];
+            let histScore = score - momentum * 7;
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date();
+                date.setDate(date.getDate() - i);
+                histScore += (momentum + (Math.random() - 0.5) * 0.1);
+                history.push({
+                    date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+                    score: Math.max(-1, Math.min(1, histScore))
+                });
+            }
+            
+            return {
+                ticker,
+                score,
+                momentum,
+                articleCount: 12 + Math.floor(Math.random() * 10),
+                bullishPct,
+                neutralPct: Math.max(0, neutralPct),
+                bearishPct: Math.max(0, bearishPct),
+                headlines,
+                alerts,
+                history
+            };
+        }
+        
+        let momentumChart = null;
+        let currentData = null;
+        
+        function analyzeTicker(ticker) {
+            document.getElementById('tickerInput').value = ticker;
+            analyzeMultiple();
+        }
+        
+        function analyzeMultiple() {
+            const input = document.getElementById('tickerInput').value.trim();
+            if (!input) return;
+            
+            const tickers = input.toUpperCase().split(/[,\s]+/).filter(t => t);
+            if (tickers.length === 0) return;
+            
+            // Show loading
+            document.getElementById('loading').classList.add('active');
+            document.getElementById('statsGrid').style.display = 'none';
+            document.getElementById('mainContent').style.display = 'none';
+            document.getElementById('comparisonCard').style.display = 'none';
+            
+            // Simulate API call
+            setTimeout(() => {
+                document.getElementById('loading').classList.remove('active');
+                
+                if (tickers.length === 1) {
+                    showSingleAnalysis(tickers[0]);
+                } else {
+                    showComparison(tickers);
+                }
+            }, 1200);
+        }
+        
+        function showSingleAnalysis(ticker) {
+            currentData = generateSentimentData(ticker);
+            
+            // Update stats
+            document.getElementById('statsGrid').style.display = 'grid';
+            document.getElementById('mainContent').style.display = 'grid';
+            
+            const scoreClass = currentData.score > 0.1 ? 'stat-bullish' : currentData.score < -0.1 ? 'stat-bearish' : 'stat-neutral';
+            document.getElementById('sentimentScore').className = 'stat-value ' + scoreClass;
+            document.getElementById('sentimentScore').textContent = currentData.score.toFixed(3);
+            
+            document.getElementById('articleCount').textContent = currentData.articleCount;
+            
+            const momentumClass = currentData.momentum > 0.05 ? 'stat-bullish' : currentData.momentum < -0.05 ? 'stat-bearish' : 'stat-neutral';
+            document.getElementById('momentum').className = 'stat-value ' + momentumClass;
+            document.getElementById('momentum').textContent = (currentData.momentum > 0 ? '+' : '') + (currentData.momentum * 100).toFixed(1) + '%';
+            
+            document.getElementById('alertCount').textContent = currentData.alerts.length;
+            
+            // Update gauge
+            document.getElementById('currentTicker').textContent = ticker;
+            const rotation = currentData.score * 90;
+            document.getElementById('gaugeNeedle').style.transform = `translateX(-50%) rotate(${rotation}deg)`;
+            document.getElementById('gaugeValue').textContent = currentData.score.toFixed(3);
+            document.getElementById('gaugeValue').className = 'gauge-value ' + scoreClass;
+            
+            const label = currentData.score > 0.3 ? 'BULLISH' : currentData.score > 0.1 ? 'SLIGHTLY BULLISH' : 
+                          currentData.score < -0.3 ? 'BEARISH' : currentData.score < -0.1 ? 'SLIGHTLY BEARISH' : 'NEUTRAL';
+            document.getElementById('gaugeLabel').textContent = label;
+            
+            // Update distribution
+            document.getElementById('distBullish').style.width = currentData.bullishPct + '%';
+            document.getElementById('distNeutral').style.width = currentData.neutralPct + '%';
+            document.getElementById('distBearish').style.width = currentData.bearishPct + '%';
+            document.getElementById('bullishPct').textContent = currentData.bullishPct + '%';
+            document.getElementById('neutralPct').textContent = currentData.neutralPct + '%';
+            document.getElementById('bearishPct').textContent = currentData.bearishPct + '%';
+            
+            // Update headlines
+            const headlineList = document.getElementById('headlineList');
+            headlineList.innerHTML = currentData.headlines.map(h => {
+                const cls = h.score > 0.1 ? 'bullish' : h.score < -0.1 ? 'bearish' : 'neutral';
+                const scoreCls = h.score > 0 ? 'positive' : h.score < 0 ? 'negative' : '';
+                return `
+                    <div class="headline-item ${cls}">
+                        <div class="headline-text">${h.text}</div>
+                        <div class="headline-meta">
+                            <span class="headline-score ${scoreCls}">Score: ${h.score.toFixed(2)}</span>
+                            <span>Today</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            // Update alerts
+            const alertList = document.getElementById('alertList');
+            if (currentData.alerts.length === 0) {
+                alertList.innerHTML = '<p style="color: var(--text-muted); text-align: center; padding: 20px;">No active alerts</p>';
+            } else {
+                alertList.innerHTML = currentData.alerts.map(a => `
+                    <div class="alert-item alert-${a.severity}">
+                        <span class="alert-icon">${a.severity === 'high' ? '🔴' : '🟡'}</span>
+                        <div class="alert-content">
+                            <div class="alert-type">${a.type.replace(/_/g, ' ')}</div>
+                            <div class="alert-desc">${a.desc}</div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            // Update chart
+            updateMomentumChart(currentData.history);
+        }
+        
+        function showComparison(tickers) {
+            const allData = tickers.map(t => generateSentimentData(t));
+            
+            // Show stats with aggregates
+            document.getElementById('statsGrid').style.display = 'grid';
+            document.getElementById('comparisonCard').style.display = 'block';
+            
+            const avgScore = allData.reduce((sum, d) => sum + d.score, 0) / allData.length;
+            const totalArticles = allData.reduce((sum, d) => sum + d.articleCount, 0);
+            const avgMomentum = allData.reduce((sum, d) => sum + d.momentum, 0) / allData.length;
+            const totalAlerts = allData.reduce((sum, d) => sum + d.alerts.length, 0);
+            
+            const scoreClass = avgScore > 0.1 ? 'stat-bullish' : avgScore < -0.1 ? 'stat-bearish' : 'stat-neutral';
+            document.getElementById('sentimentScore').className = 'stat-value ' + scoreClass;
+            document.getElementById('sentimentScore').textContent = avgScore.toFixed(3);
+            document.getElementById('articleCount').textContent = totalArticles;
+            
+            const momentumClass = avgMomentum > 0.05 ? 'stat-bullish' : avgMomentum < -0.05 ? 'stat-bearish' : 'stat-neutral';
+            document.getElementById('momentum').className = 'stat-value ' + momentumClass;
+            document.getElementById('momentum').textContent = (avgMomentum > 0 ? '+' : '') + (avgMomentum * 100).toFixed(1) + '%';
+            document.getElementById('alertCount').textContent = totalAlerts;
+            
+            // Update comparison table
+            const tbody = document.getElementById('comparisonBody');
+            tbody.innerHTML = allData.sort((a, b) => b.score - a.score).map(d => {
+                const barWidth = Math.abs(d.score) * 50;
+                const barClass = d.score >= 0 ? 'positive' : 'negative';
+                const label = d.score > 0.3 ? 'Bullish' : d.score > 0.1 ? 'Slight Bull' : 
+                              d.score < -0.3 ? 'Bearish' : d.score < -0.1 ? 'Slight Bear' : 'Neutral';
+                return `
+                    <tr>
+                        <td class="ticker-cell">${d.ticker}</td>
+                        <td>
+                            <div class="sentiment-bar">
+                                <div class="sentiment-fill ${barClass}" style="width: ${barWidth}%"></div>
+                            </div>
+                        </td>
+                        <td style="color: ${d.score > 0 ? 'var(--accent-green)' : d.score < 0 ? 'var(--accent-red)' : 'var(--text-secondary)'}">${d.score.toFixed(3)} (${label})</td>
+                        <td style="color: ${d.momentum > 0 ? 'var(--accent-green)' : d.momentum < 0 ? 'var(--accent-red)' : 'var(--text-secondary)'}">${d.momentum > 0 ? '+' : ''}${(d.momentum * 100).toFixed(1)}%</td>
+                        <td>${d.articleCount}</td>
+                        <td>${d.bullishPct}%</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        
+        function updateMomentumChart(history) {
+            const ctx = document.getElementById('momentumChart').getContext('2d');
+            
+            if (momentumChart) {
+                momentumChart.destroy();
+            }
+            
+            momentumChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: history.map(h => h.date),
+                    datasets: [{
+                        label: 'Sentiment Score',
+                        data: history.map(h => h.score),
+                        borderColor: '#8b5cf6',
+                        backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 4,
+                        pointBackgroundColor: history.map(h => h.score > 0 ? '#10b981' : h.score < 0 ? '#ef4444' : '#6b7280')
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            min: -1,
+                            max: 1,
+                            grid: { color: '#374151' },
+                            ticks: { color: '#9ca3af' }
+                        },
+                        x: {
+                            grid: { color: '#374151' },
+                            ticks: { color: '#9ca3af' }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Handle enter key
+        document.getElementById('tickerInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') analyzeMultiple();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Changelog Writer</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #e8e8e8;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            padding: 30px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(90deg, #f59e0b, #ef4444);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle { color: #888; font-size: 1.1rem; }
+        
+        .main-grid {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 25px;
+        }
+        
+        @media (max-width: 900px) {
+            .main-grid { grid-template-columns: 1fr; }
+        }
+        
+        .panel {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 20px;
+        }
+        
+        .panel h3 {
+            margin-bottom: 15px;
+            color: #f59e0b;
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #888;
+            font-size: 0.9rem;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 6px;
+            background: rgba(0,0,0,0.3);
+            color: white;
+            font-size: 0.9rem;
+        }
+        
+        textarea {
+            min-height: 200px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.85rem;
+            resize: vertical;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(90deg, #f59e0b, #ef4444);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .commit-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .commit-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 12px;
+            background: rgba(255,255,255,0.02);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border-left: 3px solid transparent;
+        }
+        
+        .commit-item.feat { border-color: #10b981; }
+        .commit-item.fix { border-color: #ef4444; }
+        .commit-item.docs { border-color: #3b82f6; }
+        .commit-item.refactor { border-color: #8b5cf6; }
+        .commit-item.test { border-color: #06b6d4; }
+        .commit-item.chore { border-color: #6b7280; }
+        .commit-item.breaking { border-color: #f59e0b; background: rgba(245, 158, 11, 0.1); }
+        
+        .commit-type {
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            min-width: 70px;
+            text-align: center;
+        }
+        
+        .type-feat { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        .type-fix { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+        .type-docs { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+        .type-refactor { background: rgba(139, 92, 246, 0.2); color: #8b5cf6; }
+        .type-test { background: rgba(6, 182, 212, 0.2); color: #06b6d4; }
+        .type-chore { background: rgba(107, 114, 128, 0.2); color: #9ca3af; }
+        .type-perf { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+        .type-breaking { background: rgba(239, 68, 68, 0.3); color: #fca5a5; }
+        
+        .commit-content { flex: 1; }
+        .commit-message { margin-bottom: 4px; }
+        .commit-meta { font-size: 0.8rem; color: #666; }
+        .commit-scope { color: #f59e0b; font-weight: 600; }
+        
+        .output-panel {
+            min-height: 500px;
+        }
+        
+        .changelog-output {
+            background: #0d1117;
+            border-radius: 8px;
+            padding: 20px;
+            min-height: 400px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            overflow-x: auto;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #f59e0b;
+        }
+        
+        .stat-label {
+            font-size: 0.8rem;
+            color: #888;
+        }
+        
+        .type-chart {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+        
+        .type-bar {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 10px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+        
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+        
+        .output-container {
+            position: relative;
+        }
+        
+        .tab-bar {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+        
+        .tab {
+            padding: 8px 16px;
+            background: transparent;
+            border: none;
+            color: #888;
+            cursor: pointer;
+            border-radius: 6px;
+        }
+        
+        .tab.active {
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+        }
+        
+        .version-input {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .version-input input {
+            flex: 1;
+        }
+        
+        .help-text {
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📝 Changelog Writer</h1>
+            <p class="subtitle">Generate changelogs from git commits with Conventional Commits support</p>
+        </header>
+        
+        <div class="main-grid">
+            <div class="panel">
+                <h3>⚙️ Configuration</h3>
+                
+                <div class="input-group">
+                    <label>Version</label>
+                    <div class="version-input">
+                        <input type="text" id="versionInput" value="1.0.0" placeholder="1.0.0">
+                        <button class="btn btn-secondary" onclick="incrementVersion()">+1</button>
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label>Release Date</label>
+                    <input type="date" id="dateInput" value="">
+                </div>
+                
+                <div class="input-group">
+                    <label>Repository URL (optional)</label>
+                    <input type="text" id="repoUrl" placeholder="https://github.com/user/repo">
+                </div>
+                
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="generateChangelog()">📝 Generate</button>
+                    <button class="btn btn-secondary" onclick="previewCommits()">👁️ Preview</button>
+                </div>
+                
+                <h3 style="margin-top: 25px;">📊 Statistics</h3>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalCommits">12</div>
+                        <div class="stat-label">Commits</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="featCount">5</div>
+                        <div class="stat-label">Features</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="fixCount">4</div>
+                        <div class="stat-label">Fixes</div>
+                    </div>
+                </div>
+                
+                <div class="type-chart" id="typeChart"></div>
+            </div>
+            
+            <div class="panel output-panel">
+                <div class="tab-bar">
+                    <button class="tab active" data-tab="commits">Commits</button>
+                    <button class="tab" data-tab="changelog">Changelog</button>
+                    <button class="tab" data-tab="raw">Raw Markdown</button>
+                </div>
+                
+                <div id="commitsTab">
+                    <h3 style="margin-bottom: 15px;">📋 Parsed Commits</h3>
+                    <div class="commit-list" id="commitList"></div>
+                </div>
+                
+                <div id="changelogTab" style="display: none;">
+                    <div class="output-container">
+                        <button class="btn btn-secondary copy-btn" onclick="copyChangelog()">📋 Copy</button>
+                        <div class="changelog-output" id="changelogOutput"></div>
+                    </div>
+                </div>
+                
+                <div id="rawTab" style="display: none;">
+                    <div class="input-group">
+                        <label>Paste commit messages (one per line)</label>
+                        <textarea id="rawCommits" placeholder="feat(auth): add OAuth2 support
+fix: resolve login timeout issue
+docs: update README with examples
+feat!: breaking change to API
+refactor(core): improve performance"></textarea>
+                    </div>
+                    <button class="btn btn-primary" onclick="parseRawCommits()">Parse Commits</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Demo commits data
+        const demoCommits = [
+            { hash: 'a1b2c3d', type: 'feat', scope: 'auth', subject: 'Add OAuth2 authentication support', date: '2025-01-27', author: 'John', breaking: false },
+            { hash: 'b2c3d4e', type: 'feat', scope: 'api', subject: 'Add REST endpoint for user management', date: '2025-01-26', author: 'Jane', breaking: false },
+            { hash: 'c3d4e5f', type: 'fix', scope: null, subject: 'Resolve memory leak in connection pool', date: '2025-01-26', author: 'John', breaking: false },
+            { hash: 'd4e5f6g', type: 'feat', scope: 'ui', subject: 'New dashboard with real-time updates', date: '2025-01-25', author: 'Jane', breaking: false },
+            { hash: 'e5f6g7h', type: 'docs', scope: null, subject: 'Update API documentation with examples', date: '2025-01-25', author: 'John', breaking: false },
+            { hash: 'f6g7h8i', type: 'fix', scope: 'auth', subject: 'Fix token refresh race condition', date: '2025-01-24', author: 'Jane', breaking: false },
+            { hash: 'g7h8i9j', type: 'perf', scope: 'db', subject: 'Optimize database queries for reports', date: '2025-01-24', author: 'John', breaking: false },
+            { hash: 'h8i9j0k', type: 'refactor', scope: 'core', subject: 'Restructure module architecture', date: '2025-01-23', author: 'Jane', breaking: false },
+            { hash: 'i9j0k1l', type: 'feat', scope: null, subject: 'Add export to CSV functionality', date: '2025-01-23', author: 'John', breaking: false },
+            { hash: 'j0k1l2m', type: 'fix', scope: 'ui', subject: 'Fix responsive layout on mobile', date: '2025-01-22', author: 'Jane', breaking: false },
+            { hash: 'k1l2m3n', type: 'test', scope: null, subject: 'Add unit tests for auth module', date: '2025-01-22', author: 'John', breaking: false },
+            { hash: 'l2m3n4o', type: 'feat', scope: 'api', subject: 'Breaking change to response format', date: '2025-01-21', author: 'Jane', breaking: true },
+        ];
+        
+        let commits = [...demoCommits];
+        
+        // Type info
+        const typeInfo = {
+            feat: { label: 'Features', emoji: '✨', color: '#10b981' },
+            fix: { label: 'Bug Fixes', emoji: '🐛', color: '#ef4444' },
+            docs: { label: 'Documentation', emoji: '📚', color: '#3b82f6' },
+            perf: { label: 'Performance', emoji: '⚡', color: '#f59e0b' },
+            refactor: { label: 'Refactoring', emoji: '♻️', color: '#8b5cf6' },
+            test: { label: 'Tests', emoji: '✅', color: '#06b6d4' },
+            chore: { label: 'Chores', emoji: '🔧', color: '#6b7280' },
+            breaking: { label: 'Breaking', emoji: '💥', color: '#dc2626' }
+        };
+        
+        // Initialize
+        function init() {
+            document.getElementById('dateInput').valueAsDate = new Date();
+            renderCommits();
+            updateStats();
+            setupTabs();
+        }
+        
+        function setupTabs() {
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    
+                    document.querySelectorAll('[id$="Tab"]').forEach(el => el.style.display = 'none');
+                    document.getElementById(tab.dataset.tab + 'Tab').style.display = 'block';
+                });
+            });
+        }
+        
+        function renderCommits() {
+            const list = document.getElementById('commitList');
+            list.innerHTML = commits.map(c => `
+                <div class="commit-item ${c.type} ${c.breaking ? 'breaking' : ''}">
+                    <span class="commit-type type-${c.breaking ? 'breaking' : c.type}">
+                        ${c.breaking ? '💥 BREAKING' : c.type.toUpperCase()}
+                    </span>
+                    <div class="commit-content">
+                        <div class="commit-message">
+                            ${c.scope ? `<span class="commit-scope">(${c.scope})</span> ` : ''}
+                            ${c.subject}
+                        </div>
+                        <div class="commit-meta">
+                            ${c.hash} • ${c.date} • ${c.author}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function updateStats() {
+            const byType = {};
+            commits.forEach(c => {
+                byType[c.type] = (byType[c.type] || 0) + 1;
+            });
+            
+            document.getElementById('totalCommits').textContent = commits.length;
+            document.getElementById('featCount').textContent = byType.feat || 0;
+            document.getElementById('fixCount').textContent = byType.fix || 0;
+            
+            // Type chart
+            const chart = document.getElementById('typeChart');
+            chart.innerHTML = Object.entries(byType)
+                .sort((a, b) => b[1] - a[1])
+                .map(([type, count]) => {
+                    const info = typeInfo[type] || { emoji: '•', label: type };
+                    return `<span class="type-bar">${info.emoji} ${type}: ${count}</span>`;
+                }).join('');
+        }
+        
+        function generateChangelog() {
+            const version = document.getElementById('versionInput').value || 'Unreleased';
+            const date = document.getElementById('dateInput').value || new Date().toISOString().split('T')[0];
+            const repoUrl = document.getElementById('repoUrl').value;
+            
+            // Group commits by type
+            const groups = {};
+            commits.forEach(c => {
+                const key = c.breaking ? 'breaking' : c.type;
+                if (!groups[key]) groups[key] = [];
+                groups[key].push(c);
+            });
+            
+            // Build changelog
+            let md = `## [${version}] - ${date}\n`;
+            
+            // Order: breaking, feat, fix, perf, refactor, docs, test, chore
+            const order = ['breaking', 'feat', 'fix', 'perf', 'refactor', 'docs', 'test', 'chore'];
+            
+            for (const type of order) {
+                const items = groups[type];
+                if (!items || items.length === 0) continue;
+                
+                const info = typeInfo[type] || { label: type, emoji: '•' };
+                md += `\n### ${info.emoji} ${info.label}\n\n`;
+                
+                for (const c of items) {
+                    let line = `- `;
+                    if (c.scope) line += `**${c.scope}**: `;
+                    line += c.subject;
+                    
+                    if (repoUrl) {
+                        line += ` ([${c.hash}](${repoUrl}/commit/${c.hash}))`;
+                    } else {
+                        line += ` (${c.hash})`;
+                    }
+                    
+                    md += line + '\n';
+                }
+            }
+            
+            document.getElementById('changelogOutput').textContent = md;
+            document.querySelector('[data-tab="changelog"]').click();
+        }
+        
+        function previewCommits() {
+            document.querySelector('[data-tab="commits"]').click();
+        }
+        
+        function parseRawCommits() {
+            const raw = document.getElementById('rawCommits').value;
+            const lines = raw.split('\n').filter(l => l.trim());
+            
+            commits = lines.map((line, i) => {
+                const parsed = parseCommitMessage(line);
+                return {
+                    hash: generateHash(),
+                    type: parsed.type,
+                    scope: parsed.scope,
+                    subject: parsed.subject,
+                    date: new Date(Date.now() - i * 86400000).toISOString().split('T')[0],
+                    author: 'You',
+                    breaking: parsed.breaking
+                };
+            });
+            
+            renderCommits();
+            updateStats();
+            document.querySelector('[data-tab="commits"]').click();
+        }
+        
+        function parseCommitMessage(message) {
+            // Pattern: type(scope)!: subject
+            const pattern = /^(\w+)(?:\(([^)]+)\))?(!)?:\s*(.+)$/;
+            const match = message.match(pattern);
+            
+            if (match) {
+                return {
+                    type: match[1].toLowerCase(),
+                    scope: match[2] || null,
+                    breaking: Boolean(match[3]),
+                    subject: match[4]
+                };
+            }
+            
+            // Fallback
+            return {
+                type: 'chore',
+                scope: null,
+                breaking: false,
+                subject: message
+            };
+        }
+        
+        function generateHash() {
+            return Math.random().toString(36).substring(2, 9);
+        }
+        
+        function incrementVersion() {
+            const input = document.getElementById('versionInput');
+            const parts = input.value.split('.');
+            if (parts.length >= 3) {
+                parts[2] = parseInt(parts[2] || 0) + 1;
+                input.value = parts.join('.');
+            }
+        }
+        
+        function copyChangelog() {
+            const text = document.getElementById('changelogOutput').textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Copied to clipboard!');
+            });
+        }
+        
+        init();
+    </script>
+</body>
+</html>

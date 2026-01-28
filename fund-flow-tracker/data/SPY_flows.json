@@ -1,0 +1,175 @@
+{
+  "ticker": "SPY",
+  "name": "SPDR S&P 500 ETF",
+  "category": "US Large Cap",
+  "current_aum_billions": 525.15,
+  "period_days": 30,
+  "flows": [
+    {
+      "date": "2025-12-29",
+      "flow_millions": 344.33,
+      "flow_pct": 0.069,
+      "aum_billions": 500.34,
+      "shares_outstanding_change_pct": 0.065
+    },
+    {
+      "date": "2025-12-30",
+      "flow_millions": 2209.82,
+      "flow_pct": 0.442,
+      "aum_billions": 502.55,
+      "shares_outstanding_change_pct": 0.42
+    },
+    {
+      "date": "2025-12-31",
+      "flow_millions": 1831.62,
+      "flow_pct": 0.364,
+      "aum_billions": 504.39,
+      "shares_outstanding_change_pct": 0.346
+    },
+    {
+      "date": "2026-01-01",
+      "flow_millions": 1396.59,
+      "flow_pct": 0.277,
+      "aum_billions": 505.78,
+      "shares_outstanding_change_pct": 0.263
+    },
+    {
+      "date": "2026-01-02",
+      "flow_millions": -1069.41,
+      "flow_pct": -0.211,
+      "aum_billions": 504.71,
+      "shares_outstanding_change_pct": -0.201
+    },
+    {
+      "date": "2026-01-05",
+      "flow_millions": 1352.59,
+      "flow_pct": 0.268,
+      "aum_billions": 506.07,
+      "shares_outstanding_change_pct": 0.255
+    },
+    {
+      "date": "2026-01-06",
+      "flow_millions": 3218.63,
+      "flow_pct": 0.636,
+      "aum_billions": 509.28,
+      "shares_outstanding_change_pct": 0.604
+    },
+    {
+      "date": "2026-01-07",
+      "flow_millions": 4243.64,
+      "flow_pct": 0.833,
+      "aum_billions": 513.53,
+      "shares_outstanding_change_pct": 0.792
+    },
+    {
+      "date": "2026-01-08",
+      "flow_millions": -2609.81,
+      "flow_pct": -0.508,
+      "aum_billions": 510.92,
+      "shares_outstanding_change_pct": -0.483
+    },
+    {
+      "date": "2026-01-09",
+      "flow_millions": 4318.78,
+      "flow_pct": 0.845,
+      "aum_billions": 515.24,
+      "shares_outstanding_change_pct": 0.803
+    },
+    {
+      "date": "2026-01-12",
+      "flow_millions": 638.72,
+      "flow_pct": 0.124,
+      "aum_billions": 515.88,
+      "shares_outstanding_change_pct": 0.118
+    },
+    {
+      "date": "2026-01-13",
+      "flow_millions": 2188.6,
+      "flow_pct": 0.424,
+      "aum_billions": 518.06,
+      "shares_outstanding_change_pct": 0.403
+    },
+    {
+      "date": "2026-01-14",
+      "flow_millions": -2611.14,
+      "flow_pct": -0.504,
+      "aum_billions": 515.45,
+      "shares_outstanding_change_pct": -0.479
+    },
+    {
+      "date": "2026-01-15",
+      "flow_millions": 2065.83,
+      "flow_pct": 0.401,
+      "aum_billions": 517.52,
+      "shares_outstanding_change_pct": 0.381
+    },
+    {
+      "date": "2026-01-16",
+      "flow_millions": -3028.64,
+      "flow_pct": -0.585,
+      "aum_billions": 514.49,
+      "shares_outstanding_change_pct": -0.556
+    },
+    {
+      "date": "2026-01-19",
+      "flow_millions": 916.08,
+      "flow_pct": 0.178,
+      "aum_billions": 515.41,
+      "shares_outstanding_change_pct": 0.169
+    },
+    {
+      "date": "2026-01-20",
+      "flow_millions": 3246.61,
+      "flow_pct": 0.63,
+      "aum_billions": 518.65,
+      "shares_outstanding_change_pct": 0.598
+    },
+    {
+      "date": "2026-01-21",
+      "flow_millions": 1312.16,
+      "flow_pct": 0.253,
+      "aum_billions": 519.96,
+      "shares_outstanding_change_pct": 0.24
+    },
+    {
+      "date": "2026-01-22",
+      "flow_millions": -1520.97,
+      "flow_pct": -0.293,
+      "aum_billions": 518.44,
+      "shares_outstanding_change_pct": -0.278
+    },
+    {
+      "date": "2026-01-23",
+      "flow_millions": 1989.13,
+      "flow_pct": 0.384,
+      "aum_billions": 520.43,
+      "shares_outstanding_change_pct": 0.364
+    },
+    {
+      "date": "2026-01-26",
+      "flow_millions": 3700.58,
+      "flow_pct": 0.711,
+      "aum_billions": 524.13,
+      "shares_outstanding_change_pct": 0.676
+    },
+    {
+      "date": "2026-01-27",
+      "flow_millions": 1016.07,
+      "flow_pct": 0.194,
+      "aum_billions": 525.15,
+      "shares_outstanding_change_pct": 0.184
+    }
+  ],
+  "summary": {
+    "total_flow_millions": 25149.81,
+    "avg_daily_flow_millions": 1143.17,
+    "positive_days": 17,
+    "negative_days": 5,
+    "flow_momentum": "INFLOW",
+    "flow_streak": {
+      "type": "INFLOW",
+      "days": 3
+    }
+  },
+  "fetched_at": "2026-01-27T21:27:13.801408"
+}

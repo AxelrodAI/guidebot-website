@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Version Summaries</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #e8e8e8;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 30px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(90deg, #00d4ff, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #888;
+            font-size: 1.1rem;
+        }
+
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #00d4ff;
+        }
+
+        .stat-label {
+            color: #888;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 900px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .sidebar {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 20px;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        .sidebar h3 {
+            margin-bottom: 15px;
+            color: #7c3aed;
+        }
+
+        .file-list {
+            list-style: none;
+        }
+
+        .file-item {
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 8px;
+            border: 1px solid transparent;
+        }
+
+        .file-item:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .file-item.active {
+            background: rgba(124, 58, 237, 0.2);
+            border-color: #7c3aed;
+        }
+
+        .file-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .file-type-badge {
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: rgba(0,212,255,0.2);
+            color: #00d4ff;
+        }
+
+        .file-meta {
+            font-size: 0.8rem;
+            color: #888;
+        }
+
+        .main-panel {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 25px;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .panel-title {
+            font-size: 1.5rem;
+        }
+
+        .version-badge {
+            background: linear-gradient(90deg, #7c3aed, #00d4ff);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: rgba(255,255,255,0.1);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 25px;
+            padding: 15px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -26px;
+            top: 20px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #7c3aed;
+            border: 2px solid #1a1a2e;
+        }
+
+        .timeline-item.latest::before {
+            background: #00d4ff;
+            box-shadow: 0 0 10px #00d4ff;
+        }
+
+        .version-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .version-number {
+            font-weight: 700;
+            color: #00d4ff;
+        }
+
+        .version-date {
+            font-size: 0.85rem;
+            color: #888;
+        }
+
+        .version-summary {
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .version-stats {
+            display: flex;
+            gap: 15px;
+            font-size: 0.85rem;
+        }
+
+        .stat-added {
+            color: #4ade80;
+        }
+
+        .stat-removed {
+            color: #f87171;
+        }
+
+        .stat-similarity {
+            color: #facc15;
+        }
+
+        .diff-viewer {
+            background: #0d1117;
+            border-radius: 8px;
+            padding: 15px;
+            overflow-x: auto;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            max-height: 400px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .diff-viewer.visible {
+            display: block;
+            margin-top: 15px;
+        }
+
+        .diff-line {
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .diff-add {
+            background: rgba(74, 222, 128, 0.15);
+            color: #4ade80;
+        }
+
+        .diff-remove {
+            background: rgba(248, 113, 113, 0.15);
+            color: #f87171;
+        }
+
+        .diff-meta {
+            color: #00d4ff;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(90deg, #7c3aed, #00d4ff);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .action-bar {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .empty-state .icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            background: rgba(0,0,0,0.2);
+            color: white;
+            font-size: 0.95rem;
+            margin-bottom: 15px;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: #7c3aed;
+        }
+
+        .recent-activity {
+            margin-top: 30px;
+        }
+
+        .activity-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px;
+            background: rgba(255,255,255,0.02);
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .activity-icon.new {
+            background: rgba(74, 222, 128, 0.2);
+        }
+
+        .activity-icon.update {
+            background: rgba(0, 212, 255, 0.2);
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-title {
+            font-weight: 600;
+        }
+
+        .activity-detail {
+            font-size: 0.85rem;
+            color: #888;
+        }
+
+        .tab-bar {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.05);
+            border: none;
+            border-radius: 8px 8px 0 0;
+            color: #888;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab.active {
+            background: rgba(124, 58, 237, 0.3);
+            color: white;
+        }
+
+        .tab:hover:not(.active) {
+            background: rgba(255,255,255,0.1);
+        }
+
+        /* Demo data notice */
+        .demo-notice {
+            background: rgba(250, 204, 21, 0.1);
+            border: 1px solid rgba(250, 204, 21, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .demo-notice .icon {
+            font-size: 1.5rem;
+        }
+
+        .load-real-btn {
+            margin-left: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📄 Document Version Summaries</h1>
+            <p class="subtitle">Auto-generate diff summaries when files change</p>
+        </header>
+
+        <div class="demo-notice" id="demoNotice">
+            <span class="icon">💡</span>
+            <div>
+                <strong>Demo Mode</strong> - Showing sample data. Use the CLI to track real files:
+                <code>python version_tracker.py track myfile.py</code>
+            </div>
+        </div>
+
+        <div class="stats-bar">
+            <div class="stat-card">
+                <div class="stat-value" id="totalFiles">4</div>
+                <div class="stat-label">Files Tracked</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalVersions">14</div>
+                <div class="stat-label">Versions Stored</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="changes24h">3</div>
+                <div class="stat-label">Changes (24h)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="linesChanged">+247</div>
+                <div class="stat-label">Lines Changed (7d)</div>
+            </div>
+        </div>
+
+        <div class="main-grid">
+            <div class="sidebar">
+                <h3>📁 Tracked Files</h3>
+                <input type="text" class="search-box" placeholder="Search files..." id="fileSearch">
+                <ul class="file-list" id="fileList">
+                    <!-- Files populated by JS -->
+                </ul>
+            </div>
+
+            <div class="main-panel">
+                <div class="tab-bar">
+                    <button class="tab active" data-tab="history">Version History</button>
+                    <button class="tab" data-tab="diff">Compare Versions</button>
+                    <button class="tab" data-tab="activity">Recent Activity</button>
+                </div>
+
+                <div id="historyTab" class="tab-content">
+                    <div class="panel-header">
+                        <h2 class="panel-title" id="selectedFileName">Select a file</h2>
+                        <span class="version-badge" id="currentVersion">--</span>
+                    </div>
+
+                    <div class="timeline" id="versionTimeline">
+                        <div class="empty-state">
+                            <div class="icon">📂</div>
+                            <p>Select a file from the sidebar to view its version history</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="diffTab" class="tab-content" style="display: none;">
+                    <div class="panel-header">
+                        <h2 class="panel-title">Compare Versions</h2>
+                    </div>
+                    <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+                        <select id="diffV1" class="search-box" style="width: auto;">
+                            <option value="">Version 1</option>
+                        </select>
+                        <span style="align-self: center;">→</span>
+                        <select id="diffV2" class="search-box" style="width: auto;">
+                            <option value="">Version 2</option>
+                        </select>
+                        <button class="btn btn-primary" onclick="showDiff()">Compare</button>
+                    </div>
+                    <div class="diff-viewer" id="diffOutput"></div>
+                </div>
+
+                <div id="activityTab" class="tab-content" style="display: none;">
+                    <div class="panel-header">
+                        <h2 class="panel-title">Recent Activity</h2>
+                    </div>
+                    <div id="activityList">
+                        <!-- Activity items -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Demo data
+        const demoFiles = [
+            {
+                id: 'f1',
+                name: 'app.py',
+                type: 'python',
+                path: '/project/app.py',
+                versions: [
+                    { version: 1, timestamp: '2025-01-20T10:00:00', summary: 'Initial version of app.py', lines_added: 150, lines_removed: 0, similarity: 0 },
+                    { version: 2, timestamp: '2025-01-22T14:30:00', summary: 'Minor edits to **app.py** (+12/-3 lines)\n\nChanges:\n  • Added new function(s) or class(es)\n  • Modified imports/dependencies', lines_added: 12, lines_removed: 3, similarity: 94.2 },
+                    { version: 3, timestamp: '2025-01-25T09:15:00', summary: 'Moderate changes to **app.py** (+45/-18 lines)\n\nChanges:\n  • Added new function(s) or class(es)\n  • Added comments/documentation\n\nKey additions:\n  + def validate_user(user_id):\n  + async def fetch_data(url):...', lines_added: 45, lines_removed: 18, similarity: 82.5 },
+                    { version: 4, timestamp: '2025-01-27T16:00:00', summary: 'Minor edits to **app.py** (+8/-2 lines)\n\nChanges:\n  • Added comments/documentation', lines_added: 8, lines_removed: 2, similarity: 96.8 }
+                ]
+            },
+            {
+                id: 'f2',
+                name: 'README.md',
+                type: 'markdown',
+                path: '/project/README.md',
+                versions: [
+                    { version: 1, timestamp: '2025-01-18T11:00:00', summary: 'Initial version of README.md', lines_added: 45, lines_removed: 0, similarity: 0 },
+                    { version: 2, timestamp: '2025-01-21T15:20:00', summary: 'Moderate changes to **README.md** (+28/-5 lines)\n\nChanges:\n  • Added new section(s)\n  • Added list items\n  • Modified code examples', lines_added: 28, lines_removed: 5, similarity: 78.3 },
+                    { version: 3, timestamp: '2025-01-26T10:45:00', summary: 'Minor edits to **README.md** (+15/-8 lines)\n\nChanges:\n  • Added list items\n\nKey additions:\n  + - Installation guide\n  + - API documentation link...', lines_added: 15, lines_removed: 8, similarity: 89.1 }
+                ]
+            },
+            {
+                id: 'f3',
+                name: 'config.json',
+                type: 'json',
+                path: '/project/config.json',
+                versions: [
+                    { version: 1, timestamp: '2025-01-19T09:30:00', summary: 'Initial version of config.json', lines_added: 25, lines_removed: 0, similarity: 0 },
+                    { version: 2, timestamp: '2025-01-23T11:00:00', summary: 'Minor edits to **config.json** (+5/-2 lines)\n\nChanges:\n  • Added new fields', lines_added: 5, lines_removed: 2, similarity: 91.5 },
+                    { version: 3, timestamp: '2025-01-27T08:00:00', summary: 'Moderate changes to **config.json** (+12/-4 lines)\n\nChanges:\n  • Added new fields\n  • Removed fields', lines_added: 12, lines_removed: 4, similarity: 83.2 }
+                ]
+            },
+            {
+                id: 'f4',
+                name: 'utils.py',
+                type: 'python',
+                path: '/project/utils.py',
+                versions: [
+                    { version: 1, timestamp: '2025-01-20T14:00:00', summary: 'Initial version of utils.py', lines_added: 80, lines_removed: 0, similarity: 0 },
+                    { version: 2, timestamp: '2025-01-24T16:30:00', summary: 'Significant updates to **utils.py** (+62/-25 lines)\n\nChanges:\n  • Added new function(s) or class(es)\n  • Removed function(s) or class(es)\n  • Modified imports/dependencies\n\nKey additions:\n  + class DataProcessor:\n  + def parse_date(date_str):\n  + def format_output(data):...', lines_added: 62, lines_removed: 25, similarity: 68.4 },
+                    { version: 3, timestamp: '2025-01-26T20:15:00', summary: 'Minor edits to **utils.py** (+18/-6 lines)\n\nChanges:\n  • Added comments/documentation', lines_added: 18, lines_removed: 6, similarity: 92.1 },
+                    { version: 4, timestamp: '2025-01-27T14:45:00', summary: 'Minor edits to **utils.py** (+5/-1 lines)', lines_added: 5, lines_removed: 1, similarity: 97.8 }
+                ]
+            }
+        ];
+
+        const demoActivity = [
+            { file: 'utils.py', action: 'update', version: 4, time: '2h ago', summary: 'Minor edits (+5/-1 lines)' },
+            { file: 'app.py', action: 'update', version: 4, time: '5h ago', summary: 'Added documentation' },
+            { file: 'config.json', action: 'update', version: 3, time: '13h ago', summary: 'Added new config fields' },
+            { file: 'README.md', action: 'update', version: 3, time: '1d ago', summary: 'Added installation guide' },
+            { file: 'utils.py', action: 'update', version: 3, time: '1d ago', summary: 'Added comments' }
+        ];
+
+        let selectedFile = null;
+
+        // Initialize
+        function init() {
+            renderFileList();
+            renderActivity();
+            setupTabs();
+            setupSearch();
+        }
+
+        function renderFileList() {
+            const list = document.getElementById('fileList');
+            list.innerHTML = demoFiles.map(file => `
+                <li class="file-item" data-id="${file.id}" onclick="selectFile('${file.id}')">
+                    <div class="file-name">
+                        ${getFileIcon(file.type)} ${file.name}
+                        <span class="file-type-badge">${file.type}</span>
+                    </div>
+                    <div class="file-meta">v${file.versions.length} • ${formatDate(file.versions[file.versions.length-1].timestamp)}</div>
+                </li>
+            `).join('');
+        }
+
+        function getFileIcon(type) {
+            const icons = {
+                python: '🐍',
+                javascript: '📜',
+                typescript: '📘',
+                markdown: '📝',
+                json: '📋',
+                text: '📄'
+            };
+            return icons[type] || '📄';
+        }
+
+        function formatDate(isoDate) {
+            const date = new Date(isoDate);
+            const now = new Date();
+            const diff = now - date;
+            
+            if (diff < 86400000) { // Less than 24h
+                const hours = Math.floor(diff / 3600000);
+                return hours === 0 ? 'Just now' : `${hours}h ago`;
+            } else if (diff < 604800000) { // Less than 7 days
+                const days = Math.floor(diff / 86400000);
+                return `${days}d ago`;
+            }
+            return date.toLocaleDateString();
+        }
+
+        function selectFile(fileId) {
+            selectedFile = demoFiles.find(f => f.id === fileId);
+            
+            // Update UI
+            document.querySelectorAll('.file-item').forEach(el => {
+                el.classList.toggle('active', el.dataset.id === fileId);
+            });
+
+            document.getElementById('selectedFileName').textContent = selectedFile.name;
+            document.getElementById('currentVersion').textContent = `v${selectedFile.versions.length}`;
+
+            renderTimeline();
+            populateDiffSelects();
+        }
+
+        function renderTimeline() {
+            if (!selectedFile) return;
+
+            const timeline = document.getElementById('versionTimeline');
+            const versions = [...selectedFile.versions].reverse();
+
+            timeline.innerHTML = versions.map((v, idx) => `
+                <div class="timeline-item ${idx === 0 ? 'latest' : ''}">
+                    <div class="version-header">
+                        <span class="version-number">Version ${v.version}</span>
+                        <span class="version-date">${new Date(v.timestamp).toLocaleString()}</span>
+                    </div>
+                    <div class="version-summary">${formatSummary(v.summary)}</div>
+                    <div class="version-stats">
+                        <span class="stat-added">+${v.lines_added} added</span>
+                        <span class="stat-removed">-${v.lines_removed} removed</span>
+                        ${v.similarity > 0 ? `<span class="stat-similarity">${v.similarity}% similar</span>` : ''}
+                    </div>
+                    <div class="action-bar">
+                        ${v.version > 1 ? `<button class="btn btn-secondary" onclick="viewDiff(${v.version - 1}, ${v.version})">View Diff</button>` : ''}
+                        <button class="btn btn-secondary" onclick="restoreVersion(${v.version})">Restore</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function formatSummary(summary) {
+            return summary
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\n/g, '<br>')
+                .replace(/  •/g, '&nbsp;&nbsp;•')
+                .replace(/  \+/g, '&nbsp;&nbsp;<span style="color: #4ade80">+</span>');
+        }
+
+        function populateDiffSelects() {
+            if (!selectedFile) return;
+
+            const v1Select = document.getElementById('diffV1');
+            const v2Select = document.getElementById('diffV2');
+
+            const options = selectedFile.versions.map(v => 
+                `<option value="${v.version}">Version ${v.version} (${formatDate(v.timestamp)})</option>`
+            ).join('');
+
+            v1Select.innerHTML = '<option value="">Select version</option>' + options;
+            v2Select.innerHTML = '<option value="">Select version</option>' + options;
+        }
+
+        function viewDiff(v1, v2) {
+            document.querySelector('[data-tab="diff"]').click();
+            document.getElementById('diffV1').value = v1;
+            document.getElementById('diffV2').value = v2;
+            showDiff();
+        }
+
+        function showDiff() {
+            const v1 = document.getElementById('diffV1').value;
+            const v2 = document.getElementById('diffV2').value;
+            const output = document.getElementById('diffOutput');
+
+            if (!v1 || !v2 || !selectedFile) {
+                output.classList.remove('visible');
+                return;
+            }
+
+            // Generate demo diff
+            const demoLines = [
+                `--- ${selectedFile.name} (v${v1})`,
+                `+++ ${selectedFile.name} (v${v2})`,
+                '@@ -10,6 +10,8 @@',
+                ' def existing_function():',
+                '     """Existing docstring."""',
+                '-    old_code = True',
+                '+    new_code = True',
+                '+    additional_feature = enabled',
+                ' ',
+                '     return result',
+                '@@ -25,4 +27,12 @@',
+                '+def new_function():',
+                '+    """Added in this version."""',
+                '+    data = fetch_data()',
+                '+    return process(data)',
+                '+',
+                ' # End of file'
+            ];
+
+            output.innerHTML = demoLines.map(line => {
+                let className = 'diff-line';
+                if (line.startsWith('+') && !line.startsWith('+++')) className += ' diff-add';
+                else if (line.startsWith('-') && !line.startsWith('---')) className += ' diff-remove';
+                else if (line.startsWith('@@') || line.startsWith('---') || line.startsWith('+++')) className += ' diff-meta';
+                return `<div class="${className}">${escapeHtml(line)}</div>`;
+            }).join('');
+
+            output.classList.add('visible');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function restoreVersion(version) {
+            if (confirm(`Restore ${selectedFile.name} to version ${version}?`)) {
+                alert(`In production, this would restore the file to version ${version}.\n\nUse CLI: python version_tracker.py restore ${selectedFile.name} --version ${version}`);
+            }
+        }
+
+        function renderActivity() {
+            const list = document.getElementById('activityList');
+            list.innerHTML = demoActivity.map(act => `
+                <div class="activity-item">
+                    <div class="activity-icon ${act.action}">
+                        ${act.action === 'new' ? '📄' : '🔄'}
+                    </div>
+                    <div class="activity-content">
+                        <div class="activity-title">${act.file} → v${act.version}</div>
+                        <div class="activity-detail">${act.summary}</div>
+                    </div>
+                    <div class="activity-time" style="color: #888; font-size: 0.85rem;">
+                        ${act.time}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function setupTabs() {
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+                    
+                    tab.classList.add('active');
+                    document.getElementById(tab.dataset.tab + 'Tab').style.display = 'block';
+                });
+            });
+        }
+
+        function setupSearch() {
+            document.getElementById('fileSearch').addEventListener('input', (e) => {
+                const query = e.target.value.toLowerCase();
+                document.querySelectorAll('.file-item').forEach(item => {
+                    const name = item.querySelector('.file-name').textContent.toLowerCase();
+                    item.style.display = name.includes(query) ? '' : 'none';
+                });
+            });
+        }
+
+        // Start
+        init();
+
+        // Select first file by default
+        setTimeout(() => selectFile('f1'), 100);
+    </script>
+</body>
+</html>

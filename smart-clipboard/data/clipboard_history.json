@@ -1,0 +1,50 @@
+{
+  "clips": [
+    {
+      "id": "28bfad75d21c",
+      "content": "https://github.com/anthropics/claude",
+      "snippet": "https://github.com/anthropics/claude",
+      "content_type": "url",
+      "type_confidence": 1.0,
+      "keywords": [],
+      "tags": [
+        "link",
+        "url"
+      ],
+      "source": "manual",
+      "created": "2026-01-27T21:36:36.877212",
+      "accessed_count": 0,
+      "last_accessed": null,
+      "pinned": false,
+      "char_count": 36,
+      "word_count": 1,
+      "line_count": 1
+    },
+    {
+      "id": "0096d653dd87",
+      "content": "def hello_world():\\n    print('Hello, World!')",
+      "snippet": "def hello_world():\\n    print('Hello, World!')",
+      "content_type": "code_python",
+      "type_confidence": 0.8,
+      "keywords": [
+        "def",
+        "print",
+        "hello",
+        "world"
+      ],
+      "tags": [
+        "code_python",
+        "code",
+        "python"
+      ],
+      "source": "manual",
+      "created": "2026-01-27T21:36:33.209261",
+      "accessed_count": 0,
+      "last_accessed": null,
+      "pinned": false,
+      "char_count": 46,
+      "word_count": 4,
+      "line_count": 1
+    }
+  ]
+}

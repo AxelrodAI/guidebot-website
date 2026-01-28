@@ -1,0 +1,1177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Factor Performance Dashboard | GuideBot</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --border-color: #30363d;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --accent-green: #3fb950;
+            --accent-red: #f85149;
+            --accent-blue: #58a6ff;
+            --accent-yellow: #d29922;
+            --accent-purple: #a371f7;
+            --accent-orange: #f0883e;
+            --accent-cyan: #39c5cf;
+            --accent-pink: #db61a2;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        header h1 {
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        header h1 span {
+            font-size: 28px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .timeframe-selector {
+            display: flex;
+            gap: 4px;
+            background: var(--bg-secondary);
+            padding: 4px;
+            border-radius: 6px;
+        }
+
+        .timeframe-btn {
+            padding: 6px 12px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .timeframe-btn.active {
+            background: var(--accent-blue);
+            color: white;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: var(--bg-tertiary);
+            border-color: var(--accent-blue);
+        }
+
+        .btn-primary {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 16px;
+        }
+
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .card-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .card-subtitle {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* Factor Overview Section */
+        .factor-overview {
+            grid-column: span 12;
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 12px;
+        }
+
+        .factor-card {
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+            transition: transform 0.2s;
+            cursor: pointer;
+        }
+
+        .factor-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .factor-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .factor-name {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .factor-return {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .factor-return.positive { color: var(--accent-green); }
+        .factor-return.negative { color: var(--accent-red); }
+
+        .factor-vs-spy {
+            font-size: 11px;
+            margin-top: 4px;
+        }
+
+        .factor-vs-spy.outperform { color: var(--accent-green); }
+        .factor-vs-spy.underperform { color: var(--accent-red); }
+
+        /* Charts Section */
+        .factor-returns-chart {
+            grid-column: span 8;
+        }
+
+        .factor-correlation-chart {
+            grid-column: span 4;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+
+        /* Factor Rotation Matrix */
+        .rotation-matrix {
+            grid-column: span 6;
+        }
+
+        .matrix-container {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 2px;
+            font-size: 11px;
+        }
+
+        .matrix-cell {
+            padding: 8px 4px;
+            text-align: center;
+            border-radius: 4px;
+        }
+
+        .matrix-header {
+            background: var(--bg-tertiary);
+            font-weight: 600;
+        }
+
+        .corr-high { background: rgba(63, 185, 80, 0.4); }
+        .corr-med { background: rgba(63, 185, 80, 0.2); }
+        .corr-low { background: transparent; }
+        .corr-neg-low { background: rgba(248, 81, 73, 0.2); }
+        .corr-neg-high { background: rgba(248, 81, 73, 0.4); }
+
+        /* Factor Crowding */
+        .crowding-section {
+            grid-column: span 6;
+        }
+
+        .crowding-bar {
+            margin: 12px 0;
+        }
+
+        .crowding-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+
+        .crowding-track {
+            height: 8px;
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .crowding-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s;
+        }
+
+        .crowding-marker {
+            position: absolute;
+            top: -4px;
+            width: 2px;
+            height: 16px;
+            background: white;
+            transform: translateX(-50%);
+        }
+
+        .crowd-low { background: var(--accent-green); }
+        .crowd-med { background: var(--accent-yellow); }
+        .crowd-high { background: var(--accent-orange); }
+        .crowd-extreme { background: var(--accent-red); }
+
+        /* Factor Rankings Table */
+        .rankings-table {
+            grid-column: span 8;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 13px;
+        }
+
+        th {
+            color: var(--text-secondary);
+            font-weight: 500;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+        }
+
+        tbody tr:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .rank-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .rank-1 { background: #ffd700; color: #000; }
+        .rank-2 { background: #c0c0c0; color: #000; }
+        .rank-3 { background: #cd7f32; color: #fff; }
+
+        .return-cell { font-family: monospace; }
+        .return-cell.positive { color: var(--accent-green); }
+        .return-cell.negative { color: var(--accent-red); }
+
+        .sparkline {
+            width: 80px;
+            height: 24px;
+        }
+
+        /* Regime Indicator */
+        .regime-section {
+            grid-column: span 4;
+        }
+
+        .regime-indicator {
+            text-align: center;
+            padding: 20px;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+
+        .regime-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .regime-value {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .regime-momentum { color: var(--accent-green); }
+        .regime-value-dominant { color: var(--accent-blue); }
+        .regime-quality { color: var(--accent-purple); }
+        .regime-defensive { color: var(--accent-yellow); }
+        .regime-mixed { color: var(--text-secondary); }
+
+        .regime-details {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 8px;
+        }
+
+        /* Factor Spread Chart */
+        .spread-section {
+            grid-column: span 6;
+        }
+
+        .spread-gauge {
+            display: flex;
+            align-items: center;
+            margin: 12px 0;
+            gap: 12px;
+        }
+
+        .spread-label {
+            width: 120px;
+            font-size: 12px;
+        }
+
+        .spread-bar-container {
+            flex: 1;
+            position: relative;
+        }
+
+        .spread-bar {
+            height: 24px;
+            background: linear-gradient(to right, var(--accent-red), var(--bg-tertiary) 40%, var(--bg-tertiary) 60%, var(--accent-green));
+            border-radius: 4px;
+            position: relative;
+        }
+
+        .spread-marker {
+            position: absolute;
+            top: 0;
+            width: 4px;
+            height: 24px;
+            background: white;
+            border-radius: 2px;
+            transform: translateX(-50%);
+        }
+
+        .spread-value {
+            width: 60px;
+            text-align: right;
+            font-family: monospace;
+            font-size: 12px;
+        }
+
+        /* Alerts Panel */
+        .alerts-panel {
+            grid-column: span 6;
+        }
+
+        .alert-item {
+            display: flex;
+            gap: 12px;
+            padding: 12px;
+            background: var(--bg-tertiary);
+            border-radius: 6px;
+            margin-bottom: 8px;
+            border-left: 3px solid;
+        }
+
+        .alert-item.warning { border-color: var(--accent-yellow); }
+        .alert-item.danger { border-color: var(--accent-red); }
+        .alert-item.info { border-color: var(--accent-blue); }
+        .alert-item.success { border-color: var(--accent-green); }
+
+        .alert-icon { font-size: 16px; }
+        .alert-content { flex: 1; }
+        .alert-title { font-size: 13px; font-weight: 600; }
+        .alert-desc { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+        .alert-time { font-size: 11px; color: var(--text-secondary); }
+
+        /* Historical Performance */
+        .historical-section {
+            grid-column: span 12;
+        }
+
+        .period-tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 16px;
+        }
+
+        .period-tab {
+            padding: 6px 16px;
+            border: 1px solid var(--border-color);
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .period-tab.active {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+            color: white;
+        }
+
+        .performance-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 16px;
+        }
+
+        .perf-card {
+            background: var(--bg-tertiary);
+            padding: 16px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .perf-factor { font-size: 12px; color: var(--text-secondary); }
+        .perf-return { font-size: 24px; font-weight: 700; margin: 8px 0; }
+        .perf-sharpe { font-size: 12px; color: var(--text-secondary); }
+
+        /* Footer */
+        footer {
+            margin-top: 24px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .factor-overview {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .dashboard-grid > .card {
+                grid-column: span 12 !important;
+            }
+            .performance-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .factor-overview {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .performance-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .header-actions {
+                flex-wrap: wrap;
+            }
+        }
+
+        /* Loading State */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 200px;
+            color: var(--text-secondary);
+        }
+
+        .loading::after {
+            content: '';
+            width: 24px;
+            height: 24px;
+            border: 2px solid var(--border-color);
+            border-top-color: var(--accent-blue);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 12px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>
+                <span>📊</span>
+                Factor Performance Dashboard
+            </h1>
+            <div class="header-actions">
+                <div class="timeframe-selector">
+                    <button class="timeframe-btn" data-period="1W">1W</button>
+                    <button class="timeframe-btn" data-period="1M">1M</button>
+                    <button class="timeframe-btn active" data-period="3M">3M</button>
+                    <button class="timeframe-btn" data-period="6M">6M</button>
+                    <button class="timeframe-btn" data-period="1Y">1Y</button>
+                    <button class="timeframe-btn" data-period="YTD">YTD</button>
+                </div>
+                <button class="btn" onclick="refreshData()">⟳ Refresh</button>
+                <button class="btn" onclick="exportData()">📥 Export</button>
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+            <!-- Factor Overview Cards -->
+            <div class="factor-overview" id="factorOverview">
+                <!-- Populated by JS -->
+            </div>
+
+            <!-- Factor Returns Chart -->
+            <div class="card factor-returns-chart">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">Factor Returns vs S&P 500</div>
+                        <div class="card-subtitle">Cumulative performance comparison</div>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="returnsChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Factor Correlation -->
+            <div class="card factor-correlation-chart">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">Factor Correlation Matrix</div>
+                        <div class="card-subtitle">Rolling 60-day correlations</div>
+                    </div>
+                </div>
+                <div id="correlationMatrix" class="matrix-container">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- Factor Rankings Table -->
+            <div class="card rankings-table">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">Factor Rankings & Metrics</div>
+                        <div class="card-subtitle">Sorted by current period return</div>
+                    </div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Factor</th>
+                            <th>Return</th>
+                            <th>vs SPY</th>
+                            <th>Sharpe</th>
+                            <th>Max DD</th>
+                            <th>Trend</th>
+                            <th>Z-Score</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rankingsBody">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Current Regime -->
+            <div class="card regime-section">
+                <div class="card-header">
+                    <div class="card-title">Current Factor Regime</div>
+                </div>
+                <div class="regime-indicator" id="regimeIndicator">
+                    <div class="regime-label">Dominant Factor Environment</div>
+                    <div class="regime-value regime-momentum">MOMENTUM</div>
+                    <div class="regime-details">Growth stocks and high-beta outperforming</div>
+                </div>
+                <div id="regimeHistory">
+                    <div class="card-subtitle" style="margin-bottom: 8px;">Recent Regime Changes</div>
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- Factor Crowding -->
+            <div class="card crowding-section">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">Factor Crowding Indicators</div>
+                        <div class="card-subtitle">Position concentration vs history</div>
+                    </div>
+                </div>
+                <div id="crowdingBars">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- Factor Spreads -->
+            <div class="card spread-section">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">Factor Spread vs Historical</div>
+                        <div class="card-subtitle">Current spread percentile (0-100%)</div>
+                    </div>
+                </div>
+                <div id="spreadGauges">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- Alerts Panel -->
+            <div class="card alerts-panel">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">Factor Alerts</div>
+                        <div class="card-subtitle">Regime changes & extreme readings</div>
+                    </div>
+                </div>
+                <div id="alertsList">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- Historical Performance Section -->
+            <div class="card historical-section">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">Historical Factor Performance</div>
+                        <div class="card-subtitle">Annualized returns and risk metrics</div>
+                    </div>
+                </div>
+                <div class="period-tabs" id="periodTabs">
+                    <button class="period-tab" data-period="1Y">1 Year</button>
+                    <button class="period-tab" data-period="3Y">3 Year</button>
+                    <button class="period-tab active" data-period="5Y">5 Year</button>
+                    <button class="period-tab" data-period="10Y">10 Year</button>
+                </div>
+                <div class="performance-grid" id="performanceGrid">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <div>Last updated: <span id="lastUpdate">--</span> • Data source: Factor ETFs & Indices</div>
+            <div>
+                <a href="../index.html" style="color: var(--accent-blue); text-decoration: none;">← Back to Dashboard</a>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Factor Definitions
+        const FACTORS = [
+            { id: 'momentum', name: 'Momentum', icon: '🚀', etf: 'MTUM', color: '#3fb950' },
+            { id: 'value', name: 'Value', icon: '💰', etf: 'VLUE', color: '#58a6ff' },
+            { id: 'quality', name: 'Quality', icon: '⭐', etf: 'QUAL', color: '#a371f7' },
+            { id: 'size', name: 'Size (Small)', icon: '📦', etf: 'SIZE', color: '#f0883e' },
+            { id: 'lowvol', name: 'Low Vol', icon: '🛡️', etf: 'USMV', color: '#d29922' },
+            { id: 'dividend', name: 'Dividend', icon: '💵', etf: 'DVY', color: '#39c5cf' }
+        ];
+
+        const SPY_COLOR = '#8b949e';
+
+        // State
+        let currentPeriod = '3M';
+        let factorData = {};
+        let charts = {};
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            generateMockData();
+            renderFactorOverview();
+            renderReturnsChart();
+            renderCorrelationMatrix();
+            renderRankingsTable();
+            renderCrowdingBars();
+            renderSpreadGauges();
+            renderAlerts();
+            renderPerformanceGrid();
+            setupEventListeners();
+            updateLastUpdate();
+        });
+
+        // Generate realistic mock data
+        function generateMockData() {
+            const periods = ['1W', '1M', '3M', '6M', '1Y', 'YTD'];
+            
+            FACTORS.forEach(factor => {
+                factorData[factor.id] = {
+                    returns: {},
+                    sharpe: (Math.random() * 1.5 + 0.3).toFixed(2),
+                    maxDrawdown: -(Math.random() * 15 + 5).toFixed(1),
+                    crowding: Math.random() * 100,
+                    spreadPercentile: Math.random() * 100,
+                    zScore: (Math.random() * 4 - 2).toFixed(2),
+                    timeSeries: generateTimeSeries(90)
+                };
+                
+                periods.forEach(period => {
+                    const baseReturn = Math.random() * 30 - 10;
+                    factorData[factor.id].returns[period] = baseReturn.toFixed(2);
+                });
+            });
+
+            // SPY benchmark
+            factorData.spy = {
+                returns: {},
+                timeSeries: generateTimeSeries(90)
+            };
+            periods.forEach(period => {
+                factorData.spy.returns[period] = (Math.random() * 20 - 5).toFixed(2);
+            });
+        }
+
+        function generateTimeSeries(days) {
+            const data = [];
+            let value = 100;
+            const now = new Date();
+            
+            for (let i = days; i >= 0; i--) {
+                const date = new Date(now);
+                date.setDate(date.getDate() - i);
+                value += (Math.random() - 0.48) * 2;
+                data.push({ x: date, y: value });
+            }
+            return data;
+        }
+
+        // Render Factor Overview Cards
+        function renderFactorOverview() {
+            const container = document.getElementById('factorOverview');
+            const spyReturn = parseFloat(factorData.spy.returns[currentPeriod]);
+            
+            container.innerHTML = FACTORS.map(factor => {
+                const ret = parseFloat(factorData[factor.id].returns[currentPeriod]);
+                const vsSpY = ret - spyReturn;
+                const retClass = ret >= 0 ? 'positive' : 'negative';
+                const vsClass = vsSpY >= 0 ? 'outperform' : 'underperform';
+                
+                return `
+                    <div class="factor-card" onclick="showFactorDetail('${factor.id}')">
+                        <div class="factor-icon">${factor.icon}</div>
+                        <div class="factor-name">${factor.name}</div>
+                        <div class="factor-return ${retClass}">${ret >= 0 ? '+' : ''}${ret}%</div>
+                        <div class="factor-vs-spy ${vsClass}">
+                            vs SPY: ${vsSpY >= 0 ? '+' : ''}${vsSpY.toFixed(1)}%
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Render Returns Chart
+        function renderReturnsChart() {
+            const ctx = document.getElementById('returnsChart').getContext('2d');
+            
+            if (charts.returns) charts.returns.destroy();
+            
+            const datasets = FACTORS.map(factor => ({
+                label: factor.name,
+                data: factorData[factor.id].timeSeries,
+                borderColor: factor.color,
+                backgroundColor: 'transparent',
+                borderWidth: 2,
+                tension: 0.3,
+                pointRadius: 0
+            }));
+
+            // Add SPY benchmark
+            datasets.push({
+                label: 'S&P 500',
+                data: factorData.spy.timeSeries,
+                borderColor: SPY_COLOR,
+                backgroundColor: 'transparent',
+                borderWidth: 2,
+                borderDash: [5, 5],
+                tension: 0.3,
+                pointRadius: 0
+            });
+
+            charts.returns = new Chart(ctx, {
+                type: 'line',
+                data: { datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#8b949e',
+                                usePointStyle: true,
+                                padding: 20
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: '#21262d',
+                            titleColor: '#e6edf3',
+                            bodyColor: '#e6edf3',
+                            borderColor: '#30363d',
+                            borderWidth: 1
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'week'
+                            },
+                            grid: {
+                                color: 'rgba(48, 54, 61, 0.5)'
+                            },
+                            ticks: {
+                                color: '#8b949e'
+                            }
+                        },
+                        y: {
+                            grid: {
+                                color: 'rgba(48, 54, 61, 0.5)'
+                            },
+                            ticks: {
+                                color: '#8b949e'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Render Correlation Matrix
+        function renderCorrelationMatrix() {
+            const container = document.getElementById('correlationMatrix');
+            const factorNames = FACTORS.map(f => f.name.slice(0, 3));
+            
+            let html = '<div class="matrix-cell matrix-header"></div>';
+            factorNames.forEach(name => {
+                html += `<div class="matrix-cell matrix-header">${name}</div>`;
+            });
+
+            FACTORS.forEach((factor, i) => {
+                html += `<div class="matrix-cell matrix-header">${factorNames[i]}</div>`;
+                FACTORS.forEach((_, j) => {
+                    if (i === j) {
+                        html += `<div class="matrix-cell corr-high">1.00</div>`;
+                    } else {
+                        const corr = (Math.random() * 1.4 - 0.4).toFixed(2);
+                        const corrClass = corr > 0.6 ? 'corr-high' : 
+                                         corr > 0.3 ? 'corr-med' : 
+                                         corr > -0.3 ? 'corr-low' :
+                                         corr > -0.6 ? 'corr-neg-low' : 'corr-neg-high';
+                        html += `<div class="matrix-cell ${corrClass}">${corr}</div>`;
+                    }
+                });
+            });
+
+            container.innerHTML = html;
+        }
+
+        // Render Rankings Table
+        function renderRankingsTable() {
+            const body = document.getElementById('rankingsBody');
+            const spyReturn = parseFloat(factorData.spy.returns[currentPeriod]);
+            
+            const rankings = FACTORS.map(factor => ({
+                ...factor,
+                return: parseFloat(factorData[factor.id].returns[currentPeriod]),
+                sharpe: factorData[factor.id].sharpe,
+                maxDD: factorData[factor.id].maxDrawdown,
+                zScore: factorData[factor.id].zScore
+            })).sort((a, b) => b.return - a.return);
+
+            body.innerHTML = rankings.map((factor, idx) => {
+                const vsSpY = factor.return - spyReturn;
+                const rankClass = idx < 3 ? `rank-${idx + 1}` : '';
+                const retClass = factor.return >= 0 ? 'positive' : 'negative';
+                const vsClass = vsSpY >= 0 ? 'positive' : 'negative';
+                
+                return `
+                    <tr>
+                        <td><span class="rank-badge ${rankClass}">${idx + 1}</span></td>
+                        <td>${factor.icon} ${factor.name}</td>
+                        <td class="return-cell ${retClass}">${factor.return >= 0 ? '+' : ''}${factor.return}%</td>
+                        <td class="return-cell ${vsClass}">${vsSpY >= 0 ? '+' : ''}${vsSpY.toFixed(1)}%</td>
+                        <td>${factor.sharpe}</td>
+                        <td class="return-cell negative">${factor.maxDD}%</td>
+                        <td><canvas class="sparkline" id="spark-${factor.id}"></canvas></td>
+                        <td>${factor.zScore}</td>
+                    </tr>
+                `;
+            }).join('');
+
+            // Render sparklines
+            rankings.forEach(factor => {
+                renderSparkline(`spark-${factor.id}`, factorData[factor.id].timeSeries.slice(-30), factor.color);
+            });
+        }
+
+        function renderSparkline(canvasId, data, color) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            const values = data.map(d => d.y);
+            const min = Math.min(...values);
+            const max = Math.max(...values);
+            const range = max - min || 1;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.beginPath();
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 1.5;
+            
+            values.forEach((val, i) => {
+                const x = (i / (values.length - 1)) * canvas.width;
+                const y = canvas.height - ((val - min) / range) * canvas.height * 0.8 - canvas.height * 0.1;
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            
+            ctx.stroke();
+        }
+
+        // Render Crowding Bars
+        function renderCrowdingBars() {
+            const container = document.getElementById('crowdingBars');
+            
+            container.innerHTML = FACTORS.map(factor => {
+                const crowding = factorData[factor.id].crowding;
+                const crowdClass = crowding > 80 ? 'crowd-extreme' :
+                                  crowding > 60 ? 'crowd-high' :
+                                  crowding > 40 ? 'crowd-med' : 'crowd-low';
+                
+                return `
+                    <div class="crowding-bar">
+                        <div class="crowding-label">
+                            <span>${factor.icon} ${factor.name}</span>
+                            <span>${crowding.toFixed(0)}%ile</span>
+                        </div>
+                        <div class="crowding-track">
+                            <div class="crowding-fill ${crowdClass}" style="width: ${crowding}%"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Render Spread Gauges
+        function renderSpreadGauges() {
+            const container = document.getElementById('spreadGauges');
+            
+            const spreads = [
+                { name: 'Value-Growth', percentile: Math.random() * 100 },
+                { name: 'Quality-Junk', percentile: Math.random() * 100 },
+                { name: 'Momentum-Mean Rev', percentile: Math.random() * 100 },
+                { name: 'Small-Large Cap', percentile: Math.random() * 100 },
+                { name: 'High-Low Vol', percentile: Math.random() * 100 }
+            ];
+
+            container.innerHTML = spreads.map(spread => {
+                const position = spread.percentile;
+                const displayVal = (spread.percentile - 50).toFixed(0);
+                
+                return `
+                    <div class="spread-gauge">
+                        <div class="spread-label">${spread.name}</div>
+                        <div class="spread-bar-container">
+                            <div class="spread-bar">
+                                <div class="spread-marker" style="left: ${position}%"></div>
+                            </div>
+                        </div>
+                        <div class="spread-value">${displayVal > 0 ? '+' : ''}${displayVal}%ile</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Render Alerts
+        function renderAlerts() {
+            const container = document.getElementById('alertsList');
+            
+            const alerts = [
+                { type: 'warning', icon: '⚠️', title: 'Momentum Crowding High', desc: '85th percentile - potential mean reversion risk', time: '2h ago' },
+                { type: 'info', icon: '📊', title: 'Value-Growth Spread Widening', desc: 'Spread at 75th percentile vs 5-year history', time: '4h ago' },
+                { type: 'danger', icon: '🔴', title: 'Factor Regime Change', desc: 'Momentum losing leadership to Quality', time: '1d ago' },
+                { type: 'success', icon: '✅', title: 'Low Vol Outperforming', desc: 'Defensive rotation signal confirmed', time: '2d ago' }
+            ];
+
+            container.innerHTML = alerts.map(alert => `
+                <div class="alert-item ${alert.type}">
+                    <div class="alert-icon">${alert.icon}</div>
+                    <div class="alert-content">
+                        <div class="alert-title">${alert.title}</div>
+                        <div class="alert-desc">${alert.desc}</div>
+                    </div>
+                    <div class="alert-time">${alert.time}</div>
+                </div>
+            `).join('');
+        }
+
+        // Render Performance Grid
+        function renderPerformanceGrid() {
+            const container = document.getElementById('performanceGrid');
+            const selectedPeriod = document.querySelector('.period-tab.active')?.dataset.period || '5Y';
+            
+            // Historical annualized returns by period
+            const historicalData = {
+                '1Y': { momentum: 15.2, value: 8.5, quality: 12.1, size: 6.3, lowvol: 9.8, dividend: 11.2 },
+                '3Y': { momentum: 12.8, value: 10.2, quality: 11.5, size: 8.1, lowvol: 8.9, dividend: 9.7 },
+                '5Y': { momentum: 11.5, value: 9.8, quality: 10.8, size: 7.5, lowvol: 8.2, dividend: 9.1 },
+                '10Y': { momentum: 10.2, value: 8.9, quality: 9.5, size: 6.8, lowvol: 7.5, dividend: 8.3 }
+            };
+
+            const sharpeData = {
+                '1Y': { momentum: 1.1, value: 0.6, quality: 0.9, size: 0.4, lowvol: 0.7, dividend: 0.8 },
+                '3Y': { momentum: 0.9, value: 0.7, quality: 0.8, size: 0.5, lowvol: 0.6, dividend: 0.7 },
+                '5Y': { momentum: 0.85, value: 0.65, quality: 0.75, size: 0.5, lowvol: 0.55, dividend: 0.65 },
+                '10Y': { momentum: 0.8, value: 0.6, quality: 0.7, size: 0.45, lowvol: 0.5, dividend: 0.6 }
+            };
+
+            const data = historicalData[selectedPeriod];
+            const sharpe = sharpeData[selectedPeriod];
+
+            container.innerHTML = FACTORS.map(factor => {
+                const ret = data[factor.id];
+                const sr = sharpe[factor.id];
+                const retClass = ret >= 0 ? 'positive' : 'negative';
+                
+                return `
+                    <div class="perf-card">
+                        <div class="perf-factor">${factor.icon} ${factor.name}</div>
+                        <div class="perf-return ${retClass}">${ret >= 0 ? '+' : ''}${ret.toFixed(1)}%</div>
+                        <div class="perf-sharpe">Sharpe: ${sr.toFixed(2)}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Event Listeners
+        function setupEventListeners() {
+            // Timeframe selector
+            document.querySelectorAll('.timeframe-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.timeframe-btn').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    currentPeriod = e.target.dataset.period;
+                    renderFactorOverview();
+                    renderRankingsTable();
+                });
+            });
+
+            // Period tabs
+            document.querySelectorAll('.period-tab').forEach(tab => {
+                tab.addEventListener('click', (e) => {
+                    document.querySelectorAll('.period-tab').forEach(t => t.classList.remove('active'));
+                    e.target.classList.add('active');
+                    renderPerformanceGrid();
+                });
+            });
+        }
+
+        function showFactorDetail(factorId) {
+            const factor = FACTORS.find(f => f.id === factorId);
+            alert(`${factor.icon} ${factor.name} Factor\n\nETF: ${factor.etf}\nReturn: ${factorData[factorId].returns[currentPeriod]}%\nSharpe: ${factorData[factorId].sharpe}\nMax Drawdown: ${factorData[factorId].maxDrawdown}%\nCrowding: ${factorData[factorId].crowding.toFixed(0)}%ile`);
+        }
+
+        function refreshData() {
+            generateMockData();
+            renderFactorOverview();
+            renderReturnsChart();
+            renderCorrelationMatrix();
+            renderRankingsTable();
+            renderCrowdingBars();
+            renderSpreadGauges();
+            renderAlerts();
+            renderPerformanceGrid();
+            updateLastUpdate();
+        }
+
+        function exportData() {
+            const exportObj = {
+                timestamp: new Date().toISOString(),
+                period: currentPeriod,
+                factors: {}
+            };
+
+            FACTORS.forEach(factor => {
+                exportObj.factors[factor.name] = {
+                    return: factorData[factor.id].returns[currentPeriod] + '%',
+                    sharpe: factorData[factor.id].sharpe,
+                    maxDrawdown: factorData[factor.id].maxDrawdown + '%',
+                    crowdingPercentile: factorData[factor.id].crowding.toFixed(0) + '%',
+                    zScore: factorData[factor.id].zScore
+                };
+            });
+
+            const blob = new Blob([JSON.stringify(exportObj, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `factor-performance-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function updateLastUpdate() {
+            document.getElementById('lastUpdate').textContent = new Date().toLocaleString();
+        }
+    </script>
+</body>
+</html>

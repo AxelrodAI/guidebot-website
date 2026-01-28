@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ambient Sound Context</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #21262d 100%);
+            min-height: 100vh;
+            color: #c9d1d9;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            padding: 30px 0 40px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, #58a6ff, #a371f7, #f78166);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #8b949e;
+            font-size: 1.1rem;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .card {
+            background: rgba(33, 38, 45, 0.8);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid rgba(48, 54, 61, 0.8);
+        }
+
+        .card-title {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #8b949e;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Current Environment */
+        .current-env {
+            grid-column: span 2;
+        }
+
+        .env-display {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .env-icon-area {
+            text-align: center;
+            padding: 40px;
+            background: linear-gradient(135deg, rgba(88, 166, 255, 0.1), rgba(163, 113, 247, 0.1));
+            border-radius: 24px;
+            min-width: 180px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .env-icon {
+            font-size: 5rem;
+            margin-bottom: 15px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .env-name {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #f0f6fc;
+        }
+
+        .env-sublabel {
+            font-size: 0.85rem;
+            color: #8b949e;
+            margin-top: 5px;
+        }
+
+        .env-details {
+            flex: 1;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(48, 54, 61, 0.5);
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            color: #8b949e;
+        }
+
+        .detail-value {
+            color: #f0f6fc;
+            font-weight: 500;
+        }
+
+        .confidence-high { color: #3fb950; }
+        .confidence-med { color: #d29922; }
+        .confidence-low { color: #f85149; }
+
+        /* Sound Spectrum */
+        .spectrum-card {
+            grid-column: span 1;
+        }
+
+        .spectrum {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 4px;
+            height: 150px;
+            padding: 20px 0;
+        }
+
+        .spectrum-bar {
+            width: 8px;
+            background: linear-gradient(180deg, #58a6ff, #a371f7);
+            border-radius: 4px;
+            transition: height 0.15s ease;
+        }
+
+        /* Response Mode */
+        .response-mode {
+            grid-column: span 3;
+        }
+
+        .mode-cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+
+        .mode-card {
+            background: rgba(48, 54, 61, 0.5);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .mode-card:hover {
+            background: rgba(88, 166, 255, 0.1);
+        }
+
+        .mode-card.active {
+            border-color: #58a6ff;
+            background: rgba(88, 166, 255, 0.15);
+        }
+
+        .mode-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .mode-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #f0f6fc;
+        }
+
+        .mode-desc {
+            font-size: 0.8rem;
+            color: #8b949e;
+        }
+
+        /* Sound Categories */
+        .categories {
+            grid-column: span 2;
+        }
+
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .category-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px;
+            background: rgba(48, 54, 61, 0.3);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .category-item:hover {
+            background: rgba(48, 54, 61, 0.6);
+        }
+
+        .category-item.detected {
+            border-color: #3fb950;
+            background: rgba(63, 185, 80, 0.1);
+        }
+
+        .cat-icon {
+            font-size: 1.5rem;
+        }
+
+        .cat-info {
+            flex: 1;
+        }
+
+        .cat-name {
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .cat-level {
+            font-size: 0.75rem;
+            color: #8b949e;
+        }
+
+        .cat-bar {
+            width: 60px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .cat-fill {
+            height: 100%;
+            background: #58a6ff;
+            border-radius: 3px;
+            transition: width 0.3s;
+        }
+
+        /* History Timeline */
+        .history {
+            grid-column: span 1;
+        }
+
+        .timeline {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .timeline-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 0;
+            border-left: 2px solid rgba(88, 166, 255, 0.3);
+            padding-left: 15px;
+            margin-left: 10px;
+        }
+
+        .timeline-item:last-child {
+            border-left-color: transparent;
+        }
+
+        .timeline-dot {
+            width: 10px;
+            height: 10px;
+            background: #58a6ff;
+            border-radius: 50%;
+            margin-left: -21px;
+        }
+
+        .timeline-content {
+            flex: 1;
+        }
+
+        .timeline-env {
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .timeline-time {
+            font-size: 0.75rem;
+            color: #8b949e;
+        }
+
+        /* AI Adaptation */
+        .adaptation {
+            grid-column: span 3;
+        }
+
+        .adaptation-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .adapt-card {
+            background: rgba(48, 54, 61, 0.4);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .adapt-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .adapt-icon {
+            font-size: 1.5rem;
+        }
+
+        .adapt-title {
+            font-weight: 600;
+            color: #f0f6fc;
+        }
+
+        .adapt-current {
+            background: rgba(88, 166, 255, 0.1);
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 10px;
+        }
+
+        .adapt-label {
+            font-size: 0.75rem;
+            color: #8b949e;
+            margin-bottom: 5px;
+        }
+
+        .adapt-value {
+            font-weight: 600;
+            color: #58a6ff;
+        }
+
+        /* Stats */
+        .stats-row {
+            grid-column: span 3;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+        }
+
+        .stat-item {
+            background: rgba(48, 54, 61, 0.4);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #58a6ff;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: #8b949e;
+            margin-top: 5px;
+        }
+
+        /* Sound Wave Animation */
+        .sound-wave {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            margin-bottom: 20px;
+        }
+
+        .wave-bar {
+            width: 4px;
+            height: 20px;
+            background: linear-gradient(180deg, #58a6ff, #a371f7);
+            border-radius: 2px;
+            animation: soundWave 0.8s ease-in-out infinite;
+        }
+
+        @keyframes soundWave {
+            0%, 100% { transform: scaleY(0.3); }
+            50% { transform: scaleY(1); }
+        }
+
+        .wave-bar:nth-child(1) { animation-delay: 0s; }
+        .wave-bar:nth-child(2) { animation-delay: 0.1s; }
+        .wave-bar:nth-child(3) { animation-delay: 0.2s; }
+        .wave-bar:nth-child(4) { animation-delay: 0.15s; }
+        .wave-bar:nth-child(5) { animation-delay: 0.3s; }
+        .wave-bar:nth-child(6) { animation-delay: 0.25s; }
+        .wave-bar:nth-child(7) { animation-delay: 0.1s; }
+        .wave-bar:nth-child(8) { animation-delay: 0.2s; }
+
+        .listening-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background: rgba(63, 185, 80, 0.15);
+            border: 1px solid rgba(63, 185, 80, 0.3);
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: #3fb950;
+        }
+
+        .listening-badge .dot {
+            width: 8px;
+            height: 8px;
+            background: #3fb950;
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        @media (max-width: 1200px) {
+            .dashboard {
+                grid-template-columns: 1fr 1fr;
+            }
+            .current-env, .response-mode, .categories, .adaptation, .stats-row {
+                grid-column: span 2;
+            }
+            .mode-cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .adaptation-grid {
+                grid-template-columns: 1fr;
+            }
+            .stats-row {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            .current-env, .response-mode, .categories, .history, .adaptation, .stats-row {
+                grid-column: span 1;
+            }
+            .category-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .stats-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .env-display {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎧 Ambient Sound Context</h1>
+            <p class="subtitle">AI adapts responses based on your environment — shorter in the car, detailed when quiet</p>
+        </header>
+
+        <div class="dashboard">
+            <!-- Current Environment -->
+            <div class="card current-env">
+                <div class="card-title">Current Environment</div>
+                <div class="sound-wave">
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                </div>
+                <span class="listening-badge"><span class="dot"></span> Listening</span>
+                
+                <div class="env-display" style="margin-top: 20px;">
+                    <div class="env-icon-area">
+                        <div class="env-icon" id="envIcon">☕</div>
+                        <div class="env-name" id="envName">Coffee Shop</div>
+                        <div class="env-sublabel" id="envSub">Moderate Noise</div>
+                    </div>
+                    <div class="env-details">
+                        <div class="detail-row">
+                            <span class="detail-label">Confidence</span>
+                            <span class="detail-value confidence-high" id="confValue">92%</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Noise Level</span>
+                            <span class="detail-value" id="noiseLevel">Medium (58 dB)</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Detected Since</span>
+                            <span class="detail-value" id="detectedSince">3 min ago</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Response Mode</span>
+                            <span class="detail-value" id="responseMode">Balanced</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sound Spectrum -->
+            <div class="card spectrum-card">
+                <div class="card-title">Sound Spectrum</div>
+                <div class="spectrum" id="spectrum">
+                    <!-- Filled by JS -->
+                </div>
+                <div style="text-align: center; color: #8b949e; font-size: 0.8rem;">
+                    Real-time frequency analysis
+                </div>
+            </div>
+
+            <!-- Response Mode Selection -->
+            <div class="card response-mode">
+                <div class="card-title">Response Mode (Auto-Adjusted)</div>
+                <div class="mode-cards">
+                    <div class="mode-card" id="mode-brief">
+                        <div class="mode-icon">⚡</div>
+                        <div class="mode-name">Brief</div>
+                        <div class="mode-desc">Short, essential info only</div>
+                    </div>
+                    <div class="mode-card active" id="mode-balanced">
+                        <div class="mode-icon">⚖️</div>
+                        <div class="mode-name">Balanced</div>
+                        <div class="mode-desc">Concise but complete</div>
+                    </div>
+                    <div class="mode-card" id="mode-detailed">
+                        <div class="mode-icon">📝</div>
+                        <div class="mode-name">Detailed</div>
+                        <div class="mode-desc">Full explanations</div>
+                    </div>
+                    <div class="mode-card" id="mode-hands-free">
+                        <div class="mode-icon">🎤</div>
+                        <div class="mode-name">Hands-Free</div>
+                        <div class="mode-desc">Voice-optimized, driving mode</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sound Categories -->
+            <div class="card categories">
+                <div class="card-title">Detected Sound Categories</div>
+                <div class="category-grid" id="categories">
+                    <!-- Filled by JS -->
+                </div>
+            </div>
+
+            <!-- Environment History -->
+            <div class="card history">
+                <div class="card-title">Environment History</div>
+                <div class="timeline" id="timeline">
+                    <!-- Filled by JS -->
+                </div>
+            </div>
+
+            <!-- AI Adaptation -->
+            <div class="card adaptation">
+                <div class="card-title">AI Adaptation Settings</div>
+                <div class="adaptation-grid">
+                    <div class="adapt-card">
+                        <div class="adapt-header">
+                            <span class="adapt-icon">📏</span>
+                            <span class="adapt-title">Response Length</span>
+                        </div>
+                        <div style="color: #8b949e; font-size: 0.85rem;">
+                            Automatically adjusted based on noise level and context
+                        </div>
+                        <div class="adapt-current">
+                            <div class="adapt-label">Current Setting</div>
+                            <div class="adapt-value" id="adaptLength">Medium (50-100 words)</div>
+                        </div>
+                    </div>
+                    <div class="adapt-card">
+                        <div class="adapt-header">
+                            <span class="adapt-icon">🔊</span>
+                            <span class="adapt-title">Speech Rate</span>
+                        </div>
+                        <div style="color: #8b949e; font-size: 0.85rem;">
+                            Voice speed adjusts to match environment pace
+                        </div>
+                        <div class="adapt-current">
+                            <div class="adapt-label">Current Setting</div>
+                            <div class="adapt-value" id="adaptSpeed">Normal (1.0x)</div>
+                        </div>
+                    </div>
+                    <div class="adapt-card">
+                        <div class="adapt-header">
+                            <span class="adapt-icon">🎯</span>
+                            <span class="adapt-title">Focus Priority</span>
+                        </div>
+                        <div style="color: #8b949e; font-size: 0.85rem;">
+                            What to emphasize in responses
+                        </div>
+                        <div class="adapt-current">
+                            <div class="adapt-label">Current Setting</div>
+                            <div class="adapt-value" id="adaptFocus">Key Points First</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-row">
+                <div class="stat-item">
+                    <div class="stat-value" id="statEnvs">4</div>
+                    <div class="stat-label">Environments Today</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="statAccuracy">96%</div>
+                    <div class="stat-label">Detection Accuracy</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="statAdaptations">12</div>
+                    <div class="stat-label">Auto-Adaptations</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="statQuiet">2.3h</div>
+                    <div class="stat-label">Time in Quiet</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="statLatency">120ms</div>
+                    <div class="stat-label">Detection Latency</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const environments = [
+            { icon: '☕', name: 'Coffee Shop', sub: 'Moderate Noise', noise: 'Medium (58 dB)', mode: 'Balanced', conf: 92 },
+            { icon: '🏠', name: 'Home - Quiet', sub: 'Minimal Noise', noise: 'Low (32 dB)', mode: 'Detailed', conf: 98 },
+            { icon: '🚗', name: 'Car - Driving', sub: 'Road Noise', noise: 'High (72 dB)', mode: 'Hands-Free', conf: 89 },
+            { icon: '🏢', name: 'Office', sub: 'Background Chatter', noise: 'Medium (55 dB)', mode: 'Balanced', conf: 94 },
+            { icon: '🚇', name: 'Public Transit', sub: 'Crowd Noise', noise: 'High (68 dB)', mode: 'Brief', conf: 85 },
+            { icon: '🏞️', name: 'Outdoor - Park', sub: 'Nature Sounds', noise: 'Low (40 dB)', mode: 'Detailed', conf: 91 },
+            { icon: '🏋️', name: 'Gym', sub: 'Music & Equipment', noise: 'High (75 dB)', mode: 'Brief', conf: 87 },
+            { icon: '📚', name: 'Library', sub: 'Very Quiet', noise: 'Very Low (28 dB)', mode: 'Detailed', conf: 96 }
+        ];
+
+        const soundCategories = [
+            { icon: '💬', name: 'Speech/Voices', level: 65 },
+            { icon: '☕', name: 'Coffee Machine', level: 45 },
+            { icon: '🎵', name: 'Background Music', level: 30 },
+            { icon: '🚶', name: 'Footsteps', level: 20 },
+            { icon: '🍽️', name: 'Dishes/Cutlery', level: 35 },
+            { icon: '📱', name: 'Typing/Tapping', level: 15 },
+            { icon: '🚗', name: 'Traffic', level: 10 },
+            { icon: '🌬️', name: 'HVAC/Fans', level: 25 },
+            { icon: '🔔', name: 'Notifications', level: 5 }
+        ];
+
+        const history = [
+            { icon: '☕', name: 'Coffee Shop', time: 'Now' },
+            { icon: '🚗', name: 'Car', time: '15 min ago' },
+            { icon: '🏠', name: 'Home', time: '1 hour ago' },
+            { icon: '🏢', name: 'Office', time: '3 hours ago' },
+            { icon: '🚇', name: 'Transit', time: '4 hours ago' }
+        ];
+
+        // Initialize spectrum
+        const spectrum = document.getElementById('spectrum');
+        for (let i = 0; i < 32; i++) {
+            const bar = document.createElement('div');
+            bar.className = 'spectrum-bar';
+            bar.style.height = Math.random() * 100 + 20 + 'px';
+            spectrum.appendChild(bar);
+        }
+
+        // Animate spectrum
+        setInterval(() => {
+            document.querySelectorAll('.spectrum-bar').forEach(bar => {
+                bar.style.height = Math.random() * 100 + 20 + 'px';
+            });
+        }, 150);
+
+        // Populate categories
+        const categoriesEl = document.getElementById('categories');
+        soundCategories.forEach(cat => {
+            const item = document.createElement('div');
+            item.className = 'category-item' + (cat.level > 40 ? ' detected' : '');
+            item.innerHTML = `
+                <span class="cat-icon">${cat.icon}</span>
+                <div class="cat-info">
+                    <div class="cat-name">${cat.name}</div>
+                    <div class="cat-level">${cat.level}%</div>
+                </div>
+                <div class="cat-bar">
+                    <div class="cat-fill" style="width: ${cat.level}%"></div>
+                </div>
+            `;
+            categoriesEl.appendChild(item);
+        });
+
+        // Populate history
+        const timeline = document.getElementById('timeline');
+        history.forEach(h => {
+            const item = document.createElement('div');
+            item.className = 'timeline-item';
+            item.innerHTML = `
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                    <div class="timeline-env">${h.icon} ${h.name}</div>
+                    <div class="timeline-time">${h.time}</div>
+                </div>
+            `;
+            timeline.appendChild(item);
+        });
+
+        // Mode card clicks
+        document.querySelectorAll('.mode-card').forEach(card => {
+            card.addEventListener('click', () => {
+                document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('active'));
+                card.classList.add('active');
+            });
+        });
+
+        // Simulate environment changes
+        let envIndex = 0;
+        function updateEnvironment() {
+            const env = environments[envIndex % environments.length];
+            
+            document.getElementById('envIcon').textContent = env.icon;
+            document.getElementById('envName').textContent = env.name;
+            document.getElementById('envSub').textContent = env.sub;
+            document.getElementById('noiseLevel').textContent = env.noise;
+            document.getElementById('responseMode').textContent = env.mode;
+            document.getElementById('confValue').textContent = env.conf + '%';
+            
+            // Update confidence color
+            const confEl = document.getElementById('confValue');
+            confEl.className = 'detail-value ' + 
+                (env.conf >= 90 ? 'confidence-high' : env.conf >= 80 ? 'confidence-med' : 'confidence-low');
+            
+            // Update active mode
+            document.querySelectorAll('.mode-card').forEach(card => {
+                card.classList.remove('active');
+                if (card.querySelector('.mode-name').textContent === env.mode) {
+                    card.classList.add('active');
+                }
+            });
+            
+            // Update adaptation values
+            const lengthSettings = {
+                'Brief': 'Short (20-50 words)',
+                'Balanced': 'Medium (50-100 words)',
+                'Detailed': 'Long (100-200 words)',
+                'Hands-Free': 'Minimal (10-30 words)'
+            };
+            const speedSettings = {
+                'Brief': 'Fast (1.2x)',
+                'Balanced': 'Normal (1.0x)',
+                'Detailed': 'Slower (0.9x)',
+                'Hands-Free': 'Clear (0.95x)'
+            };
+            const focusSettings = {
+                'Brief': 'Action Items Only',
+                'Balanced': 'Key Points First',
+                'Detailed': 'Full Context',
+                'Hands-Free': 'Voice Confirmations'
+            };
+            
+            document.getElementById('adaptLength').textContent = lengthSettings[env.mode];
+            document.getElementById('adaptSpeed').textContent = speedSettings[env.mode];
+            document.getElementById('adaptFocus').textContent = focusSettings[env.mode];
+            
+            envIndex++;
+        }
+
+        // Change environment every 8 seconds
+        setInterval(updateEnvironment, 8000);
+
+        // Update category levels randomly
+        setInterval(() => {
+            document.querySelectorAll('.cat-fill').forEach(fill => {
+                const current = parseInt(fill.style.width);
+                const delta = Math.random() * 20 - 10;
+                const newVal = Math.max(0, Math.min(100, current + delta));
+                fill.style.width = newVal + '%';
+                fill.parentElement.previousElementSibling.querySelector('.cat-level').textContent = Math.round(newVal) + '%';
+                
+                // Update detected state
+                const item = fill.closest('.category-item');
+                if (newVal > 40) {
+                    item.classList.add('detected');
+                } else {
+                    item.classList.remove('detected');
+                }
+            });
+        }, 2000);
+
+        // Update stats periodically
+        setInterval(() => {
+            const adapts = parseInt(document.getElementById('statAdaptations').textContent);
+            document.getElementById('statAdaptations').textContent = adapts + 1;
+            document.getElementById('statLatency').textContent = (100 + Math.floor(Math.random() * 50)) + 'ms';
+        }, 15000);
+    </script>
+</body>
+</html>

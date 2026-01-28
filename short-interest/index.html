@@ -1,0 +1,1293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Short Interest Tracker | Guide Bot - AI Equity Research</title>
+    <meta name="description" content="Track short interest, days to cover, and squeeze potential across your portfolio holdings.">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0"></script>
+    
+    <style>
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #111827;
+            --bg-card: #1a2234;
+            --bg-card-hover: #1f2942;
+            --text-primary: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --accent-blue: #3b82f6;
+            --accent-yellow: #f59e0b;
+            --accent-purple: #8b5cf6;
+            --accent-orange: #f97316;
+            --border-color: #374151;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* Header */
+        header {
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-card) 100%);
+            border-bottom: 1px solid var(--border-color);
+            padding: 20px 0;
+            margin-bottom: 24px;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .back-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+        
+        .back-link:hover {
+            color: var(--accent-green);
+        }
+        
+        .header-title h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fff 0%, var(--accent-red) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .header-title p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        /* Alert Banner */
+        .alert-banner {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(249, 115, 22, 0.15) 100%);
+            border: 1px solid var(--accent-red);
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 24px;
+            display: none;
+        }
+        
+        .alert-banner.visible {
+            display: block;
+        }
+        
+        .alert-banner h3 {
+            color: var(--accent-red);
+            font-size: 1rem;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .alert-list {
+            list-style: none;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        
+        .alert-item {
+            background: rgba(239, 68, 68, 0.2);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        /* Stats Row */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        
+        .stat-card .label {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+        
+        .stat-card.alert .value {
+            color: var(--accent-red);
+        }
+        
+        .stat-card.caution .value {
+            color: var(--accent-yellow);
+        }
+        
+        .stat-card.normal .value {
+            color: var(--accent-green);
+        }
+        
+        /* Filters */
+        .filters-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+        
+        .filters-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            align-items: center;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        
+        .filter-group label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .filter-group input,
+        .filter-group select {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px 14px;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            min-width: 160px;
+        }
+        
+        .filter-group input:focus,
+        .filter-group select:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+        }
+        
+        .filter-buttons {
+            display: flex;
+            gap: 8px;
+            margin-left: auto;
+        }
+        
+        .btn {
+            background: var(--accent-blue);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        
+        .btn-secondary {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+        }
+        
+        .btn-alert {
+            background: var(--accent-red);
+        }
+        
+        /* Main Grid */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 24px;
+        }
+        
+        @media (max-width: 1200px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Holdings Table */
+        .holdings-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .section-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .section-header h2 {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        .table-wrapper {
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 14px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        th {
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        th:hover {
+            color: var(--text-primary);
+        }
+        
+        th.sorted-asc::after {
+            content: ' ▲';
+        }
+        
+        th.sorted-desc::after {
+            content: ' ▼';
+        }
+        
+        tr:hover {
+            background: var(--bg-card-hover);
+        }
+        
+        .ticker-cell {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .ticker {
+            font-weight: 700;
+            color: var(--accent-blue);
+        }
+        
+        .company-name {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        
+        .change-positive {
+            color: var(--accent-red);
+        }
+        
+        .change-negative {
+            color: var(--accent-green);
+        }
+        
+        .alert-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .alert-badge.squeeze {
+            background: rgba(249, 115, 22, 0.2);
+            color: var(--accent-orange);
+        }
+        
+        .alert-badge.high-si {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--accent-red);
+        }
+        
+        .alert-badge.threshold {
+            background: rgba(168, 85, 247, 0.2);
+            color: var(--accent-purple);
+        }
+        
+        .alert-badge.increasing {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--accent-yellow);
+        }
+        
+        /* Progress Bar for SI */
+        .si-bar-container {
+            width: 120px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .si-bar {
+            flex: 1;
+            height: 8px;
+            background: var(--bg-secondary);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .si-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        
+        .si-bar-fill.low {
+            background: var(--accent-green);
+        }
+        
+        .si-bar-fill.medium {
+            background: var(--accent-yellow);
+        }
+        
+        .si-bar-fill.high {
+            background: var(--accent-orange);
+        }
+        
+        .si-bar-fill.extreme {
+            background: var(--accent-red);
+        }
+        
+        .si-value {
+            font-weight: 600;
+            min-width: 50px;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+        
+        .sidebar-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .sidebar-card .section-header {
+            padding: 14px 16px;
+        }
+        
+        .sidebar-card .section-header h3 {
+            font-size: 0.95rem;
+        }
+        
+        .chart-container {
+            padding: 16px;
+            height: 220px;
+        }
+        
+        /* Watchlist */
+        .watchlist-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .watchlist-item:last-child {
+            border-bottom: none;
+        }
+        
+        .watchlist-item:hover {
+            background: var(--bg-card-hover);
+        }
+        
+        .watchlist-ticker {
+            font-weight: 700;
+            color: var(--accent-blue);
+        }
+        
+        .watchlist-si {
+            font-size: 0.9rem;
+        }
+        
+        .watchlist-change {
+            font-size: 0.8rem;
+        }
+        
+        /* Squeeze Candidates */
+        .squeeze-card {
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .squeeze-card:last-child {
+            border-bottom: none;
+        }
+        
+        .squeeze-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .squeeze-ticker {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        
+        .squeeze-score {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .squeeze-score.high {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--accent-red);
+        }
+        
+        .squeeze-score.medium {
+            background: rgba(249, 115, 22, 0.2);
+            color: var(--accent-orange);
+        }
+        
+        .squeeze-metrics {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            font-size: 0.8rem;
+        }
+        
+        .squeeze-metric {
+            text-align: center;
+        }
+        
+        .squeeze-metric .value {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .squeeze-metric .label {
+            color: var(--text-muted);
+            font-size: 0.7rem;
+        }
+        
+        /* Add Ticker Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-overlay.visible {
+            display: flex;
+        }
+        
+        .modal {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            width: 90%;
+            max-width: 500px;
+        }
+        
+        .modal h3 {
+            margin-bottom: 16px;
+        }
+        
+        .modal-input {
+            width: 100%;
+            padding: 14px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            margin-bottom: 16px;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .filters-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .filter-buttons {
+                margin-left: 0;
+            }
+            
+            .stats-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            th, td {
+                padding: 10px 12px;
+                font-size: 0.85rem;
+            }
+            
+            .btn {
+                padding: 12px 16px;
+                font-size: 1rem;
+            }
+        }
+        
+        /* Loading State */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 60px;
+            color: var(--text-muted);
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border-color);
+            border-top-color: var(--accent-blue);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 16px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Last Updated */
+        .last-updated {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container header-content">
+            <div class="header-left">
+                <a href="../index.html" class="back-link">
+                    ← Back to Guide Bot
+                </a>
+                <div class="header-title">
+                    <h1>📉 Short Interest Tracker</h1>
+                    <p>Monitor SI%, days to cover, and squeeze potential</p>
+                </div>
+            </div>
+            <div class="header-right">
+                <span class="last-updated" id="lastUpdated">Last updated: --</span>
+            </div>
+        </div>
+    </header>
+    
+    <main class="container">
+        <!-- Alert Banner -->
+        <div class="alert-banner" id="alertBanner">
+            <h3>🚨 Active Alerts</h3>
+            <ul class="alert-list" id="alertList"></ul>
+        </div>
+        
+        <!-- Stats Row -->
+        <div class="stats-row">
+            <div class="stat-card" id="statTotal">
+                <div class="value">--</div>
+                <div class="label">Tracked Holdings</div>
+            </div>
+            <div class="stat-card alert" id="statHighSI">
+                <div class="value">--</div>
+                <div class="label">High SI (>20%)</div>
+            </div>
+            <div class="stat-card caution" id="statDTC">
+                <div class="value">--</div>
+                <div class="label">Days to Cover >5</div>
+            </div>
+            <div class="stat-card" id="statThreshold">
+                <div class="value">--</div>
+                <div class="label">On Threshold List</div>
+            </div>
+            <div class="stat-card" id="statIncreasing">
+                <div class="value">--</div>
+                <div class="label">SI Increasing WoW</div>
+            </div>
+        </div>
+        
+        <!-- Filters -->
+        <div class="filters-section">
+            <div class="filters-row">
+                <div class="filter-group">
+                    <label>Search Ticker</label>
+                    <input type="text" id="searchTicker" placeholder="e.g., EWBC, GME...">
+                </div>
+                <div class="filter-group">
+                    <label>Sector</label>
+                    <select id="filterSector">
+                        <option value="">All Sectors</option>
+                        <option value="Technology">Technology</option>
+                        <option value="Healthcare">Healthcare</option>
+                        <option value="Financial">Financial Services</option>
+                        <option value="Consumer">Consumer</option>
+                        <option value="Industrial">Industrial</option>
+                        <option value="Energy">Energy</option>
+                        <option value="Materials">Materials</option>
+                        <option value="Utilities">Utilities</option>
+                        <option value="Real Estate">Real Estate</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>SI % Range</label>
+                    <select id="filterSI">
+                        <option value="">All</option>
+                        <option value="high">High (>20%)</option>
+                        <option value="medium">Medium (10-20%)</option>
+                        <option value="low">Low (<10%)</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Alert Type</label>
+                    <select id="filterAlert">
+                        <option value="">All</option>
+                        <option value="squeeze">Squeeze Potential</option>
+                        <option value="threshold">Threshold List</option>
+                        <option value="increasing">SI Increasing</option>
+                    </select>
+                </div>
+                <div class="filter-buttons">
+                    <button class="btn btn-secondary" onclick="resetFilters()">Reset</button>
+                    <button class="btn" onclick="openAddModal()">+ Add Ticker</button>
+                    <button class="btn btn-secondary" onclick="exportData()">📥 Export</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Grid -->
+        <div class="main-grid">
+            <!-- Holdings Table -->
+            <div class="holdings-section">
+                <div class="section-header">
+                    <h2>Portfolio Holdings</h2>
+                    <span id="holdingsCount">0 holdings</span>
+                </div>
+                <div class="table-wrapper">
+                    <table id="holdingsTable">
+                        <thead>
+                            <tr>
+                                <th data-sort="ticker">Ticker</th>
+                                <th data-sort="si_percent">SI % of Float</th>
+                                <th data-sort="si_change">WoW Change</th>
+                                <th data-sort="dtc">Days to Cover</th>
+                                <th data-sort="shares_short">Shares Short</th>
+                                <th data-sort="alerts">Alerts</th>
+                            </tr>
+                        </thead>
+                        <tbody id="holdingsBody">
+                            <tr>
+                                <td colspan="6" class="loading">
+                                    <div class="spinner"></div>
+                                    Loading short interest data...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <!-- Squeeze Candidates -->
+                <div class="sidebar-card">
+                    <div class="section-header">
+                        <h3>🚀 Squeeze Candidates</h3>
+                    </div>
+                    <div id="squeezeCandidates">
+                        <div class="loading" style="padding: 20px;">
+                            Analyzing...
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- SI Distribution Chart -->
+                <div class="sidebar-card">
+                    <div class="section-header">
+                        <h3>📊 SI Distribution</h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="siDistributionChart"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Top Movers -->
+                <div class="sidebar-card">
+                    <div class="section-header">
+                        <h3>📈 Biggest SI Changes</h3>
+                    </div>
+                    <div id="topMovers"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Add Ticker Modal -->
+    <div class="modal-overlay" id="addModal">
+        <div class="modal">
+            <h3>Add Ticker to Watchlist</h3>
+            <input type="text" class="modal-input" id="newTicker" placeholder="Enter ticker symbol (e.g., AAPL)">
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" onclick="closeAddModal()">Cancel</button>
+                <button class="btn" onclick="addTicker()">Add Ticker</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Sample data - in production, this would come from the Python fetcher
+        let shortInterestData = [
+            { ticker: 'EWBC', company: 'East West Bancorp', sector: 'Financial', si_percent: 4.2, si_change: -0.8, dtc: 2.3, shares_short: 8520000, avg_volume: 3704348, threshold: false, price: 98.45 },
+            { ticker: 'GME', company: 'GameStop', sector: 'Consumer', si_percent: 24.1, si_change: 3.2, dtc: 6.8, shares_short: 45600000, avg_volume: 6705882, threshold: true, price: 28.50 },
+            { ticker: 'AMC', company: 'AMC Entertainment', sector: 'Consumer', si_percent: 22.5, si_change: 1.5, dtc: 5.2, shares_short: 112000000, avg_volume: 21538462, threshold: true, price: 4.25 },
+            { ticker: 'CVNA', company: 'Carvana', sector: 'Consumer', si_percent: 18.7, si_change: -2.1, dtc: 4.8, shares_short: 23400000, avg_volume: 4875000, threshold: false, price: 185.30 },
+            { ticker: 'UPST', company: 'Upstart Holdings', sector: 'Financial', si_percent: 31.2, si_change: 5.8, dtc: 7.1, shares_short: 18900000, avg_volume: 2661972, threshold: true, price: 52.80 },
+            { ticker: 'RIVN', company: 'Rivian Automotive', sector: 'Consumer', si_percent: 12.8, si_change: 0.9, dtc: 3.2, shares_short: 95200000, avg_volume: 29750000, threshold: false, price: 13.45 },
+            { ticker: 'NKLA', company: 'Nikola Corp', sector: 'Industrial', si_percent: 28.4, si_change: -1.2, dtc: 5.9, shares_short: 67800000, avg_volume: 11491525, threshold: true, price: 0.85 },
+            { ticker: 'BBBY', company: 'Bed Bath & Beyond', sector: 'Consumer', si_percent: 45.2, si_change: 8.7, dtc: 9.2, shares_short: 34500000, avg_volume: 3750000, threshold: true, price: 0.12 },
+            { ticker: 'COIN', company: 'Coinbase', sector: 'Financial', si_percent: 8.5, si_change: -1.8, dtc: 2.1, shares_short: 12300000, avg_volume: 5857143, threshold: false, price: 225.60 },
+            { ticker: 'PLTR', company: 'Palantir', sector: 'Technology', si_percent: 3.8, si_change: 0.2, dtc: 1.5, shares_short: 78900000, avg_volume: 52600000, threshold: false, price: 87.50 },
+            { ticker: 'SOFI', company: 'SoFi Technologies', sector: 'Financial', si_percent: 11.2, si_change: 2.4, dtc: 3.8, shares_short: 89200000, avg_volume: 23473684, threshold: false, price: 14.85 },
+            { ticker: 'MSTR', company: 'MicroStrategy', sector: 'Technology', si_percent: 15.6, si_change: -0.5, dtc: 4.2, shares_short: 3200000, avg_volume: 761905, threshold: false, price: 395.20 },
+            { ticker: 'LCID', company: 'Lucid Group', sector: 'Consumer', si_percent: 19.8, si_change: 3.1, dtc: 4.5, shares_short: 285000000, avg_volume: 63333333, threshold: false, price: 2.85 },
+            { ticker: 'BYND', company: 'Beyond Meat', sector: 'Consumer', si_percent: 38.5, si_change: 4.2, dtc: 8.5, shares_short: 12800000, avg_volume: 1505882, threshold: true, price: 6.20 },
+            { ticker: 'SPCE', company: 'Virgin Galactic', sector: 'Industrial', si_percent: 25.3, si_change: -3.5, dtc: 5.8, shares_short: 45600000, avg_volume: 7862069, threshold: true, price: 1.45 }
+        ];
+        
+        let sortColumn = 'si_percent';
+        let sortDirection = 'desc';
+        let siDistributionChart = null;
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadData();
+            setupEventListeners();
+        });
+        
+        function loadData() {
+            // Try to load from JSON file first
+            fetch('short_interest.json')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.holdings && data.holdings.length > 0) {
+                        shortInterestData = data.holdings;
+                    }
+                    if (data.lastUpdated) {
+                        document.getElementById('lastUpdated').textContent = 
+                            'Last updated: ' + new Date(data.lastUpdated).toLocaleString();
+                    }
+                    renderAll();
+                })
+                .catch(() => {
+                    // Use sample data
+                    renderAll();
+                });
+        }
+        
+        function renderAll() {
+            updateStats();
+            updateAlerts();
+            renderTable();
+            renderSqueezeCandidates();
+            renderSIDistributionChart();
+            renderTopMovers();
+        }
+        
+        function setupEventListeners() {
+            // Search
+            document.getElementById('searchTicker').addEventListener('input', renderTable);
+            document.getElementById('filterSector').addEventListener('change', renderTable);
+            document.getElementById('filterSI').addEventListener('change', renderTable);
+            document.getElementById('filterAlert').addEventListener('change', renderTable);
+            
+            // Table sorting
+            document.querySelectorAll('th[data-sort]').forEach(th => {
+                th.addEventListener('click', function() {
+                    const column = this.dataset.sort;
+                    if (sortColumn === column) {
+                        sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+                    } else {
+                        sortColumn = column;
+                        sortDirection = 'desc';
+                    }
+                    renderTable();
+                });
+            });
+        }
+        
+        function getFilteredData() {
+            let data = [...shortInterestData];
+            
+            // Search filter
+            const search = document.getElementById('searchTicker').value.toLowerCase();
+            if (search) {
+                data = data.filter(h => 
+                    h.ticker.toLowerCase().includes(search) ||
+                    h.company.toLowerCase().includes(search)
+                );
+            }
+            
+            // Sector filter
+            const sector = document.getElementById('filterSector').value;
+            if (sector) {
+                data = data.filter(h => h.sector === sector);
+            }
+            
+            // SI range filter
+            const siFilter = document.getElementById('filterSI').value;
+            if (siFilter === 'high') {
+                data = data.filter(h => h.si_percent >= 20);
+            } else if (siFilter === 'medium') {
+                data = data.filter(h => h.si_percent >= 10 && h.si_percent < 20);
+            } else if (siFilter === 'low') {
+                data = data.filter(h => h.si_percent < 10);
+            }
+            
+            // Alert filter
+            const alertFilter = document.getElementById('filterAlert').value;
+            if (alertFilter === 'squeeze') {
+                data = data.filter(h => getSqueezeScore(h) >= 60);
+            } else if (alertFilter === 'threshold') {
+                data = data.filter(h => h.threshold);
+            } else if (alertFilter === 'increasing') {
+                data = data.filter(h => h.si_change > 20);
+            }
+            
+            return data;
+        }
+        
+        function updateStats() {
+            const data = shortInterestData;
+            
+            document.querySelector('#statTotal .value').textContent = data.length;
+            document.querySelector('#statHighSI .value').textContent = 
+                data.filter(h => h.si_percent >= 20).length;
+            document.querySelector('#statDTC .value').textContent = 
+                data.filter(h => h.dtc > 5).length;
+            document.querySelector('#statThreshold .value').textContent = 
+                data.filter(h => h.threshold).length;
+            document.querySelector('#statIncreasing .value').textContent = 
+                data.filter(h => h.si_change > 0).length;
+        }
+        
+        function updateAlerts() {
+            const alerts = [];
+            
+            shortInterestData.forEach(h => {
+                if (h.si_change >= 20) {
+                    alerts.push({ ticker: h.ticker, type: 'SI Jump', message: `+${h.si_change.toFixed(1)}% WoW` });
+                }
+                if (h.dtc > 5 && h.si_percent > 15) {
+                    alerts.push({ ticker: h.ticker, type: 'Squeeze Risk', message: `${h.dtc.toFixed(1)} DTC, ${h.si_percent}% SI` });
+                }
+            });
+            
+            const banner = document.getElementById('alertBanner');
+            const list = document.getElementById('alertList');
+            
+            if (alerts.length > 0) {
+                banner.classList.add('visible');
+                list.innerHTML = alerts.map(a => `
+                    <li class="alert-item">
+                        <strong>${a.ticker}</strong>: ${a.type} - ${a.message}
+                    </li>
+                `).join('');
+            } else {
+                banner.classList.remove('visible');
+            }
+        }
+        
+        function renderTable() {
+            let data = getFilteredData();
+            
+            // Sort
+            data.sort((a, b) => {
+                let valA = a[sortColumn];
+                let valB = b[sortColumn];
+                
+                if (typeof valA === 'string') {
+                    valA = valA.toLowerCase();
+                    valB = valB.toLowerCase();
+                }
+                
+                if (sortDirection === 'asc') {
+                    return valA > valB ? 1 : -1;
+                } else {
+                    return valA < valB ? 1 : -1;
+                }
+            });
+            
+            // Update sort indicators
+            document.querySelectorAll('th[data-sort]').forEach(th => {
+                th.classList.remove('sorted-asc', 'sorted-desc');
+                if (th.dataset.sort === sortColumn) {
+                    th.classList.add(sortDirection === 'asc' ? 'sorted-asc' : 'sorted-desc');
+                }
+            });
+            
+            // Render rows
+            const tbody = document.getElementById('holdingsBody');
+            
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:40px; color:var(--text-muted);">No holdings match your filters</td></tr>';
+            } else {
+                tbody.innerHTML = data.map(h => `
+                    <tr>
+                        <td>
+                            <div class="ticker-cell">
+                                <span class="ticker">${h.ticker}</span>
+                                <span class="company-name">${h.company}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="si-bar-container">
+                                <div class="si-bar">
+                                    <div class="si-bar-fill ${getSIClass(h.si_percent)}" style="width: ${Math.min(h.si_percent * 2, 100)}%"></div>
+                                </div>
+                                <span class="si-value">${h.si_percent.toFixed(1)}%</span>
+                            </div>
+                        </td>
+                        <td class="${h.si_change >= 0 ? 'change-positive' : 'change-negative'}">
+                            ${h.si_change >= 0 ? '+' : ''}${h.si_change.toFixed(1)}%
+                        </td>
+                        <td>${h.dtc.toFixed(1)}</td>
+                        <td>${formatNumber(h.shares_short)}</td>
+                        <td>${getAlertBadges(h)}</td>
+                    </tr>
+                `).join('');
+            }
+            
+            document.getElementById('holdingsCount').textContent = `${data.length} holdings`;
+        }
+        
+        function getSIClass(si) {
+            if (si >= 30) return 'extreme';
+            if (si >= 20) return 'high';
+            if (si >= 10) return 'medium';
+            return 'low';
+        }
+        
+        function getAlertBadges(h) {
+            const badges = [];
+            
+            const squeezeScore = getSqueezeScore(h);
+            if (squeezeScore >= 60) {
+                badges.push(`<span class="alert-badge squeeze">🚀 Squeeze</span>`);
+            }
+            
+            if (h.si_percent >= 20) {
+                badges.push(`<span class="alert-badge high-si">⚠️ High SI</span>`);
+            }
+            
+            if (h.threshold) {
+                badges.push(`<span class="alert-badge threshold">📋 Threshold</span>`);
+            }
+            
+            if (h.si_change >= 5) {
+                badges.push(`<span class="alert-badge increasing">📈 +${h.si_change.toFixed(0)}%</span>`);
+            }
+            
+            return badges.join(' ') || '-';
+        }
+        
+        function getSqueezeScore(h) {
+            let score = 0;
+            
+            // High SI contributes to score
+            if (h.si_percent >= 30) score += 40;
+            else if (h.si_percent >= 20) score += 30;
+            else if (h.si_percent >= 15) score += 20;
+            else if (h.si_percent >= 10) score += 10;
+            
+            // High DTC contributes
+            if (h.dtc >= 7) score += 30;
+            else if (h.dtc >= 5) score += 20;
+            else if (h.dtc >= 3) score += 10;
+            
+            // SI increasing contributes
+            if (h.si_change >= 5) score += 20;
+            else if (h.si_change >= 2) score += 10;
+            
+            // On threshold list is a factor
+            if (h.threshold) score += 10;
+            
+            return Math.min(score, 100);
+        }
+        
+        function renderSqueezeCandidates() {
+            const candidates = shortInterestData
+                .map(h => ({ ...h, squeezeScore: getSqueezeScore(h) }))
+                .filter(h => h.squeezeScore >= 50)
+                .sort((a, b) => b.squeezeScore - a.squeezeScore)
+                .slice(0, 5);
+            
+            const container = document.getElementById('squeezeCandidates');
+            
+            if (candidates.length === 0) {
+                container.innerHTML = '<div style="padding:20px; text-align:center; color:var(--text-muted);">No squeeze candidates detected</div>';
+                return;
+            }
+            
+            container.innerHTML = candidates.map(h => `
+                <div class="squeeze-card">
+                    <div class="squeeze-header">
+                        <span class="squeeze-ticker">${h.ticker}</span>
+                        <span class="squeeze-score ${h.squeezeScore >= 70 ? 'high' : 'medium'}">
+                            🔥 ${h.squeezeScore}%
+                        </span>
+                    </div>
+                    <div class="squeeze-metrics">
+                        <div class="squeeze-metric">
+                            <div class="value">${h.si_percent.toFixed(1)}%</div>
+                            <div class="label">SI Float</div>
+                        </div>
+                        <div class="squeeze-metric">
+                            <div class="value">${h.dtc.toFixed(1)}</div>
+                            <div class="label">Days Cover</div>
+                        </div>
+                        <div class="squeeze-metric">
+                            <div class="value" style="color: ${h.si_change >= 0 ? 'var(--accent-red)' : 'var(--accent-green)'}">
+                                ${h.si_change >= 0 ? '+' : ''}${h.si_change.toFixed(1)}%
+                            </div>
+                            <div class="label">WoW Chg</div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function renderSIDistributionChart() {
+            const ctx = document.getElementById('siDistributionChart').getContext('2d');
+            
+            const distribution = {
+                'Low (<10%)': shortInterestData.filter(h => h.si_percent < 10).length,
+                'Medium (10-20%)': shortInterestData.filter(h => h.si_percent >= 10 && h.si_percent < 20).length,
+                'High (20-30%)': shortInterestData.filter(h => h.si_percent >= 20 && h.si_percent < 30).length,
+                'Extreme (>30%)': shortInterestData.filter(h => h.si_percent >= 30).length
+            };
+            
+            if (siDistributionChart) {
+                siDistributionChart.destroy();
+            }
+            
+            siDistributionChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(distribution),
+                    datasets: [{
+                        data: Object.values(distribution),
+                        backgroundColor: [
+                            '#10b981',
+                            '#f59e0b',
+                            '#f97316',
+                            '#ef4444'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#9ca3af',
+                                padding: 12,
+                                font: { size: 11 }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function renderTopMovers() {
+            const movers = [...shortInterestData]
+                .sort((a, b) => Math.abs(b.si_change) - Math.abs(a.si_change))
+                .slice(0, 5);
+            
+            const container = document.getElementById('topMovers');
+            container.innerHTML = movers.map(h => `
+                <div class="watchlist-item">
+                    <div>
+                        <span class="watchlist-ticker">${h.ticker}</span>
+                        <div class="watchlist-si">${h.si_percent.toFixed(1)}% SI</div>
+                    </div>
+                    <span class="watchlist-change ${h.si_change >= 0 ? 'change-positive' : 'change-negative'}">
+                        ${h.si_change >= 0 ? '↑' : '↓'} ${Math.abs(h.si_change).toFixed(1)}%
+                    </span>
+                </div>
+            `).join('');
+        }
+        
+        function formatNumber(num) {
+            if (num >= 1e9) return (num / 1e9).toFixed(1) + 'B';
+            if (num >= 1e6) return (num / 1e6).toFixed(1) + 'M';
+            if (num >= 1e3) return (num / 1e3).toFixed(1) + 'K';
+            return num.toString();
+        }
+        
+        function resetFilters() {
+            document.getElementById('searchTicker').value = '';
+            document.getElementById('filterSector').value = '';
+            document.getElementById('filterSI').value = '';
+            document.getElementById('filterAlert').value = '';
+            renderTable();
+        }
+        
+        function openAddModal() {
+            document.getElementById('addModal').classList.add('visible');
+            document.getElementById('newTicker').focus();
+        }
+        
+        function closeAddModal() {
+            document.getElementById('addModal').classList.remove('visible');
+            document.getElementById('newTicker').value = '';
+        }
+        
+        function addTicker() {
+            const ticker = document.getElementById('newTicker').value.trim().toUpperCase();
+            if (!ticker) return;
+            
+            // In production, this would fetch real data
+            alert(`Added ${ticker} to watchlist. Run the data fetcher to pull latest SI data.`);
+            closeAddModal();
+        }
+        
+        function exportData() {
+            const data = getFilteredData();
+            const csv = [
+                ['Ticker', 'Company', 'Sector', 'SI %', 'WoW Change', 'Days to Cover', 'Shares Short', 'Threshold', 'Squeeze Score'].join(','),
+                ...data.map(h => [
+                    h.ticker,
+                    `"${h.company}"`,
+                    h.sector,
+                    h.si_percent,
+                    h.si_change,
+                    h.dtc,
+                    h.shares_short,
+                    h.threshold ? 'Yes' : 'No',
+                    getSqueezeScore(h)
+                ].join(','))
+            ].join('\n');
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `short_interest_${new Date().toISOString().slice(0,10)}.csv`;
+            a.click();
+        }
+        
+        // Close modal on escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeAddModal();
+            }
+        });
+        
+        // Close modal on outside click
+        document.getElementById('addModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeAddModal();
+            }
+        });
+    </script>
+</body>
+</html>

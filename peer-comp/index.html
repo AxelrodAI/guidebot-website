@@ -1,0 +1,1385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Peer Comparison Tool | Guide Bot - AI Equity Research</title>
+    <meta name="description" content="Auto-generate comp tables for any stock. Compare valuation, growth, and returns vs sector peers.">
+    
+    <!-- Chart.js for sparklines -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0"></script>
+    
+    <style>
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #111827;
+            --bg-card: #1a2234;
+            --bg-card-hover: #1f2942;
+            --text-primary: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --accent-blue: #3b82f6;
+            --accent-yellow: #f59e0b;
+            --accent-purple: #8b5cf6;
+            --accent-orange: #f97316;
+            --border-color: #374151;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* Header */
+        header {
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-card) 100%);
+            border-bottom: 1px solid var(--border-color);
+            padding: 20px 0;
+            margin-bottom: 24px;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .back-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+        
+        .back-link:hover {
+            color: var(--accent-green);
+        }
+        
+        .header-title h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fff 0%, var(--accent-blue) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .header-title p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        /* Search Section */
+        .search-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        
+        .search-row {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+        
+        .search-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        
+        .search-group label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .search-group input {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            padding: 14px 18px;
+            color: var(--text-primary);
+            font-size: 1.1rem;
+            font-weight: 600;
+            width: 180px;
+            text-transform: uppercase;
+        }
+        
+        .search-group input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+        }
+        
+        .search-group select {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            padding: 14px 18px;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            min-width: 200px;
+        }
+        
+        .btn {
+            background: var(--accent-blue);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 14px 28px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+        }
+        
+        .btn-export {
+            background: var(--accent-green);
+        }
+        
+        .search-actions {
+            display: flex;
+            gap: 12px;
+            margin-left: auto;
+        }
+        
+        /* Target Stock Card */
+        .target-section {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+        
+        @media (max-width: 1200px) {
+            .target-section {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .target-card {
+            background: linear-gradient(135deg, var(--bg-card) 0%, #1e293b 100%);
+            border: 2px solid var(--accent-blue);
+            border-radius: 16px;
+            padding: 24px;
+        }
+        
+        .target-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+        
+        .target-ticker {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--accent-blue);
+        }
+        
+        .target-name {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            margin-top: 4px;
+        }
+        
+        .target-badge {
+            background: var(--accent-blue);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .target-price {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        
+        .target-change {
+            font-size: 1rem;
+            padding: 4px 10px;
+            border-radius: 6px;
+            display: inline-block;
+        }
+        
+        .target-change.positive {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--accent-green);
+        }
+        
+        .target-change.negative {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--accent-red);
+        }
+        
+        .target-metrics {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 20px;
+        }
+        
+        .target-metric {
+            background: var(--bg-secondary);
+            padding: 12px;
+            border-radius: 10px;
+        }
+        
+        .target-metric .label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+        
+        .target-metric .value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        /* Peer Summary */
+        .peer-summary {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+        }
+        
+        .summary-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .summary-header h2 {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        .peer-count {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+        }
+        
+        .summary-card {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+        }
+        
+        .summary-card .metric-name {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+        
+        .summary-card .metric-comparison {
+            display: flex;
+            justify-content: center;
+            align-items: baseline;
+            gap: 8px;
+        }
+        
+        .summary-card .your-value {
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+        
+        .summary-card .vs-avg {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+        
+        .summary-card .vs-avg .value {
+            font-weight: 600;
+        }
+        
+        .premium {
+            color: var(--accent-red);
+        }
+        
+        .discount {
+            color: var(--accent-green);
+        }
+        
+        /* Comparison Table */
+        .comp-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+        
+        .section-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .section-header h2 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .table-tabs {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .table-tab {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .table-tab:hover {
+            border-color: var(--accent-blue);
+            color: var(--text-primary);
+        }
+        
+        .table-tab.active {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+            color: white;
+        }
+        
+        .table-wrapper {
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1200px;
+        }
+        
+        th, td {
+            padding: 14px 16px;
+            text-align: right;
+            border-bottom: 1px solid var(--border-color);
+            white-space: nowrap;
+        }
+        
+        th {
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            position: sticky;
+            top: 0;
+        }
+        
+        th:first-child,
+        td:first-child {
+            text-align: left;
+            position: sticky;
+            left: 0;
+            background: var(--bg-card);
+            z-index: 1;
+        }
+        
+        th:first-child {
+            background: var(--bg-secondary);
+            z-index: 2;
+        }
+        
+        tr:hover {
+            background: var(--bg-card-hover);
+        }
+        
+        tr:hover td:first-child {
+            background: var(--bg-card-hover);
+        }
+        
+        tr.target-row {
+            background: rgba(59, 130, 246, 0.1);
+        }
+        
+        tr.target-row td:first-child {
+            background: rgba(59, 130, 246, 0.1);
+        }
+        
+        tr.avg-row {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+        
+        tr.avg-row td:first-child {
+            background: var(--bg-secondary);
+        }
+        
+        .ticker-cell {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .ticker {
+            font-weight: 700;
+            color: var(--accent-blue);
+            min-width: 60px;
+        }
+        
+        tr.target-row .ticker {
+            color: var(--accent-green);
+        }
+        
+        .company-name {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            max-width: 150px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        /* Metric coloring */
+        .metric-high {
+            color: var(--accent-red);
+        }
+        
+        .metric-low {
+            color: var(--accent-green);
+        }
+        
+        .metric-neutral {
+            color: var(--text-primary);
+        }
+        
+        /* Sparkline container */
+        .sparkline {
+            width: 80px;
+            height: 24px;
+        }
+        
+        /* Value with rank badge */
+        .value-with-rank {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 6px;
+        }
+        
+        .rank-badge {
+            font-size: 0.65rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: var(--bg-secondary);
+            color: var(--text-muted);
+        }
+        
+        .rank-badge.top {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--accent-green);
+        }
+        
+        .rank-badge.bottom {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--accent-red);
+        }
+        
+        /* Loading State */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 80px;
+            color: var(--text-muted);
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border-color);
+            border-top-color: var(--accent-blue);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 16px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+        }
+        
+        .empty-state h3 {
+            font-size: 1.2rem;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+        }
+        
+        .empty-state p {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .search-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .search-group input,
+            .search-group select {
+                width: 100%;
+            }
+            
+            .search-actions {
+                margin-left: 0;
+                flex-direction: column;
+            }
+            
+            .target-metrics {
+                grid-template-columns: 1fr;
+            }
+            
+            .table-tabs {
+                flex-wrap: wrap;
+            }
+        }
+        
+        /* Last Updated */
+        .last-updated {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container header-content">
+            <div class="header-left">
+                <a href="../index.html" class="back-link">
+                    ← Back to Guide Bot
+                </a>
+                <div class="header-title">
+                    <h1>📊 Peer Comparison Tool</h1>
+                    <p>Auto-generate comp tables with one click</p>
+                </div>
+            </div>
+            <div class="header-right">
+                <span class="last-updated" id="lastUpdated">Enter a ticker to begin</span>
+            </div>
+        </div>
+    </header>
+    
+    <main class="container">
+        <!-- Search Section -->
+        <div class="search-section">
+            <div class="search-row">
+                <div class="search-group">
+                    <label>Target Ticker</label>
+                    <input type="text" id="tickerInput" placeholder="AAPL" maxlength="5">
+                </div>
+                <div class="search-group">
+                    <label>Peer Selection</label>
+                    <select id="peerMethod">
+                        <option value="sector">Same Sector</option>
+                        <option value="industry">Same Industry</option>
+                        <option value="custom">Custom Peers</option>
+                    </select>
+                </div>
+                <div class="search-group">
+                    <label>Market Cap Tier</label>
+                    <select id="marketCapFilter">
+                        <option value="">All Caps</option>
+                        <option value="mega">Mega Cap (>$200B)</option>
+                        <option value="large">Large Cap ($10-200B)</option>
+                        <option value="mid">Mid Cap ($2-10B)</option>
+                        <option value="small">Small Cap (<$2B)</option>
+                    </select>
+                </div>
+                <div class="search-group" id="customPeersGroup" style="display: none;">
+                    <label>Custom Peers</label>
+                    <input type="text" id="customPeers" placeholder="MSFT, GOOG, META" style="width: 250px;">
+                </div>
+                <div class="search-actions">
+                    <button class="btn" onclick="generateComps()">
+                        🔍 Generate Comps
+                    </button>
+                    <button class="btn btn-export" onclick="exportToCSV()">
+                        📥 Export CSV
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Target & Summary Section -->
+        <div class="target-section" id="targetSection" style="display: none;">
+            <!-- Target Stock Card -->
+            <div class="target-card">
+                <div class="target-header">
+                    <div>
+                        <div class="target-ticker" id="targetTicker">AAPL</div>
+                        <div class="target-name" id="targetName">Apple Inc.</div>
+                    </div>
+                    <span class="target-badge" id="targetSector">Technology</span>
+                </div>
+                <div class="target-price" id="targetPrice">$178.50</div>
+                <span class="target-change positive" id="targetChange">+2.34%</span>
+                <div class="target-metrics">
+                    <div class="target-metric">
+                        <div class="label">Market Cap</div>
+                        <div class="value" id="targetMktCap">$2.8T</div>
+                    </div>
+                    <div class="target-metric">
+                        <div class="label">Enterprise Value</div>
+                        <div class="value" id="targetEV">$2.9T</div>
+                    </div>
+                    <div class="target-metric">
+                        <div class="label">Avg Volume</div>
+                        <div class="value" id="targetVolume">58.2M</div>
+                    </div>
+                    <div class="target-metric">
+                        <div class="label">52W Range</div>
+                        <div class="value" id="target52W">$124 - $199</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Peer Summary -->
+            <div class="peer-summary">
+                <div class="summary-header">
+                    <h2>📈 vs Peer Averages</h2>
+                    <span class="peer-count" id="peerCount">Comparing to 8 peers</span>
+                </div>
+                <div class="summary-grid" id="summaryGrid">
+                    <!-- Dynamically populated -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Comparison Tables -->
+        <div class="comp-section" id="compSection" style="display: none;">
+            <div class="section-header">
+                <h2>📋 Full Comparison Table</h2>
+                <div class="table-tabs">
+                    <button class="table-tab active" data-tab="valuation">Valuation</button>
+                    <button class="table-tab" data-tab="growth">Growth</button>
+                    <button class="table-tab" data-tab="profitability">Profitability</button>
+                    <button class="table-tab" data-tab="returns">Returns</button>
+                </div>
+            </div>
+            <div class="table-wrapper">
+                <table id="compTable">
+                    <thead id="compTableHead">
+                        <!-- Dynamically populated -->
+                    </thead>
+                    <tbody id="compTableBody">
+                        <!-- Dynamically populated -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Empty State -->
+        <div class="empty-state" id="emptyState">
+            <h3>🔍 Enter a ticker to generate comps</h3>
+            <p>We'll automatically find sector peers and calculate valuation, growth, and return metrics for you.</p>
+        </div>
+    </main>
+    
+    <script>
+        // Sample peer data - in production would come from Python fetcher
+        const sampleData = {
+            'AAPL': {
+                ticker: 'AAPL',
+                name: 'Apple Inc.',
+                sector: 'Technology',
+                industry: 'Consumer Electronics',
+                price: 178.50,
+                change: 2.34,
+                marketCap: 2800000000000,
+                ev: 2900000000000,
+                avgVolume: 58200000,
+                week52Low: 124,
+                week52High: 199,
+                pe: 28.5,
+                forwardPE: 26.2,
+                evEbitda: 21.8,
+                evSales: 7.2,
+                priceToSales: 7.0,
+                peg: 2.1,
+                priceToBook: 45.2,
+                revenueGrowth: 8.5,
+                epsGrowth: 12.3,
+                fcfGrowth: 15.2,
+                grossMargin: 43.5,
+                operatingMargin: 29.8,
+                netMargin: 25.3,
+                roe: 147.2,
+                roic: 48.5,
+                roa: 27.8,
+            },
+            'MSFT': {
+                ticker: 'MSFT',
+                name: 'Microsoft Corp.',
+                sector: 'Technology',
+                industry: 'Software',
+                price: 378.90,
+                change: 1.82,
+                marketCap: 2810000000000,
+                ev: 2750000000000,
+                avgVolume: 22100000,
+                week52Low: 245,
+                week52High: 390,
+                pe: 35.2,
+                forwardPE: 31.5,
+                evEbitda: 24.5,
+                evSales: 12.8,
+                priceToSales: 12.2,
+                peg: 2.4,
+                priceToBook: 12.8,
+                revenueGrowth: 15.8,
+                epsGrowth: 18.2,
+                fcfGrowth: 22.1,
+                grossMargin: 69.8,
+                operatingMargin: 44.2,
+                netMargin: 36.5,
+                roe: 38.5,
+                roic: 25.2,
+                roa: 18.2,
+            },
+            'GOOG': {
+                ticker: 'GOOG',
+                name: 'Alphabet Inc.',
+                sector: 'Technology',
+                industry: 'Internet Services',
+                price: 141.80,
+                change: -0.52,
+                marketCap: 1780000000000,
+                ev: 1650000000000,
+                avgVolume: 24500000,
+                week52Low: 102,
+                week52High: 155,
+                pe: 24.8,
+                forwardPE: 21.2,
+                evEbitda: 14.2,
+                evSales: 5.6,
+                priceToSales: 5.8,
+                peg: 1.2,
+                priceToBook: 6.2,
+                revenueGrowth: 12.5,
+                epsGrowth: 28.5,
+                fcfGrowth: 18.5,
+                grossMargin: 56.2,
+                operatingMargin: 27.5,
+                netMargin: 23.8,
+                roe: 28.2,
+                roic: 22.5,
+                roa: 15.8,
+            },
+            'META': {
+                ticker: 'META',
+                name: 'Meta Platforms Inc.',
+                sector: 'Technology',
+                industry: 'Internet Services',
+                price: 505.20,
+                change: 3.15,
+                marketCap: 1290000000000,
+                ev: 1180000000000,
+                avgVolume: 14800000,
+                week52Low: 274,
+                week52High: 542,
+                pe: 27.5,
+                forwardPE: 22.8,
+                evEbitda: 13.8,
+                evSales: 8.5,
+                priceToSales: 8.2,
+                peg: 1.0,
+                priceToBook: 8.5,
+                revenueGrowth: 22.5,
+                epsGrowth: 45.2,
+                fcfGrowth: 35.8,
+                grossMargin: 80.5,
+                operatingMargin: 38.5,
+                netMargin: 28.2,
+                roe: 32.5,
+                roic: 28.8,
+                roa: 18.5,
+            },
+            'NVDA': {
+                ticker: 'NVDA',
+                name: 'NVIDIA Corp.',
+                sector: 'Technology',
+                industry: 'Semiconductors',
+                price: 495.50,
+                change: 4.25,
+                marketCap: 1220000000000,
+                ev: 1180000000000,
+                avgVolume: 42500000,
+                week52Low: 222,
+                week52High: 505,
+                pe: 62.5,
+                forwardPE: 35.2,
+                evEbitda: 45.2,
+                evSales: 22.5,
+                priceToSales: 21.8,
+                peg: 1.5,
+                priceToBook: 42.5,
+                revenueGrowth: 122.5,
+                epsGrowth: 285.2,
+                fcfGrowth: 152.8,
+                grossMargin: 72.8,
+                operatingMargin: 54.2,
+                netMargin: 48.5,
+                roe: 82.5,
+                roic: 65.2,
+                roa: 42.5,
+            },
+            'AMZN': {
+                ticker: 'AMZN',
+                name: 'Amazon.com Inc.',
+                sector: 'Technology',
+                industry: 'E-Commerce',
+                price: 178.25,
+                change: 1.45,
+                marketCap: 1850000000000,
+                ev: 1920000000000,
+                avgVolume: 45200000,
+                week52Low: 118,
+                week52High: 189,
+                pe: 58.5,
+                forwardPE: 42.5,
+                evEbitda: 18.5,
+                evSales: 3.2,
+                priceToSales: 3.0,
+                peg: 1.8,
+                priceToBook: 8.2,
+                revenueGrowth: 12.8,
+                epsGrowth: 185.2,
+                fcfGrowth: 45.2,
+                grossMargin: 46.5,
+                operatingMargin: 6.8,
+                netMargin: 5.2,
+                roe: 18.5,
+                roic: 12.2,
+                roa: 6.8,
+            },
+            'CRM': {
+                ticker: 'CRM',
+                name: 'Salesforce Inc.',
+                sector: 'Technology',
+                industry: 'Software',
+                price: 265.80,
+                change: -1.22,
+                marketCap: 258000000000,
+                ev: 255000000000,
+                avgVolume: 5800000,
+                week52Low: 192,
+                week52High: 282,
+                pe: 42.5,
+                forwardPE: 28.5,
+                evEbitda: 22.8,
+                evSales: 7.5,
+                priceToSales: 7.2,
+                peg: 1.8,
+                priceToBook: 4.2,
+                revenueGrowth: 11.2,
+                epsGrowth: 52.5,
+                fcfGrowth: 28.5,
+                grossMargin: 75.2,
+                operatingMargin: 18.5,
+                netMargin: 12.2,
+                roe: 10.5,
+                roic: 8.2,
+                roa: 5.5,
+            },
+            'ORCL': {
+                ticker: 'ORCL',
+                name: 'Oracle Corp.',
+                sector: 'Technology',
+                industry: 'Software',
+                price: 125.50,
+                change: 0.85,
+                marketCap: 345000000000,
+                ev: 420000000000,
+                avgVolume: 8500000,
+                week52Low: 99,
+                week52High: 128,
+                pe: 32.5,
+                forwardPE: 22.5,
+                evEbitda: 16.2,
+                evSales: 8.2,
+                priceToSales: 6.8,
+                peg: 2.5,
+                priceToBook: 52.5,
+                revenueGrowth: 8.5,
+                epsGrowth: 15.2,
+                fcfGrowth: 12.5,
+                grossMargin: 71.5,
+                operatingMargin: 28.5,
+                netMargin: 18.2,
+                roe: 125.5,
+                roic: 15.2,
+                roa: 8.5,
+            },
+            'ADBE': {
+                ticker: 'ADBE',
+                name: 'Adobe Inc.',
+                sector: 'Technology',
+                industry: 'Software',
+                price: 565.20,
+                change: 2.85,
+                marketCap: 252000000000,
+                ev: 248000000000,
+                avgVolume: 3200000,
+                week52Low: 433,
+                week52High: 638,
+                pe: 45.2,
+                forwardPE: 28.5,
+                evEbitda: 28.5,
+                evSales: 12.8,
+                priceToSales: 12.5,
+                peg: 2.2,
+                priceToBook: 15.8,
+                revenueGrowth: 10.5,
+                epsGrowth: 15.8,
+                fcfGrowth: 18.2,
+                grossMargin: 88.2,
+                operatingMargin: 35.5,
+                netMargin: 28.5,
+                roe: 38.2,
+                roic: 28.5,
+                roa: 18.2,
+            },
+        };
+        
+        let currentData = [];
+        let targetStock = null;
+        let currentTab = 'valuation';
+        
+        // Tab definitions
+        const tabConfig = {
+            valuation: {
+                name: 'Valuation',
+                metrics: [
+                    { key: 'pe', label: 'P/E', format: 'multiple', lower: true },
+                    { key: 'forwardPE', label: 'Fwd P/E', format: 'multiple', lower: true },
+                    { key: 'evEbitda', label: 'EV/EBITDA', format: 'multiple', lower: true },
+                    { key: 'evSales', label: 'EV/Sales', format: 'multiple', lower: true },
+                    { key: 'priceToSales', label: 'P/S', format: 'multiple', lower: true },
+                    { key: 'peg', label: 'PEG', format: 'multiple', lower: true },
+                    { key: 'priceToBook', label: 'P/B', format: 'multiple', lower: true },
+                ]
+            },
+            growth: {
+                name: 'Growth',
+                metrics: [
+                    { key: 'revenueGrowth', label: 'Rev Growth', format: 'percent', lower: false },
+                    { key: 'epsGrowth', label: 'EPS Growth', format: 'percent', lower: false },
+                    { key: 'fcfGrowth', label: 'FCF Growth', format: 'percent', lower: false },
+                ]
+            },
+            profitability: {
+                name: 'Profitability',
+                metrics: [
+                    { key: 'grossMargin', label: 'Gross Margin', format: 'percent', lower: false },
+                    { key: 'operatingMargin', label: 'Op Margin', format: 'percent', lower: false },
+                    { key: 'netMargin', label: 'Net Margin', format: 'percent', lower: false },
+                ]
+            },
+            returns: {
+                name: 'Returns',
+                metrics: [
+                    { key: 'roe', label: 'ROE', format: 'percent', lower: false },
+                    { key: 'roic', label: 'ROIC', format: 'percent', lower: false },
+                    { key: 'roa', label: 'ROA', format: 'percent', lower: false },
+                ]
+            }
+        };
+        
+        // Event Listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tab switching
+            document.querySelectorAll('.table-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    document.querySelectorAll('.table-tab').forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    currentTab = this.dataset.tab;
+                    renderTable();
+                });
+            });
+            
+            // Peer method change
+            document.getElementById('peerMethod').addEventListener('change', function() {
+                document.getElementById('customPeersGroup').style.display = 
+                    this.value === 'custom' ? 'block' : 'none';
+            });
+            
+            // Enter key to search
+            document.getElementById('tickerInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') generateComps();
+            });
+        });
+        
+        function generateComps() {
+            const ticker = document.getElementById('tickerInput').value.trim().toUpperCase();
+            if (!ticker) {
+                alert('Please enter a ticker symbol');
+                return;
+            }
+            
+            // In production, this would fetch from Python backend
+            // For demo, use sample data
+            targetStock = sampleData[ticker] || generateRandomStock(ticker);
+            
+            // Get peers
+            const peerMethod = document.getElementById('peerMethod').value;
+            let peers = [];
+            
+            if (peerMethod === 'custom') {
+                const customPeers = document.getElementById('customPeers').value
+                    .split(',')
+                    .map(t => t.trim().toUpperCase())
+                    .filter(t => t && t !== ticker);
+                peers = customPeers.map(t => sampleData[t] || generateRandomStock(t));
+            } else {
+                // Get all stocks from same sector (excluding target)
+                peers = Object.values(sampleData).filter(s => 
+                    s.ticker !== ticker && s.sector === (targetStock.sector || 'Technology')
+                );
+            }
+            
+            // Apply market cap filter
+            const capFilter = document.getElementById('marketCapFilter').value;
+            if (capFilter) {
+                peers = peers.filter(s => matchesCapTier(s.marketCap, capFilter));
+            }
+            
+            currentData = [targetStock, ...peers];
+            
+            // Show sections
+            document.getElementById('emptyState').style.display = 'none';
+            document.getElementById('targetSection').style.display = 'grid';
+            document.getElementById('compSection').style.display = 'block';
+            
+            // Update target card
+            updateTargetCard();
+            
+            // Update summary
+            updateSummary();
+            
+            // Render table
+            renderTable();
+            
+            document.getElementById('lastUpdated').textContent = 
+                `Last updated: ${new Date().toLocaleString()}`;
+        }
+        
+        function generateRandomStock(ticker) {
+            return {
+                ticker: ticker,
+                name: `${ticker} Corporation`,
+                sector: 'Technology',
+                industry: 'Software',
+                price: Math.random() * 200 + 50,
+                change: (Math.random() - 0.5) * 10,
+                marketCap: Math.random() * 500000000000 + 10000000000,
+                ev: Math.random() * 500000000000 + 10000000000,
+                avgVolume: Math.random() * 10000000 + 1000000,
+                week52Low: Math.random() * 100 + 30,
+                week52High: Math.random() * 100 + 150,
+                pe: Math.random() * 40 + 10,
+                forwardPE: Math.random() * 30 + 8,
+                evEbitda: Math.random() * 20 + 8,
+                evSales: Math.random() * 10 + 2,
+                priceToSales: Math.random() * 10 + 1,
+                peg: Math.random() * 3 + 0.5,
+                priceToBook: Math.random() * 15 + 1,
+                revenueGrowth: Math.random() * 30 - 5,
+                epsGrowth: Math.random() * 50 - 10,
+                fcfGrowth: Math.random() * 40 - 10,
+                grossMargin: Math.random() * 40 + 30,
+                operatingMargin: Math.random() * 30 + 5,
+                netMargin: Math.random() * 25 + 2,
+                roe: Math.random() * 40 + 5,
+                roic: Math.random() * 30 + 5,
+                roa: Math.random() * 20 + 2,
+            };
+        }
+        
+        function matchesCapTier(marketCap, tier) {
+            switch(tier) {
+                case 'mega': return marketCap >= 200000000000;
+                case 'large': return marketCap >= 10000000000 && marketCap < 200000000000;
+                case 'mid': return marketCap >= 2000000000 && marketCap < 10000000000;
+                case 'small': return marketCap < 2000000000;
+                default: return true;
+            }
+        }
+        
+        function updateTargetCard() {
+            document.getElementById('targetTicker').textContent = targetStock.ticker;
+            document.getElementById('targetName').textContent = targetStock.name;
+            document.getElementById('targetSector').textContent = targetStock.sector;
+            document.getElementById('targetPrice').textContent = formatCurrency(targetStock.price);
+            
+            const changeEl = document.getElementById('targetChange');
+            changeEl.textContent = `${targetStock.change >= 0 ? '+' : ''}${targetStock.change.toFixed(2)}%`;
+            changeEl.className = `target-change ${targetStock.change >= 0 ? 'positive' : 'negative'}`;
+            
+            document.getElementById('targetMktCap').textContent = formatLargeNumber(targetStock.marketCap);
+            document.getElementById('targetEV').textContent = formatLargeNumber(targetStock.ev);
+            document.getElementById('targetVolume').textContent = formatLargeNumber(targetStock.avgVolume);
+            document.getElementById('target52W').textContent = 
+                `$${targetStock.week52Low.toFixed(0)} - $${targetStock.week52High.toFixed(0)}`;
+        }
+        
+        function updateSummary() {
+            const peers = currentData.filter(s => s.ticker !== targetStock.ticker);
+            document.getElementById('peerCount').textContent = `Comparing to ${peers.length} peers`;
+            
+            const summaryMetrics = [
+                { key: 'pe', label: 'P/E Ratio', lowerBetter: true },
+                { key: 'evEbitda', label: 'EV/EBITDA', lowerBetter: true },
+                { key: 'revenueGrowth', label: 'Revenue Growth', lowerBetter: false },
+                { key: 'netMargin', label: 'Net Margin', lowerBetter: false },
+                { key: 'roe', label: 'ROE', lowerBetter: false },
+            ];
+            
+            const grid = document.getElementById('summaryGrid');
+            grid.innerHTML = summaryMetrics.map(m => {
+                const targetVal = targetStock[m.key];
+                const peerAvg = peers.reduce((sum, p) => sum + p[m.key], 0) / peers.length;
+                const diff = ((targetVal - peerAvg) / peerAvg * 100);
+                const isBetter = m.lowerBetter ? diff < 0 : diff > 0;
+                
+                return `
+                    <div class="summary-card">
+                        <div class="metric-name">${m.label}</div>
+                        <div class="metric-comparison">
+                            <span class="your-value">${formatMetric(targetVal, m.key)}</span>
+                        </div>
+                        <div class="vs-avg">
+                            vs avg <span class="value ${isBetter ? 'discount' : 'premium'}">
+                                ${formatMetric(peerAvg, m.key)}
+                            </span>
+                            <br>
+                            <span class="${isBetter ? 'discount' : 'premium'}">
+                                (${diff >= 0 ? '+' : ''}${diff.toFixed(1)}%)
+                            </span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function renderTable() {
+            const config = tabConfig[currentTab];
+            
+            // Header
+            const thead = document.getElementById('compTableHead');
+            thead.innerHTML = `
+                <tr>
+                    <th>Company</th>
+                    <th>Price</th>
+                    <th>Mkt Cap</th>
+                    ${config.metrics.map(m => `<th>${m.label}</th>`).join('')}
+                </tr>
+            `;
+            
+            // Calculate averages
+            const peers = currentData.filter(s => s.ticker !== targetStock.ticker);
+            const avgRow = {
+                ticker: 'AVG',
+                name: 'Peer Average',
+                price: peers.reduce((s, p) => s + p.price, 0) / peers.length,
+                marketCap: peers.reduce((s, p) => s + p.marketCap, 0) / peers.length,
+            };
+            config.metrics.forEach(m => {
+                avgRow[m.key] = peers.reduce((s, p) => s + p[m.key], 0) / peers.length;
+            });
+            
+            // Calculate ranks
+            const allData = [...currentData];
+            config.metrics.forEach(m => {
+                const sorted = [...allData].sort((a, b) => 
+                    m.lower ? a[m.key] - b[m.key] : b[m.key] - a[m.key]
+                );
+                sorted.forEach((s, i) => {
+                    s[`${m.key}_rank`] = i + 1;
+                });
+            });
+            
+            // Body
+            const tbody = document.getElementById('compTableBody');
+            tbody.innerHTML = currentData.map(stock => {
+                const isTarget = stock.ticker === targetStock.ticker;
+                return `
+                    <tr class="${isTarget ? 'target-row' : ''}">
+                        <td>
+                            <div class="ticker-cell">
+                                <span class="ticker">${stock.ticker}</span>
+                                <span class="company-name">${stock.name}</span>
+                            </div>
+                        </td>
+                        <td>${formatCurrency(stock.price)}</td>
+                        <td>${formatLargeNumber(stock.marketCap)}</td>
+                        ${config.metrics.map(m => {
+                            const rank = stock[`${m.key}_rank`];
+                            const rankClass = rank <= 2 ? 'top' : (rank >= currentData.length - 1 ? 'bottom' : '');
+                            return `
+                                <td>
+                                    <div class="value-with-rank">
+                                        ${formatMetric(stock[m.key], m.key)}
+                                        <span class="rank-badge ${rankClass}">#${rank}</span>
+                                    </div>
+                                </td>
+                            `;
+                        }).join('')}
+                    </tr>
+                `;
+            }).join('') + `
+                <tr class="avg-row">
+                    <td>
+                        <div class="ticker-cell">
+                            <span class="ticker">AVG</span>
+                            <span class="company-name">Peer Average</span>
+                        </div>
+                    </td>
+                    <td>${formatCurrency(avgRow.price)}</td>
+                    <td>${formatLargeNumber(avgRow.marketCap)}</td>
+                    ${config.metrics.map(m => `<td>${formatMetric(avgRow[m.key], m.key)}</td>`).join('')}
+                </tr>
+            `;
+        }
+        
+        function formatMetric(value, key) {
+            if (value === null || value === undefined) return 'N/A';
+            
+            if (key.includes('Growth') || key.includes('Margin') || 
+                key === 'roe' || key === 'roic' || key === 'roa') {
+                return `${value.toFixed(1)}%`;
+            }
+            return `${value.toFixed(1)}x`;
+        }
+        
+        function formatCurrency(value) {
+            return `$${value.toFixed(2)}`;
+        }
+        
+        function formatLargeNumber(num) {
+            if (num >= 1e12) return `$${(num / 1e12).toFixed(1)}T`;
+            if (num >= 1e9) return `$${(num / 1e9).toFixed(1)}B`;
+            if (num >= 1e6) return `$${(num / 1e6).toFixed(1)}M`;
+            return num.toLocaleString();
+        }
+        
+        function exportToCSV() {
+            if (currentData.length === 0) {
+                alert('Generate comps first!');
+                return;
+            }
+            
+            const allMetrics = [
+                'ticker', 'name', 'price', 'marketCap',
+                'pe', 'forwardPE', 'evEbitda', 'evSales', 'priceToSales', 'peg', 'priceToBook',
+                'revenueGrowth', 'epsGrowth', 'fcfGrowth',
+                'grossMargin', 'operatingMargin', 'netMargin',
+                'roe', 'roic', 'roa'
+            ];
+            
+            const headers = [
+                'Ticker', 'Company', 'Price', 'Market Cap',
+                'P/E', 'Fwd P/E', 'EV/EBITDA', 'EV/Sales', 'P/S', 'PEG', 'P/B',
+                'Rev Growth %', 'EPS Growth %', 'FCF Growth %',
+                'Gross Margin %', 'Op Margin %', 'Net Margin %',
+                'ROE %', 'ROIC %', 'ROA %'
+            ];
+            
+            const csv = [
+                headers.join(','),
+                ...currentData.map(s => allMetrics.map(m => {
+                    const val = s[m];
+                    if (typeof val === 'string') return `"${val}"`;
+                    if (typeof val === 'number') return val.toFixed(2);
+                    return '';
+                }).join(','))
+            ].join('\n');
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `peer_comp_${targetStock?.ticker || 'export'}_${new Date().toISOString().slice(0,10)}.csv`;
+            a.click();
+        }
+    </script>
+</body>
+</html>

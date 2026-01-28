@@ -1,0 +1,382 @@
+[
+  {
+    "ticker": "JPM",
+    "name": "JPMorgan Chase",
+    "sector": "Financials",
+    "date": "2026-01-28",
+    "time": "BMO",
+    "expectedEPS": 4.15,
+    "beatRate": 82,
+    "history": [
+      {"date": "2025-10-15", "estimate": 4.01, "actual": 4.37, "result": "BEAT", "priceMove": 2.8},
+      {"date": "2025-07-12", "estimate": 4.19, "actual": 4.51, "result": "BEAT", "priceMove": 1.2},
+      {"date": "2025-04-12", "estimate": 4.11, "actual": 4.44, "result": "BEAT", "priceMove": 6.5},
+      {"date": "2025-01-15", "estimate": 3.89, "actual": 3.97, "result": "BEAT", "priceMove": 0.5},
+      {"date": "2024-10-11", "estimate": 3.99, "actual": 4.33, "result": "BEAT", "priceMove": 4.4},
+      {"date": "2024-07-12", "estimate": 4.15, "actual": 4.26, "result": "BEAT", "priceMove": -1.2},
+      {"date": "2024-04-12", "estimate": 4.13, "actual": 4.63, "result": "BEAT", "priceMove": 6.5},
+      {"date": "2024-01-12", "estimate": 3.61, "actual": 3.04, "result": "MISS", "priceMove": -0.7}
+    ]
+  },
+  {
+    "ticker": "GS",
+    "name": "Goldman Sachs",
+    "sector": "Financials",
+    "date": "2026-01-28",
+    "time": "BMO",
+    "expectedEPS": 8.25,
+    "beatRate": 75,
+    "history": [
+      {"date": "2025-10-15", "estimate": 7.89, "actual": 8.40, "result": "BEAT", "priceMove": 3.5},
+      {"date": "2025-07-15", "estimate": 8.35, "actual": 8.62, "result": "BEAT", "priceMove": 1.1},
+      {"date": "2025-04-14", "estimate": 8.74, "actual": 11.58, "result": "BEAT", "priceMove": 5.8},
+      {"date": "2025-01-15", "estimate": 8.15, "actual": 8.22, "result": "BEAT", "priceMove": -1.9},
+      {"date": "2024-10-15", "estimate": 6.89, "actual": 8.40, "result": "BEAT", "priceMove": 5.9},
+      {"date": "2024-07-15", "estimate": 8.45, "actual": 8.62, "result": "BEAT", "priceMove": 1.0},
+      {"date": "2024-04-15", "estimate": 8.53, "actual": 11.58, "result": "BEAT", "priceMove": 2.9},
+      {"date": "2024-01-16", "estimate": 3.51, "actual": 5.48, "result": "BEAT", "priceMove": 0.7}
+    ]
+  },
+  {
+    "ticker": "BAC",
+    "name": "Bank of America",
+    "sector": "Financials",
+    "date": "2026-01-28",
+    "time": "BMO",
+    "expectedEPS": 0.82,
+    "beatRate": 75,
+    "history": [
+      {"date": "2025-10-15", "estimate": 0.77, "actual": 0.81, "result": "BEAT", "priceMove": 1.8},
+      {"date": "2025-07-16", "estimate": 0.79, "actual": 0.83, "result": "BEAT", "priceMove": 2.2},
+      {"date": "2025-04-15", "estimate": 0.76, "actual": 0.83, "result": "BEAT", "priceMove": 3.5},
+      {"date": "2025-01-16", "estimate": 0.77, "actual": 0.82, "result": "BEAT", "priceMove": 0.3},
+      {"date": "2024-10-15", "estimate": 0.77, "actual": 0.81, "result": "BEAT", "priceMove": 0.6},
+      {"date": "2024-07-16", "estimate": 0.79, "actual": 0.83, "result": "BEAT", "priceMove": 5.4},
+      {"date": "2024-04-16", "estimate": 0.76, "actual": 0.76, "result": "INLINE", "priceMove": -3.5},
+      {"date": "2024-01-12", "estimate": 0.63, "actual": 0.70, "result": "BEAT", "priceMove": 1.1}
+    ]
+  },
+  {
+    "ticker": "NFLX",
+    "name": "Netflix Inc.",
+    "sector": "Communication",
+    "date": "2026-01-29",
+    "time": "AMC",
+    "expectedEPS": 4.25,
+    "beatRate": 78,
+    "history": [
+      {"date": "2025-10-17", "estimate": 5.08, "actual": 5.52, "result": "BEAT", "priceMove": 5.1},
+      {"date": "2025-07-18", "estimate": 4.74, "actual": 4.88, "result": "BEAT", "priceMove": 1.5},
+      {"date": "2025-04-17", "estimate": 4.52, "actual": 5.28, "result": "BEAT", "priceMove": 4.8},
+      {"date": "2025-01-21", "estimate": 4.19, "actual": 4.27, "result": "BEAT", "priceMove": 9.7},
+      {"date": "2024-10-17", "estimate": 5.12, "actual": 5.40, "result": "BEAT", "priceMove": 11.1},
+      {"date": "2024-07-18", "estimate": 4.74, "actual": 4.88, "result": "BEAT", "priceMove": 1.5},
+      {"date": "2024-04-18", "estimate": 4.52, "actual": 5.28, "result": "BEAT", "priceMove": 9.1},
+      {"date": "2024-01-23", "estimate": 2.22, "actual": 2.11, "result": "MISS", "priceMove": -1.5}
+    ]
+  },
+  {
+    "ticker": "TSLA",
+    "name": "Tesla Inc.",
+    "sector": "Consumer",
+    "date": "2026-01-29",
+    "time": "AMC",
+    "expectedEPS": 0.75,
+    "beatRate": 65,
+    "history": [
+      {"date": "2025-10-23", "estimate": 0.60, "actual": 0.72, "result": "BEAT", "priceMove": 21.9},
+      {"date": "2025-07-23", "estimate": 0.62, "actual": 0.52, "result": "MISS", "priceMove": -12.3},
+      {"date": "2025-04-23", "estimate": 0.53, "actual": 0.45, "result": "MISS", "priceMove": -4.1},
+      {"date": "2025-01-29", "estimate": 0.76, "actual": 0.73, "result": "MISS", "priceMove": -0.4},
+      {"date": "2024-10-23", "estimate": 0.60, "actual": 0.72, "result": "BEAT", "priceMove": 21.9},
+      {"date": "2024-07-23", "estimate": 0.62, "actual": 0.52, "result": "MISS", "priceMove": -12.3},
+      {"date": "2024-04-23", "estimate": 0.52, "actual": 0.45, "result": "MISS", "priceMove": -2.0},
+      {"date": "2024-01-24", "estimate": 0.74, "actual": 0.71, "result": "MISS", "priceMove": -12.1}
+    ]
+  },
+  {
+    "ticker": "MSFT",
+    "name": "Microsoft Corp",
+    "sector": "Technology",
+    "date": "2026-01-30",
+    "time": "AMC",
+    "expectedEPS": 3.15,
+    "beatRate": 92,
+    "history": [
+      {"date": "2025-10-30", "estimate": 3.10, "actual": 3.30, "result": "BEAT", "priceMove": 2.1},
+      {"date": "2025-07-30", "estimate": 2.93, "actual": 2.95, "result": "BEAT", "priceMove": -3.6},
+      {"date": "2025-04-30", "estimate": 2.82, "actual": 2.94, "result": "BEAT", "priceMove": 1.8},
+      {"date": "2025-01-30", "estimate": 3.11, "actual": 3.23, "result": "BEAT", "priceMove": -2.4},
+      {"date": "2024-10-30", "estimate": 3.10, "actual": 3.30, "result": "BEAT", "priceMove": 2.1},
+      {"date": "2024-07-30", "estimate": 2.93, "actual": 2.95, "result": "BEAT", "priceMove": -4.0},
+      {"date": "2024-04-25", "estimate": 2.82, "actual": 2.94, "result": "BEAT", "priceMove": 5.0},
+      {"date": "2024-01-30", "estimate": 2.77, "actual": 2.93, "result": "BEAT", "priceMove": 2.1}
+    ]
+  },
+  {
+    "ticker": "META",
+    "name": "Meta Platforms",
+    "sector": "Communication",
+    "date": "2026-01-30",
+    "time": "AMC",
+    "expectedEPS": 6.85,
+    "beatRate": 85,
+    "history": [
+      {"date": "2025-10-30", "estimate": 5.25, "actual": 6.03, "result": "BEAT", "priceMove": 3.8},
+      {"date": "2025-07-31", "estimate": 4.73, "actual": 5.16, "result": "BEAT", "priceMove": -3.9},
+      {"date": "2025-04-30", "estimate": 4.32, "actual": 4.71, "result": "BEAT", "priceMove": 4.8},
+      {"date": "2025-02-01", "estimate": 5.25, "actual": 5.33, "result": "BEAT", "priceMove": 20.3},
+      {"date": "2024-10-30", "estimate": 5.25, "actual": 6.03, "result": "BEAT", "priceMove": -4.1},
+      {"date": "2024-07-31", "estimate": 4.73, "actual": 5.16, "result": "BEAT", "priceMove": -4.0},
+      {"date": "2024-04-24", "estimate": 4.32, "actual": 4.71, "result": "BEAT", "priceMove": -10.6},
+      {"date": "2024-02-01", "estimate": 5.02, "actual": 5.33, "result": "BEAT", "priceMove": 20.3}
+    ]
+  },
+  {
+    "ticker": "AAPL",
+    "name": "Apple Inc.",
+    "sector": "Technology",
+    "date": "2026-01-31",
+    "time": "AMC",
+    "expectedEPS": 2.42,
+    "beatRate": 88,
+    "history": [
+      {"date": "2025-10-31", "estimate": 1.60, "actual": 1.64, "result": "BEAT", "priceMove": -1.8},
+      {"date": "2025-08-01", "estimate": 1.34, "actual": 1.40, "result": "BEAT", "priceMove": -5.4},
+      {"date": "2025-05-01", "estimate": 1.50, "actual": 1.53, "result": "BEAT", "priceMove": 6.0},
+      {"date": "2025-01-30", "estimate": 2.36, "actual": 2.40, "result": "BEAT", "priceMove": -3.4},
+      {"date": "2024-10-31", "estimate": 1.60, "actual": 1.64, "result": "BEAT", "priceMove": -1.8},
+      {"date": "2024-08-01", "estimate": 1.34, "actual": 1.40, "result": "BEAT", "priceMove": -5.0},
+      {"date": "2024-05-02", "estimate": 1.50, "actual": 1.53, "result": "BEAT", "priceMove": 6.0},
+      {"date": "2024-02-01", "estimate": 2.09, "actual": 2.18, "result": "BEAT", "priceMove": -0.5}
+    ]
+  },
+  {
+    "ticker": "AMZN",
+    "name": "Amazon.com",
+    "sector": "Consumer",
+    "date": "2026-01-31",
+    "time": "AMC",
+    "expectedEPS": 1.52,
+    "beatRate": 82,
+    "history": [
+      {"date": "2025-10-31", "estimate": 1.14, "actual": 1.43, "result": "BEAT", "priceMove": 6.2},
+      {"date": "2025-08-01", "estimate": 1.03, "actual": 1.26, "result": "BEAT", "priceMove": -8.8},
+      {"date": "2025-05-01", "estimate": 0.83, "actual": 0.98, "result": "BEAT", "priceMove": 2.2},
+      {"date": "2025-02-06", "estimate": 1.49, "actual": 1.86, "result": "BEAT", "priceMove": -3.7},
+      {"date": "2024-10-31", "estimate": 1.14, "actual": 1.43, "result": "BEAT", "priceMove": 6.2},
+      {"date": "2024-08-01", "estimate": 1.03, "actual": 1.26, "result": "BEAT", "priceMove": -8.8},
+      {"date": "2024-04-30", "estimate": 0.83, "actual": 0.98, "result": "BEAT", "priceMove": -4.1},
+      {"date": "2024-02-01", "estimate": 0.79, "actual": 1.00, "result": "BEAT", "priceMove": 7.9}
+    ]
+  },
+  {
+    "ticker": "GOOGL",
+    "name": "Alphabet Inc.",
+    "sector": "Communication",
+    "date": "2026-02-04",
+    "time": "AMC",
+    "expectedEPS": 2.15,
+    "beatRate": 80,
+    "history": [
+      {"date": "2025-10-29", "estimate": 1.85, "actual": 2.12, "result": "BEAT", "priceMove": 2.8},
+      {"date": "2025-07-23", "estimate": 1.85, "actual": 1.89, "result": "BEAT", "priceMove": -5.0},
+      {"date": "2025-04-24", "estimate": 1.51, "actual": 1.89, "result": "BEAT", "priceMove": 10.2},
+      {"date": "2025-02-04", "estimate": 2.04, "actual": 2.15, "result": "BEAT", "priceMove": -7.3},
+      {"date": "2024-10-29", "estimate": 1.85, "actual": 2.12, "result": "BEAT", "priceMove": 2.8},
+      {"date": "2024-07-23", "estimate": 1.85, "actual": 1.89, "result": "BEAT", "priceMove": -5.0},
+      {"date": "2024-04-25", "estimate": 1.51, "actual": 1.89, "result": "BEAT", "priceMove": 10.2},
+      {"date": "2024-02-01", "estimate": 1.60, "actual": 1.64, "result": "BEAT", "priceMove": -7.3}
+    ]
+  },
+  {
+    "ticker": "AMD",
+    "name": "AMD",
+    "sector": "Technology",
+    "date": "2026-02-04",
+    "time": "AMC",
+    "expectedEPS": 1.12,
+    "beatRate": 85,
+    "history": [
+      {"date": "2025-10-29", "estimate": 0.92, "actual": 0.92, "result": "INLINE", "priceMove": -4.0},
+      {"date": "2025-07-30", "estimate": 0.68, "actual": 0.69, "result": "BEAT", "priceMove": 4.4},
+      {"date": "2025-04-29", "estimate": 0.62, "actual": 0.62, "result": "INLINE", "priceMove": -8.9},
+      {"date": "2025-02-04", "estimate": 0.77, "actual": 0.77, "result": "INLINE", "priceMove": -6.4},
+      {"date": "2024-10-29", "estimate": 0.92, "actual": 0.92, "result": "INLINE", "priceMove": -4.0},
+      {"date": "2024-07-30", "estimate": 0.68, "actual": 0.69, "result": "BEAT", "priceMove": 4.4},
+      {"date": "2024-04-30", "estimate": 0.62, "actual": 0.62, "result": "INLINE", "priceMove": -9.0},
+      {"date": "2024-01-30", "estimate": 0.77, "actual": 0.77, "result": "INLINE", "priceMove": -2.5}
+    ]
+  },
+  {
+    "ticker": "NVDA",
+    "name": "NVIDIA Corp",
+    "sector": "Technology",
+    "date": "2026-02-19",
+    "time": "AMC",
+    "expectedEPS": 0.85,
+    "beatRate": 95,
+    "history": [
+      {"date": "2025-11-20", "estimate": 0.75, "actual": 0.81, "result": "BEAT", "priceMove": -3.2},
+      {"date": "2025-08-28", "estimate": 0.64, "actual": 0.68, "result": "BEAT", "priceMove": 1.2},
+      {"date": "2025-05-22", "estimate": 0.57, "actual": 0.61, "result": "BEAT", "priceMove": 9.3},
+      {"date": "2025-02-26", "estimate": 0.64, "actual": 0.65, "result": "BEAT", "priceMove": -8.5},
+      {"date": "2024-11-20", "estimate": 0.75, "actual": 0.81, "result": "BEAT", "priceMove": -3.2},
+      {"date": "2024-08-28", "estimate": 0.64, "actual": 0.68, "result": "BEAT", "priceMove": 1.2},
+      {"date": "2024-05-22", "estimate": 0.57, "actual": 0.61, "result": "BEAT", "priceMove": 9.3},
+      {"date": "2024-02-21", "estimate": 0.46, "actual": 0.52, "result": "BEAT", "priceMove": 16.4}
+    ]
+  },
+  {
+    "ticker": "WMT",
+    "name": "Walmart Inc.",
+    "sector": "Consumer",
+    "date": "2026-02-19",
+    "time": "BMO",
+    "expectedEPS": 0.65,
+    "beatRate": 88,
+    "history": [
+      {"date": "2025-11-19", "estimate": 0.53, "actual": 0.58, "result": "BEAT", "priceMove": 3.0},
+      {"date": "2025-08-15", "estimate": 0.64, "actual": 0.67, "result": "BEAT", "priceMove": 6.6},
+      {"date": "2025-05-16", "estimate": 0.52, "actual": 0.60, "result": "BEAT", "priceMove": 7.0},
+      {"date": "2025-02-20", "estimate": 0.64, "actual": 0.66, "result": "BEAT", "priceMove": 3.3},
+      {"date": "2024-11-19", "estimate": 0.53, "actual": 0.58, "result": "BEAT", "priceMove": 3.0},
+      {"date": "2024-08-15", "estimate": 0.64, "actual": 0.67, "result": "BEAT", "priceMove": 6.6},
+      {"date": "2024-05-16", "estimate": 0.52, "actual": 0.60, "result": "BEAT", "priceMove": 7.0},
+      {"date": "2024-02-20", "estimate": 0.55, "actual": 0.56, "result": "BEAT", "priceMove": 3.2}
+    ]
+  },
+  {
+    "ticker": "HD",
+    "name": "Home Depot",
+    "sector": "Consumer",
+    "date": "2026-02-24",
+    "time": "BMO",
+    "expectedEPS": 3.10,
+    "beatRate": 82,
+    "history": [
+      {"date": "2025-11-12", "estimate": 3.64, "actual": 3.67, "result": "BEAT", "priceMove": 0.8},
+      {"date": "2025-08-13", "estimate": 4.49, "actual": 4.60, "result": "BEAT", "priceMove": 1.7},
+      {"date": "2025-05-14", "estimate": 3.60, "actual": 3.63, "result": "BEAT", "priceMove": -0.2},
+      {"date": "2025-02-25", "estimate": 2.82, "actual": 2.82, "result": "INLINE", "priceMove": 1.0},
+      {"date": "2024-11-12", "estimate": 3.64, "actual": 3.67, "result": "BEAT", "priceMove": 0.8},
+      {"date": "2024-08-13", "estimate": 4.49, "actual": 4.60, "result": "BEAT", "priceMove": 1.7},
+      {"date": "2024-05-14", "estimate": 3.60, "actual": 3.63, "result": "BEAT", "priceMove": -0.2},
+      {"date": "2024-02-20", "estimate": 2.77, "actual": 2.82, "result": "BEAT", "priceMove": 1.0}
+    ]
+  },
+  {
+    "ticker": "UNH",
+    "name": "UnitedHealth",
+    "sector": "Healthcare",
+    "date": "2026-02-04",
+    "time": "BMO",
+    "expectedEPS": 6.95,
+    "beatRate": 90,
+    "history": [
+      {"date": "2025-10-15", "estimate": 7.15, "actual": 7.15, "result": "INLINE", "priceMove": 0.3},
+      {"date": "2025-07-16", "estimate": 6.66, "actual": 6.80, "result": "BEAT", "priceMove": 5.2},
+      {"date": "2025-04-16", "estimate": 6.63, "actual": 7.20, "result": "BEAT", "priceMove": 5.2},
+      {"date": "2025-01-16", "estimate": 5.99, "actual": 6.16, "result": "BEAT", "priceMove": 3.9},
+      {"date": "2024-10-15", "estimate": 7.00, "actual": 7.15, "result": "BEAT", "priceMove": 0.5},
+      {"date": "2024-07-16", "estimate": 6.66, "actual": 6.80, "result": "BEAT", "priceMove": 5.2},
+      {"date": "2024-04-16", "estimate": 6.61, "actual": 7.20, "result": "BEAT", "priceMove": 5.2},
+      {"date": "2024-01-12", "estimate": 5.98, "actual": 6.16, "result": "BEAT", "priceMove": 3.4}
+    ]
+  },
+  {
+    "ticker": "XOM",
+    "name": "Exxon Mobil",
+    "sector": "Energy",
+    "date": "2026-01-31",
+    "time": "BMO",
+    "expectedEPS": 1.85,
+    "beatRate": 62,
+    "history": [
+      {"date": "2025-11-01", "estimate": 1.88, "actual": 1.92, "result": "BEAT", "priceMove": -1.6},
+      {"date": "2025-08-02", "estimate": 2.01, "actual": 2.14, "result": "BEAT", "priceMove": 0.3},
+      {"date": "2025-04-26", "estimate": 2.19, "actual": 2.06, "result": "MISS", "priceMove": -2.7},
+      {"date": "2025-01-31", "estimate": 1.91, "actual": 2.48, "result": "BEAT", "priceMove": 2.4},
+      {"date": "2024-11-01", "estimate": 1.88, "actual": 1.92, "result": "BEAT", "priceMove": -1.6},
+      {"date": "2024-08-02", "estimate": 2.01, "actual": 2.14, "result": "BEAT", "priceMove": 0.3},
+      {"date": "2024-04-26", "estimate": 2.20, "actual": 2.06, "result": "MISS", "priceMove": -2.7},
+      {"date": "2024-02-02", "estimate": 2.21, "actual": 2.48, "result": "BEAT", "priceMove": 2.4}
+    ]
+  },
+  {
+    "ticker": "CAT",
+    "name": "Caterpillar",
+    "sector": "Industrials",
+    "date": "2026-02-05",
+    "time": "BMO",
+    "expectedEPS": 5.25,
+    "beatRate": 78,
+    "history": [
+      {"date": "2025-10-30", "estimate": 5.35, "actual": 5.17, "result": "MISS", "priceMove": -2.2},
+      {"date": "2025-08-06", "estimate": 5.54, "actual": 5.99, "result": "BEAT", "priceMove": -3.1},
+      {"date": "2025-04-25", "estimate": 5.14, "actual": 5.60, "result": "BEAT", "priceMove": 2.2},
+      {"date": "2025-02-04", "estimate": 4.75, "actual": 5.23, "result": "BEAT", "priceMove": 4.7},
+      {"date": "2024-10-30", "estimate": 5.33, "actual": 5.17, "result": "MISS", "priceMove": -2.2},
+      {"date": "2024-08-06", "estimate": 5.54, "actual": 5.99, "result": "BEAT", "priceMove": -3.1},
+      {"date": "2024-04-25", "estimate": 5.12, "actual": 5.60, "result": "BEAT", "priceMove": 2.2},
+      {"date": "2024-02-01", "estimate": 4.73, "actual": 5.23, "result": "BEAT", "priceMove": 4.7}
+    ]
+  },
+  {
+    "ticker": "PFE",
+    "name": "Pfizer Inc.",
+    "sector": "Healthcare",
+    "date": "2026-02-04",
+    "time": "BMO",
+    "expectedEPS": 0.48,
+    "beatRate": 68,
+    "history": [
+      {"date": "2025-10-29", "estimate": 0.62, "actual": 0.62, "result": "INLINE", "priceMove": -1.3},
+      {"date": "2025-07-30", "estimate": 0.46, "actual": 0.60, "result": "BEAT", "priceMove": -1.7},
+      {"date": "2025-04-29", "estimate": 0.52, "actual": 0.55, "result": "BEAT", "priceMove": 3.2},
+      {"date": "2025-02-04", "estimate": 0.45, "actual": 0.63, "result": "BEAT", "priceMove": 2.3},
+      {"date": "2024-10-29", "estimate": 0.62, "actual": 0.62, "result": "INLINE", "priceMove": -1.3},
+      {"date": "2024-07-30", "estimate": 0.46, "actual": 0.60, "result": "BEAT", "priceMove": -1.7},
+      {"date": "2024-04-30", "estimate": 0.52, "actual": 0.55, "result": "BEAT", "priceMove": 3.2},
+      {"date": "2024-01-30", "estimate": 0.14, "actual": 0.10, "result": "MISS", "priceMove": -3.3}
+    ]
+  },
+  {
+    "ticker": "DIS",
+    "name": "Walt Disney",
+    "sector": "Communication",
+    "date": "2026-02-05",
+    "time": "AMC",
+    "expectedEPS": 1.48,
+    "beatRate": 65,
+    "history": [
+      {"date": "2025-11-14", "estimate": 1.10, "actual": 1.14, "result": "BEAT", "priceMove": 6.2},
+      {"date": "2025-08-07", "estimate": 1.19, "actual": 1.39, "result": "BEAT", "priceMove": -5.1},
+      {"date": "2025-05-07", "estimate": 1.10, "actual": 1.21, "result": "BEAT", "priceMove": 6.7},
+      {"date": "2025-02-05", "estimate": 0.99, "actual": 1.22, "result": "BEAT", "priceMove": 11.5},
+      {"date": "2024-11-14", "estimate": 1.10, "actual": 1.14, "result": "BEAT", "priceMove": 6.2},
+      {"date": "2024-08-07", "estimate": 1.19, "actual": 1.39, "result": "BEAT", "priceMove": -5.1},
+      {"date": "2024-05-07", "estimate": 1.10, "actual": 1.21, "result": "BEAT", "priceMove": 6.7},
+      {"date": "2024-02-07", "estimate": 0.99, "actual": 1.22, "result": "BEAT", "priceMove": 11.5}
+    ]
+  },
+  {
+    "ticker": "BA",
+    "name": "Boeing Co",
+    "sector": "Industrials",
+    "date": "2026-01-29",
+    "time": "BMO",
+    "expectedEPS": -1.85,
+    "beatRate": 42,
+    "history": [
+      {"date": "2025-10-23", "estimate": -1.59, "actual": -10.44, "result": "MISS", "priceMove": 1.3},
+      {"date": "2025-07-31", "estimate": -1.88, "actual": -2.90, "result": "MISS", "priceMove": -6.1},
+      {"date": "2025-04-24", "estimate": -1.61, "actual": -1.13, "result": "BEAT", "priceMove": -2.9},
+      {"date": "2025-01-28", "estimate": -1.73, "actual": -0.47, "result": "BEAT", "priceMove": 5.3},
+      {"date": "2024-10-23", "estimate": -1.59, "actual": -10.44, "result": "MISS", "priceMove": 1.3},
+      {"date": "2024-07-31", "estimate": -1.87, "actual": -2.90, "result": "MISS", "priceMove": -6.1},
+      {"date": "2024-04-24", "estimate": -1.61, "actual": -1.13, "result": "BEAT", "priceMove": -2.9},
+      {"date": "2024-01-31", "estimate": -0.28, "actual": -0.47, "result": "MISS", "priceMove": -5.0}
+    ]
+  }
+]

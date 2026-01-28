@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Shortcuts | Guide Bot</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-card: #1a1a25;
+            --bg-hover: #252535;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0b0;
+            --text-muted: #606070;
+            --accent: #6366f1;
+            --accent-hover: #818cf8;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --border: #2a2a3a;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+        
+        /* Header */
+        .header {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        
+        .logo i {
+            color: var(--accent);
+            font-size: 1.5rem;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+        
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: var(--accent-hover);
+        }
+        
+        .btn-secondary {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--bg-hover);
+        }
+        
+        /* Main Layout */
+        .main-container {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            min-height: calc(100vh - 65px);
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            padding: 1.5rem;
+        }
+        
+        .sidebar-section {
+            margin-bottom: 2rem;
+        }
+        
+        .sidebar-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
+            letter-spacing: 0.05em;
+        }
+        
+        .stat-card {
+            background: var(--bg-card);
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 0.75rem;
+        }
+        
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+        
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+        
+        .category-list {
+            list-style: none;
+        }
+        
+        .category-item {
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.25rem;
+            transition: background 0.2s;
+        }
+        
+        .category-item:hover, .category-item.active {
+            background: var(--bg-hover);
+        }
+        
+        .category-item.active {
+            border-left: 3px solid var(--accent);
+        }
+        
+        .category-icon {
+            margin-right: 0.5rem;
+        }
+        
+        .category-count {
+            background: var(--bg-primary);
+            padding: 0.2rem 0.5rem;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+        
+        /* Content Area */
+        .content {
+            padding: 2rem;
+            max-width: 1200px;
+        }
+        
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .content-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .search-bar {
+            position: relative;
+            width: 300px;
+        }
+        
+        .search-bar input {
+            width: 100%;
+            padding: 0.625rem 1rem 0.625rem 2.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+        }
+        
+        .search-bar input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        
+        .search-bar i {
+            position: absolute;
+            left: 0.875rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+        
+        /* Shortcuts Grid */
+        .shortcuts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1rem;
+        }
+        
+        .shortcut-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1.25rem;
+            border: 1px solid var(--border);
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        
+        .shortcut-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+        
+        .shortcut-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+        
+        .shortcut-trigger {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .shortcut-trigger i {
+            font-size: 0.875rem;
+        }
+        
+        .shortcut-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .shortcut-actions button {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 0.25rem;
+            transition: color 0.2s;
+        }
+        
+        .shortcut-actions button:hover {
+            color: var(--text-primary);
+        }
+        
+        .shortcut-actions button.delete:hover {
+            color: var(--danger);
+        }
+        
+        .shortcut-description {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+        
+        .shortcut-workflow {
+            background: var(--bg-primary);
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+        }
+        
+        .workflow-step {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+            padding: 0.375rem 0;
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+        }
+        
+        .workflow-step:not(:last-child) {
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .step-number {
+            background: var(--accent);
+            color: white;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.6875rem;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+        
+        .shortcut-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .shortcut-category {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            background: var(--bg-primary);
+            padding: 0.25rem 0.625rem;
+            border-radius: 20px;
+        }
+        
+        .shortcut-usage {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+        
+        .usage-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        
+        .usage-badge.high { color: var(--success); }
+        .usage-badge.medium { color: var(--warning); }
+        .usage-badge.low { color: var(--text-muted); }
+        
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s;
+        }
+        
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+        }
+        
+        .modal-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        
+        .modal-close {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.25rem;
+            cursor: pointer;
+            padding: 0.25rem;
+        }
+        
+        .modal-close:hover {
+            color: var(--text-primary);
+        }
+        
+        .modal-body {
+            padding: 1.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+        
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+        }
+        
+        .form-input, .form-textarea, .form-select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            font-size: 0.9375rem;
+            transition: border-color 0.2s;
+        }
+        
+        .form-input:focus, .form-textarea:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        
+        .form-textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        
+        .form-hint {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.375rem;
+        }
+        
+        /* Workflow Builder */
+        .workflow-builder {
+            background: var(--bg-card);
+            border-radius: 8px;
+            padding: 1rem;
+        }
+        
+        .workflow-steps {
+            margin-bottom: 1rem;
+        }
+        
+        .step-input-row {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            align-items: center;
+        }
+        
+        .step-input-row input {
+            flex: 1;
+            padding: 0.625rem;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+        }
+        
+        .step-input-row input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        
+        .step-remove {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 0.375rem;
+        }
+        
+        .step-remove:hover {
+            color: var(--danger);
+        }
+        
+        .add-step-btn {
+            width: 100%;
+            padding: 0.625rem;
+            border-radius: 6px;
+            border: 1px dashed var(--border);
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+        
+        .add-step-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        
+        .modal-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+        }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-muted);
+        }
+        
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            color: var(--accent);
+            opacity: 0.5;
+        }
+        
+        .empty-state h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+        }
+        
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 1001;
+        }
+        
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .toast.success i { color: var(--success); }
+        .toast.error i { color: var(--danger); }
+        
+        /* Mobile */
+        @media (max-width: 768px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                display: none;
+            }
+            
+            .content {
+                padding: 1rem;
+            }
+            
+            .shortcuts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .search-bar {
+                width: 100%;
+            }
+            
+            .content-header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <i class="fas fa-microphone-alt"></i>
+            <span>Voice Shortcuts</span>
+        </div>
+        <div class="header-actions">
+            <button class="btn btn-secondary" onclick="exportShortcuts()">
+                <i class="fas fa-download"></i> Export
+            </button>
+            <button class="btn btn-secondary" onclick="importShortcuts()">
+                <i class="fas fa-upload"></i> Import
+            </button>
+            <button class="btn btn-primary" onclick="openModal()">
+                <i class="fas fa-plus"></i> New Shortcut
+            </button>
+        </div>
+    </header>
+    
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-title">Statistics</div>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalShortcuts">0</div>
+                    <div class="stat-label">Total Shortcuts</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalUsage">0</div>
+                    <div class="stat-label">Total Uses</div>
+                </div>
+            </div>
+            
+            <div class="sidebar-section">
+                <div class="sidebar-title">Categories</div>
+                <ul class="category-list" id="categoryList">
+                    <li class="category-item active" data-category="all">
+                        <span><i class="fas fa-layer-group category-icon"></i> All Shortcuts</span>
+                        <span class="category-count" id="countAll">0</span>
+                    </li>
+                    <li class="category-item" data-category="workflow">
+                        <span><i class="fas fa-project-diagram category-icon"></i> Workflows</span>
+                        <span class="category-count" id="countWorkflow">0</span>
+                    </li>
+                    <li class="category-item" data-category="query">
+                        <span><i class="fas fa-search category-icon"></i> Quick Queries</span>
+                        <span class="category-count" id="countQuery">0</span>
+                    </li>
+                    <li class="category-item" data-category="navigation">
+                        <span><i class="fas fa-compass category-icon"></i> Navigation</span>
+                        <span class="category-count" id="countNavigation">0</span>
+                    </li>
+                    <li class="category-item" data-category="automation">
+                        <span><i class="fas fa-robot category-icon"></i> Automation</span>
+                        <span class="category-count" id="countAutomation">0</span>
+                    </li>
+                    <li class="category-item" data-category="custom">
+                        <span><i class="fas fa-star category-icon"></i> Custom</span>
+                        <span class="category-count" id="countCustom">0</span>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="sidebar-section">
+                <div class="sidebar-title">Top Used</div>
+                <div id="topUsed"></div>
+            </div>
+        </aside>
+        
+        <!-- Content -->
+        <main class="content">
+            <div class="content-header">
+                <h1 class="content-title">My Shortcuts</h1>
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search shortcuts..." id="searchInput" oninput="filterShortcuts()">
+                </div>
+            </div>
+            
+            <div class="shortcuts-grid" id="shortcutsGrid">
+                <!-- Shortcuts will be rendered here -->
+            </div>
+            
+            <div class="empty-state" id="emptyState" style="display: none;">
+                <i class="fas fa-microphone-slash"></i>
+                <h3>No shortcuts yet</h3>
+                <p>Create your first voice shortcut to get started!</p>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Create/Edit Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">Create Shortcut</h2>
+                <button class="modal-close" onclick="closeModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="shortcutForm">
+                    <input type="hidden" id="shortcutId">
+                    
+                    <div class="form-group">
+                        <label class="form-label">Trigger Phrase *</label>
+                        <input type="text" class="form-input" id="triggerPhrase" placeholder="e.g., 'do the thing'" required>
+                        <p class="form-hint">What you'll say to activate this shortcut</p>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-textarea" id="description" placeholder="What does this shortcut do?"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Category</label>
+                        <select class="form-select" id="category">
+                            <option value="workflow">Workflows</option>
+                            <option value="query">Quick Queries</option>
+                            <option value="navigation">Navigation</option>
+                            <option value="automation">Automation</option>
+                            <option value="custom">Custom</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Workflow Steps</label>
+                        <div class="workflow-builder">
+                            <div class="workflow-steps" id="workflowSteps">
+                                <div class="step-input-row">
+                                    <span class="step-number">1</span>
+                                    <input type="text" placeholder="First action..." class="step-input">
+                                    <button type="button" class="step-remove" onclick="removeStep(this)">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <button type="button" class="add-step-btn" onclick="addStep()">
+                                <i class="fas fa-plus"></i> Add Step
+                            </button>
+                        </div>
+                        <p class="form-hint">Define the sequence of actions for this shortcut</p>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveShortcut()">
+                    <i class="fas fa-save"></i> Save Shortcut
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Toast -->
+    <div class="toast" id="toast">
+        <i class="fas fa-check-circle"></i>
+        <span id="toastMessage">Shortcut saved!</span>
+    </div>
+    
+    <!-- Hidden file input for import -->
+    <input type="file" id="importInput" accept=".json" style="display: none" onchange="handleImport(event)">
+    
+    <script>
+        // Sample data
+        let shortcuts = [
+            {
+                id: 1,
+                trigger: "check my portfolio",
+                description: "Get a quick summary of my current positions and P&L",
+                category: "query",
+                steps: [
+                    "Open portfolio dashboard",
+                    "Calculate current P&L",
+                    "Summarize top movers"
+                ],
+                usage: 47,
+                created: "2026-01-15"
+            },
+            {
+                id: 2,
+                trigger: "morning routine",
+                description: "Start the daily analysis workflow with market overview and news",
+                category: "workflow",
+                steps: [
+                    "Check pre-market futures",
+                    "Scan overnight news",
+                    "Review earnings calendar",
+                    "Check analyst upgrades/downgrades",
+                    "Review watchlist alerts"
+                ],
+                usage: 32,
+                created: "2026-01-10"
+            },
+            {
+                id: 3,
+                trigger: "analyze this stock",
+                description: "Run full analysis on the currently selected ticker",
+                category: "automation",
+                steps: [
+                    "Pull fundamentals from SEC filings",
+                    "Fetch analyst estimates",
+                    "Calculate valuation metrics",
+                    "Generate comparison vs peers",
+                    "Summarize findings"
+                ],
+                usage: 89,
+                created: "2026-01-05"
+            },
+            {
+                id: 4,
+                trigger: "show earnings",
+                description: "Display upcoming earnings for watchlist stocks",
+                category: "navigation",
+                steps: [
+                    "Open earnings calendar",
+                    "Filter to watchlist",
+                    "Sort by date"
+                ],
+                usage: 23,
+                created: "2026-01-20"
+            },
+            {
+                id: 5,
+                trigger: "run the screener",
+                description: "Execute the default stock screener with saved filters",
+                category: "automation",
+                steps: [
+                    "Load saved screener filters",
+                    "Fetch latest market data",
+                    "Apply filters",
+                    "Sort by score",
+                    "Display results"
+                ],
+                usage: 15,
+                created: "2026-01-22"
+            },
+            {
+                id: 6,
+                trigger: "what's moving",
+                description: "Quick summary of biggest movers in the market",
+                category: "query",
+                steps: [
+                    "Get top gainers",
+                    "Get top losers",
+                    "Check sector performance",
+                    "Summarize key moves"
+                ],
+                usage: 56,
+                created: "2026-01-08"
+            }
+        ];
+        
+        let currentFilter = 'all';
+        let editingId = null;
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load from localStorage if available
+            const saved = localStorage.getItem('voiceShortcuts');
+            if (saved) {
+                shortcuts = JSON.parse(saved);
+            }
+            renderShortcuts();
+            updateStats();
+            setupCategoryFilters();
+        });
+        
+        // Render shortcuts
+        function renderShortcuts() {
+            const grid = document.getElementById('shortcutsGrid');
+            const emptyState = document.getElementById('emptyState');
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            let filtered = shortcuts;
+            
+            // Apply category filter
+            if (currentFilter !== 'all') {
+                filtered = filtered.filter(s => s.category === currentFilter);
+            }
+            
+            // Apply search filter
+            if (searchTerm) {
+                filtered = filtered.filter(s => 
+                    s.trigger.toLowerCase().includes(searchTerm) ||
+                    s.description.toLowerCase().includes(searchTerm) ||
+                    s.steps.some(step => step.toLowerCase().includes(searchTerm))
+                );
+            }
+            
+            if (filtered.length === 0) {
+                grid.innerHTML = '';
+                emptyState.style.display = 'block';
+                return;
+            }
+            
+            emptyState.style.display = 'none';
+            
+            grid.innerHTML = filtered.map(shortcut => `
+                <div class="shortcut-card" onclick="editShortcut(${shortcut.id})">
+                    <div class="shortcut-header">
+                        <div class="shortcut-trigger">
+                            <i class="fas fa-quote-left"></i>
+                            "${shortcut.trigger}"
+                        </div>
+                        <div class="shortcut-actions" onclick="event.stopPropagation()">
+                            <button onclick="editShortcut(${shortcut.id})" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="duplicateShortcut(${shortcut.id})" title="Duplicate">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                            <button class="delete" onclick="deleteShortcut(${shortcut.id})" title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <p class="shortcut-description">${shortcut.description}</p>
+                    <div class="shortcut-workflow">
+                        ${shortcut.steps.map((step, i) => `
+                            <div class="workflow-step">
+                                <span class="step-number">${i + 1}</span>
+                                <span>${step}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="shortcut-footer">
+                        <span class="shortcut-category">
+                            <i class="fas fa-${getCategoryIcon(shortcut.category)}"></i>
+                            ${capitalizeFirst(shortcut.category)}
+                        </span>
+                        <span class="shortcut-usage">
+                            <span class="usage-badge ${getUsageLevel(shortcut.usage)}">
+                                <i class="fas fa-fire"></i> ${shortcut.usage} uses
+                            </span>
+                        </span>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Helper functions
+        function getCategoryIcon(category) {
+            const icons = {
+                workflow: 'project-diagram',
+                query: 'search',
+                navigation: 'compass',
+                automation: 'robot',
+                custom: 'star'
+            };
+            return icons[category] || 'star';
+        }
+        
+        function getUsageLevel(usage) {
+            if (usage >= 50) return 'high';
+            if (usage >= 20) return 'medium';
+            return 'low';
+        }
+        
+        function capitalizeFirst(str) {
+            return str.charAt(0).toUpperCase() + str.slice(1);
+        }
+        
+        // Update stats
+        function updateStats() {
+            document.getElementById('totalShortcuts').textContent = shortcuts.length;
+            document.getElementById('totalUsage').textContent = shortcuts.reduce((sum, s) => sum + s.usage, 0);
+            
+            // Update category counts
+            document.getElementById('countAll').textContent = shortcuts.length;
+            document.getElementById('countWorkflow').textContent = shortcuts.filter(s => s.category === 'workflow').length;
+            document.getElementById('countQuery').textContent = shortcuts.filter(s => s.category === 'query').length;
+            document.getElementById('countNavigation').textContent = shortcuts.filter(s => s.category === 'navigation').length;
+            document.getElementById('countAutomation').textContent = shortcuts.filter(s => s.category === 'automation').length;
+            document.getElementById('countCustom').textContent = shortcuts.filter(s => s.category === 'custom').length;
+            
+            // Top used
+            const topUsed = document.getElementById('topUsed');
+            const top3 = [...shortcuts].sort((a, b) => b.usage - a.usage).slice(0, 3);
+            topUsed.innerHTML = top3.map(s => `
+                <div class="stat-card" style="padding: 0.75rem; cursor: pointer" onclick="editShortcut(${s.id})">
+                    <div style="font-size: 0.875rem; font-weight: 500; color: var(--accent)">"${s.trigger}"</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted)">${s.usage} uses</div>
+                </div>
+            `).join('');
+        }
+        
+        // Category filters
+        function setupCategoryFilters() {
+            document.querySelectorAll('.category-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    document.querySelectorAll('.category-item').forEach(i => i.classList.remove('active'));
+                    item.classList.add('active');
+                    currentFilter = item.dataset.category;
+                    renderShortcuts();
+                });
+            });
+        }
+        
+        // Filter shortcuts
+        function filterShortcuts() {
+            renderShortcuts();
+        }
+        
+        // Modal functions
+        function openModal(id = null) {
+            editingId = id;
+            const overlay = document.getElementById('modalOverlay');
+            const title = document.getElementById('modalTitle');
+            
+            if (id) {
+                const shortcut = shortcuts.find(s => s.id === id);
+                title.textContent = 'Edit Shortcut';
+                document.getElementById('shortcutId').value = id;
+                document.getElementById('triggerPhrase').value = shortcut.trigger;
+                document.getElementById('description').value = shortcut.description;
+                document.getElementById('category').value = shortcut.category;
+                
+                // Populate steps
+                const stepsContainer = document.getElementById('workflowSteps');
+                stepsContainer.innerHTML = shortcut.steps.map((step, i) => `
+                    <div class="step-input-row">
+                        <span class="step-number">${i + 1}</span>
+                        <input type="text" placeholder="Action..." class="step-input" value="${step}">
+                        <button type="button" class="step-remove" onclick="removeStep(this)">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `).join('');
+            } else {
+                title.textContent = 'Create Shortcut';
+                document.getElementById('shortcutForm').reset();
+                document.getElementById('shortcutId').value = '';
+                document.getElementById('workflowSteps').innerHTML = `
+                    <div class="step-input-row">
+                        <span class="step-number">1</span>
+                        <input type="text" placeholder="First action..." class="step-input">
+                        <button type="button" class="step-remove" onclick="removeStep(this)">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+            }
+            
+            overlay.classList.add('active');
+        }
+        
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('active');
+            editingId = null;
+        }
+        
+        // Step management
+        function addStep() {
+            const container = document.getElementById('workflowSteps');
+            const stepCount = container.children.length + 1;
+            const stepHtml = `
+                <div class="step-input-row">
+                    <span class="step-number">${stepCount}</span>
+                    <input type="text" placeholder="Next action..." class="step-input">
+                    <button type="button" class="step-remove" onclick="removeStep(this)">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', stepHtml);
+        }
+        
+        function removeStep(btn) {
+            const row = btn.closest('.step-input-row');
+            const container = document.getElementById('workflowSteps');
+            if (container.children.length > 1) {
+                row.remove();
+                renumberSteps();
+            }
+        }
+        
+        function renumberSteps() {
+            const steps = document.querySelectorAll('#workflowSteps .step-input-row');
+            steps.forEach((step, i) => {
+                step.querySelector('.step-number').textContent = i + 1;
+            });
+        }
+        
+        // Save shortcut
+        function saveShortcut() {
+            const trigger = document.getElementById('triggerPhrase').value.trim();
+            const description = document.getElementById('description').value.trim();
+            const category = document.getElementById('category').value;
+            const steps = Array.from(document.querySelectorAll('#workflowSteps .step-input'))
+                .map(input => input.value.trim())
+                .filter(step => step);
+            
+            if (!trigger) {
+                showToast('Please enter a trigger phrase', 'error');
+                return;
+            }
+            
+            if (steps.length === 0) {
+                showToast('Please add at least one workflow step', 'error');
+                return;
+            }
+            
+            if (editingId) {
+                // Update existing
+                const index = shortcuts.findIndex(s => s.id === editingId);
+                shortcuts[index] = {
+                    ...shortcuts[index],
+                    trigger,
+                    description,
+                    category,
+                    steps
+                };
+                showToast('Shortcut updated!', 'success');
+            } else {
+                // Create new
+                shortcuts.push({
+                    id: Date.now(),
+                    trigger,
+                    description,
+                    category,
+                    steps,
+                    usage: 0,
+                    created: new Date().toISOString().split('T')[0]
+                });
+                showToast('Shortcut created!', 'success');
+            }
+            
+            saveToStorage();
+            renderShortcuts();
+            updateStats();
+            closeModal();
+        }
+        
+        // Edit shortcut
+        function editShortcut(id) {
+            openModal(id);
+        }
+        
+        // Duplicate shortcut
+        function duplicateShortcut(id) {
+            const original = shortcuts.find(s => s.id === id);
+            const copy = {
+                ...original,
+                id: Date.now(),
+                trigger: original.trigger + ' (copy)',
+                usage: 0,
+                created: new Date().toISOString().split('T')[0]
+            };
+            shortcuts.push(copy);
+            saveToStorage();
+            renderShortcuts();
+            updateStats();
+            showToast('Shortcut duplicated!', 'success');
+        }
+        
+        // Delete shortcut
+        function deleteShortcut(id) {
+            if (confirm('Delete this shortcut?')) {
+                shortcuts = shortcuts.filter(s => s.id !== id);
+                saveToStorage();
+                renderShortcuts();
+                updateStats();
+                showToast('Shortcut deleted', 'success');
+            }
+        }
+        
+        // Storage
+        function saveToStorage() {
+            localStorage.setItem('voiceShortcuts', JSON.stringify(shortcuts));
+        }
+        
+        // Export/Import
+        function exportShortcuts() {
+            const data = JSON.stringify(shortcuts, null, 2);
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'voice-shortcuts.json';
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('Shortcuts exported!', 'success');
+        }
+        
+        function importShortcuts() {
+            document.getElementById('importInput').click();
+        }
+        
+        function handleImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (Array.isArray(imported)) {
+                        // Reassign IDs to avoid conflicts
+                        imported.forEach((s, i) => {
+                            s.id = Date.now() + i;
+                        });
+                        shortcuts = [...shortcuts, ...imported];
+                        saveToStorage();
+                        renderShortcuts();
+                        updateStats();
+                        showToast(`Imported ${imported.length} shortcuts!`, 'success');
+                    }
+                } catch (err) {
+                    showToast('Invalid file format', 'error');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+        
+        // Toast
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            const icon = toast.querySelector('i');
+            
+            toastMessage.textContent = message;
+            toast.className = `toast ${type}`;
+            icon.className = type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
+            
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>

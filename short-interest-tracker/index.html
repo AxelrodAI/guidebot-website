@@ -63,6 +63,7 @@
         .header-actions {
             display: flex;
             gap: 12px;
+            align-items: center;
         }
 
         .btn {
@@ -85,6 +86,11 @@
             border-color: var(--text-secondary);
         }
 
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
         .btn-primary {
             background: var(--accent-blue);
             border-color: var(--accent-blue);
@@ -92,6 +98,53 @@
 
         .btn-primary:hover {
             background: #4c9aed;
+        }
+
+        /* Add Ticker Section */
+        .add-ticker-section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px 20px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .add-ticker-section label {
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .ticker-input-container {
+            flex: 1;
+            max-width: 300px;
+        }
+
+        .data-status {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent-green);
+        }
+
+        .status-dot.loading {
+            background: var(--accent-yellow);
+            animation: pulse 1s infinite;
+        }
+
+        .status-dot.error {
+            background: var(--accent-red);
         }
 
         /* Stats Grid */
@@ -215,15 +268,6 @@
             color: var(--text-primary);
         }
 
-        th.sorted::after {
-            content: ' ▼';
-            font-size: 10px;
-        }
-
-        th.sorted.asc::after {
-            content: ' ▲';
-        }
-
         tr:hover {
             background: var(--bg-tertiary);
         }
@@ -281,7 +325,22 @@
         .badge-alert { background: rgba(248, 81, 73, 0.2); color: var(--accent-red); }
         .badge-watch { background: rgba(210, 153, 34, 0.2); color: var(--accent-yellow); }
         .badge-normal { background: rgba(63, 185, 80, 0.2); color: var(--accent-green); }
-        .badge-threshold { background: rgba(163, 113, 247, 0.2); color: var(--accent-purple); }
+        .badge-loading { background: rgba(139, 148, 158, 0.2); color: var(--text-secondary); }
+
+        .remove-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .remove-btn:hover {
+            background: rgba(248, 81, 73, 0.2);
+            color: var(--accent-red);
+        }
 
         /* Sidebar */
         .sidebar {
@@ -314,106 +373,67 @@
             padding: 16px 20px;
         }
 
-        /* Alert Feed */
-        .alert-feed {
+        /* Activity Log */
+        .activity-log {
             max-height: 280px;
             overflow-y: auto;
         }
 
-        .alert-item {
+        .activity-item {
             display: flex;
             gap: 12px;
-            padding: 12px 0;
+            padding: 10px 0;
             border-bottom: 1px solid var(--border-color);
+            font-size: 13px;
         }
 
-        .alert-item:last-child {
+        .activity-item:last-child {
             border-bottom: none;
         }
 
-        .alert-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: 6px;
+        .activity-time {
+            color: var(--text-secondary);
+            font-size: 11px;
+            white-space: nowrap;
+        }
+
+        /* High SI Stocks */
+        .high-si-list {
+            padding: 0;
+        }
+
+        .high-si-item {
             display: flex;
             align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            flex-shrink: 0;
+            justify-content: space-between;
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--border-color);
         }
 
-        .alert-icon.spike { background: rgba(248, 81, 73, 0.2); }
-        .alert-icon.dtc { background: rgba(210, 153, 34, 0.2); }
-        .alert-icon.threshold { background: rgba(163, 113, 247, 0.2); }
-
-        .alert-content {
-            flex: 1;
+        .high-si-item:last-child {
+            border-bottom: none;
         }
 
-        .alert-title {
-            font-size: 13px;
-            font-weight: 500;
-            margin-bottom: 4px;
+        .high-si-ticker {
+            font-weight: 600;
+            color: var(--accent-red);
         }
 
-        .alert-meta {
-            font-size: 12px;
+        /* Empty State */
+        .empty-state {
+            padding: 40px 20px;
+            text-align: center;
             color: var(--text-secondary);
         }
 
-        /* Chart */
-        .chart-container {
-            padding: 20px;
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
         }
 
-        .chart-placeholder {
-            height: 200px;
-            background: var(--bg-tertiary);
-            border-radius: 6px;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .chart-lines {
-            position: absolute;
-            inset: 20px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-
-        .chart-line {
-            height: 1px;
-            background: var(--border-color);
-        }
-
-        .chart-bars {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            right: 20px;
-            height: 160px;
-            display: flex;
-            align-items: flex-end;
-            gap: 8px;
-        }
-
-        .chart-bar {
-            flex: 1;
-            background: var(--accent-blue);
-            border-radius: 3px 3px 0 0;
-            opacity: 0.8;
-            transition: all 0.3s;
-        }
-
-        .chart-bar:hover {
-            opacity: 1;
-        }
-
-        .chart-bar.highlighted {
-            background: var(--accent-red);
+        .empty-state h3 {
+            margin-bottom: 8px;
+            color: var(--text-primary);
         }
 
         /* Settings */
@@ -482,33 +502,6 @@
             transform: translateX(18px);
         }
 
-        /* Threshold List Section */
-        .threshold-list {
-            padding: 0;
-        }
-
-        .threshold-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 12px 20px;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .threshold-item:last-child {
-            border-bottom: none;
-        }
-
-        .threshold-ticker {
-            font-weight: 600;
-            color: var(--accent-purple);
-        }
-
-        .threshold-days {
-            font-size: 12px;
-            color: var(--text-secondary);
-        }
-
         /* Responsive */
         @media (max-width: 1200px) {
             .main-grid {
@@ -528,6 +521,10 @@
             .table-filters {
                 flex-wrap: wrap;
             }
+
+            .add-ticker-section {
+                flex-wrap: wrap;
+            }
         }
 
         /* Animation */
@@ -536,8 +533,8 @@
             50% { opacity: 0.5; }
         }
 
-        .pulsing {
-            animation: pulse 2s infinite;
+        .loading-row {
+            animation: pulse 1.5s infinite;
         }
 
         /* Scrollbar */
@@ -566,17 +563,28 @@
             <h1>
                 <span class="icon">📊</span>
                 Short Interest Tracker
+                <span style="font-size: 12px; color: var(--accent-green); font-weight: normal; margin-left: 8px;">LIVE DATA</span>
             </h1>
             <div class="header-actions">
-                <button class="btn" onclick="refreshData()">
-                    🔄 Refresh
+                <button class="btn" onclick="refreshAllData()" id="refreshBtn">
+                    🔄 Refresh All
                 </button>
                 <button class="btn" onclick="exportData()">
                     📥 Export
                 </button>
-                <button class="btn btn-primary" onclick="openAlertSettings()">
-                    ⚙️ Alert Settings
-                </button>
+            </div>
+        </div>
+
+        <!-- Add Ticker Section -->
+        <div class="add-ticker-section">
+            <label>➕ Add Ticker:</label>
+            <div class="ticker-input-container" id="tickerInputContainer"></div>
+            <button class="btn btn-primary" onclick="addSelectedTicker()" id="addTickerBtn">
+                Add to Watchlist
+            </button>
+            <div class="data-status">
+                <div class="status-dot" id="statusDot"></div>
+                <span id="statusText">Ready</span>
             </div>
         </div>
 
@@ -584,23 +592,23 @@
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="label">Portfolio Avg SI %</div>
-                <div class="value" id="avgSI">14.2%</div>
-                <div class="change positive">↑ 1.8% vs last week</div>
+                <div class="value" id="avgSI">--%</div>
+                <div class="change neutral" id="avgSIChange">Add tickers to track</div>
             </div>
             <div class="stat-card">
                 <div class="label">Stocks SI &gt; 20%</div>
-                <div class="value" id="highSI">7</div>
-                <div class="change negative">↑ 2 new this week</div>
+                <div class="value" id="highSI">0</div>
+                <div class="change neutral" id="highSILabel">High short interest</div>
             </div>
             <div class="stat-card">
                 <div class="label">Avg Days to Cover</div>
-                <div class="value" id="avgDTC">3.8</div>
-                <div class="change neutral">↔ Unchanged</div>
+                <div class="value" id="avgDTC">--</div>
+                <div class="change neutral" id="avgDTCLabel">Market average ~2 days</div>
             </div>
             <div class="stat-card">
-                <div class="label">On Threshold List</div>
-                <div class="value" id="thresholdCount">4</div>
-                <div class="change negative">↑ 1 added</div>
+                <div class="label">Tracked Stocks</div>
+                <div class="value" id="trackedCount">0</div>
+                <div class="change neutral" id="trackedLabel">Using real Yahoo Finance data</div>
             </div>
         </div>
 
@@ -611,18 +619,10 @@
                 <div class="table-header">
                     <h2>Portfolio Short Interest</h2>
                     <div class="table-filters">
-                        <input type="text" class="search-input" placeholder="Search ticker..." id="searchInput" oninput="filterTable()">
-                        <select class="filter-select" id="statusFilter" onchange="filterTable()">
-                            <option value="all">All Status</option>
-                            <option value="alert">Alert</option>
-                            <option value="watch">Watch</option>
-                            <option value="normal">Normal</option>
-                            <option value="threshold">Threshold</option>
-                        </select>
+                        <input type="text" class="search-input" placeholder="Filter tickers..." id="searchInput" oninput="filterTable()">
                         <select class="filter-select" id="sortField" onchange="sortTable()">
                             <option value="si">Sort by SI %</option>
                             <option value="dtc">Sort by DTC</option>
-                            <option value="change">Sort by Δ WoW</option>
                             <option value="ticker">Sort by Ticker</option>
                         </select>
                     </div>
@@ -632,65 +632,67 @@
                         <tr>
                             <th>Ticker</th>
                             <th>Company</th>
+                            <th>Price</th>
                             <th onclick="sortBy('si')">SI % Float</th>
                             <th onclick="sortBy('dtc')">Days to Cover</th>
-                            <th onclick="sortBy('change')">Δ WoW</th>
-                            <th>SI Shares</th>
+                            <th>Short Shares</th>
                             <th>Status</th>
+                            <th></th>
                         </tr>
                     </thead>
                     <tbody id="stockTable">
                         <!-- Populated by JS -->
                     </tbody>
                 </table>
+                <div id="emptyState" class="empty-state" style="display: none;">
+                    <div class="empty-state-icon">📈</div>
+                    <h3>No tickers tracked yet</h3>
+                    <p>Search and add tickers above to track their short interest data in real-time.</p>
+                </div>
             </div>
 
             <!-- Sidebar -->
             <div class="sidebar">
-                <!-- Alert Feed -->
+                <!-- High SI Stocks -->
                 <div class="sidebar-card">
                     <div class="sidebar-card-header">
-                        <h3>🔔 Recent Alerts</h3>
-                        <span class="badge badge-alert">5 new</span>
+                        <h3>⚠️ High Short Interest (&gt;15%)</h3>
                     </div>
-                    <div class="alert-feed" id="alertFeed">
-                        <!-- Populated by JS -->
-                    </div>
-                </div>
-
-                <!-- SI Trend Chart -->
-                <div class="sidebar-card">
-                    <div class="sidebar-card-header">
-                        <h3>📈 SI Trend (Selected)</h3>
-                        <select class="filter-select" id="chartTicker" onchange="updateChart()">
-                            <option value="GME">GME</option>
-                            <option value="AMC">AMC</option>
-                            <option value="CVNA">CVNA</option>
-                            <option value="BBBY">BBBY</option>
-                        </select>
-                    </div>
-                    <div class="chart-container">
-                        <div class="chart-placeholder">
-                            <div class="chart-lines">
-                                <div class="chart-line"></div>
-                                <div class="chart-line"></div>
-                                <div class="chart-line"></div>
-                                <div class="chart-line"></div>
-                            </div>
-                            <div class="chart-bars" id="chartBars">
-                                <!-- Populated by JS -->
-                            </div>
+                    <div class="high-si-list" id="highSIList">
+                        <div class="empty-state" style="padding: 20px;">
+                            <p>No high SI stocks tracked yet</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- Threshold List -->
+                <!-- Activity Log -->
                 <div class="sidebar-card">
                     <div class="sidebar-card-header">
-                        <h3>⚠️ Threshold List</h3>
+                        <h3>📋 Activity Log</h3>
+                        <button class="btn" onclick="clearLog()" style="padding: 4px 8px; font-size: 11px;">Clear</button>
                     </div>
-                    <div class="threshold-list" id="thresholdList">
-                        <!-- Populated by JS -->
+                    <div class="activity-log" id="activityLog">
+                        <div class="activity-item">
+                            <span>Ready to track real short interest data</span>
+                            <span class="activity-time">now</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Add Popular -->
+                <div class="sidebar-card">
+                    <div class="sidebar-card-header">
+                        <h3>🔥 Popular Tickers</h3>
+                    </div>
+                    <div class="sidebar-card-body">
+                        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                            <button class="btn" onclick="quickAddTicker('AAPL')">AAPL</button>
+                            <button class="btn" onclick="quickAddTicker('TSLA')">TSLA</button>
+                            <button class="btn" onclick="quickAddTicker('NVDA')">NVDA</button>
+                            <button class="btn" onclick="quickAddTicker('GME')">GME</button>
+                            <button class="btn" onclick="quickAddTicker('AMC')">AMC</button>
+                            <button class="btn" onclick="quickAddTicker('MSFT')">MSFT</button>
+                        </div>
                     </div>
                 </div>
 
@@ -701,24 +703,12 @@
                     </div>
                     <div class="sidebar-card-body">
                         <div class="settings-group">
-                            <div class="settings-label">SI % Jump Alert (WoW)</div>
-                            <input type="number" class="settings-input" value="20" id="siJumpThreshold"> %
+                            <div class="settings-label">High SI % Threshold</div>
+                            <input type="number" class="settings-input" value="20" id="siThreshold" onchange="updateThresholds()"> %
                         </div>
                         <div class="settings-group">
                             <div class="settings-label">Days to Cover Alert</div>
-                            <input type="number" class="settings-input" value="5" id="dtcThreshold"> days
-                        </div>
-                        <div class="toggle-row">
-                            <label>Threshold List Alerts</label>
-                            <div class="toggle active" onclick="this.classList.toggle('active')"></div>
-                        </div>
-                        <div class="toggle-row">
-                            <label>Email Notifications</label>
-                            <div class="toggle active" onclick="this.classList.toggle('active')"></div>
-                        </div>
-                        <div class="toggle-row">
-                            <label>Push Notifications</label>
-                            <div class="toggle" onclick="this.classList.toggle('active')"></div>
+                            <input type="number" class="settings-input" value="5" id="dtcThreshold" onchange="updateThresholds()"> days
                         </div>
                     </div>
                 </div>
@@ -726,202 +716,432 @@
         </div>
     </div>
 
+    <!-- Load shared ticker service -->
+    <script src="../shared/ticker-service.js"></script>
+    <script src="../shared/ticker-input.js"></script>
+    
     <script>
-        // Mock data - In production, this would come from FINRA/exchange APIs
-        const stockData = [
-            { ticker: 'GME', company: 'GameStop Corp', si: 24.3, dtc: 7.2, change: 32.5, shares: '62.4M', status: 'alert', threshold: true },
-            { ticker: 'AMC', company: 'AMC Entertainment', si: 21.7, dtc: 5.8, change: 18.2, shares: '98.2M', status: 'alert', threshold: true },
-            { ticker: 'CVNA', company: 'Carvana Co', si: 38.2, dtc: 8.1, change: 45.3, shares: '41.6M', status: 'alert', threshold: true },
-            { ticker: 'BBBY', company: 'Bed Bath & Beyond', si: 42.8, dtc: 9.4, change: -5.2, shares: '28.3M', status: 'threshold', threshold: true },
-            { ticker: 'RIVN', company: 'Rivian Automotive', si: 18.4, dtc: 4.2, change: 12.8, shares: '124.5M', status: 'watch', threshold: false },
-            { ticker: 'LCID', company: 'Lucid Group', si: 15.2, dtc: 3.8, change: 8.4, shares: '88.7M', status: 'watch', threshold: false },
-            { ticker: 'SPCE', company: 'Virgin Galactic', si: 28.9, dtc: 6.3, change: 22.1, shares: '52.1M', status: 'alert', threshold: false },
-            { ticker: 'PLTR', company: 'Palantir Tech', si: 8.2, dtc: 2.4, change: -3.1, shares: '142.8M', status: 'normal', threshold: false },
-            { ticker: 'SOFI', company: 'SoFi Technologies', si: 12.6, dtc: 3.1, change: 5.8, shares: '76.4M', status: 'watch', threshold: false },
-            { ticker: 'COIN', company: 'Coinbase Global', si: 11.4, dtc: 2.8, change: -8.2, shares: '18.9M', status: 'normal', threshold: false },
-            { ticker: 'SNOW', company: 'Snowflake Inc', si: 6.8, dtc: 1.9, change: 2.1, shares: '21.4M', status: 'normal', threshold: false },
-            { ticker: 'MSTR', company: 'MicroStrategy', si: 19.7, dtc: 5.2, change: 28.4, shares: '3.2M', status: 'alert', threshold: false },
-            { ticker: 'UPST', company: 'Upstart Holdings', si: 35.2, dtc: 7.8, change: 15.6, shares: '24.8M', status: 'alert', threshold: false },
-            { ticker: 'AFRM', company: 'Affirm Holdings', si: 14.8, dtc: 3.5, change: 6.2, shares: '35.2M', status: 'watch', threshold: false },
-            { ticker: 'HOOD', company: 'Robinhood Markets', si: 9.2, dtc: 2.2, change: -12.4, shares: '71.3M', status: 'normal', threshold: false },
-        ];
+        // ========================================
+        // SHORT INTEREST TRACKER - LIVE DATA VERSION
+        // Uses shared TickerService for real Yahoo Finance data
+        // ========================================
 
-        const alerts = [
-            { type: 'spike', ticker: 'CVNA', title: 'SI jumped 45.3% WoW', time: '2 hours ago', icon: '📈' },
-            { type: 'spike', ticker: 'GME', title: 'SI jumped 32.5% WoW', time: '4 hours ago', icon: '📈' },
-            { type: 'dtc', ticker: 'BBBY', title: 'DTC reached 9.4 days', time: '6 hours ago', icon: '⏱️' },
-            { type: 'threshold', ticker: 'AMC', title: 'Added to threshold list', time: '1 day ago', icon: '⚠️' },
-            { type: 'spike', ticker: 'MSTR', title: 'SI jumped 28.4% WoW', time: '1 day ago', icon: '📈' },
-        ];
+        // State
+        let watchlist = [];
+        let stockData = new Map();
+        let activityLog = [];
+        let selectedTicker = null;
+        let tickerInput = null;
 
-        const thresholdStocks = stockData.filter(s => s.threshold);
+        // Thresholds
+        let siThreshold = 20;
+        let dtcThreshold = 5;
 
-        const chartData = {
-            'GME': [45, 52, 48, 62, 58, 72, 68, 75, 82, 78, 85, 92],
-            'AMC': [35, 42, 38, 45, 52, 48, 55, 62, 58, 65, 72, 68],
-            'CVNA': [25, 32, 45, 52, 62, 78, 85, 92, 88, 95, 100, 98],
-            'BBBY': [85, 82, 78, 72, 68, 65, 72, 78, 82, 88, 92, 95],
-        };
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            initTickerInput();
+            loadFromStorage();
+            updateUI();
+            logActivity('Tracker initialized - using Yahoo Finance API');
+        });
 
-        // Render table
-        function renderTable(data = stockData) {
+        // Initialize the ticker input component
+        function initTickerInput() {
+            tickerInput = new TickerInput('#tickerInputContainer', {
+                placeholder: 'Search ticker (e.g., AAPL, MSFT)',
+                onSelect: (ticker, data) => {
+                    selectedTicker = ticker;
+                    logActivity(`Selected: ${ticker} (${data.name})`);
+                }
+            });
+        }
+
+        // Add the selected ticker to watchlist
+        async function addSelectedTicker() {
+            const ticker = tickerInput.getValue().toUpperCase();
+            if (!ticker) {
+                logActivity('⚠️ Enter a ticker symbol first');
+                return;
+            }
+
+            if (watchlist.includes(ticker)) {
+                logActivity(`⚠️ ${ticker} already in watchlist`);
+                return;
+            }
+
+            setStatus('loading', `Fetching ${ticker}...`);
+            
+            try {
+                // Fetch real data using TickerService
+                const data = await TickerService.getShortInterest(ticker);
+                
+                stockData.set(ticker, {
+                    ticker: data.ticker,
+                    company: data.company,
+                    price: data.price,
+                    priceChange: data.priceChange,
+                    si: data.siPercent,
+                    dtc: data.daysTocover,
+                    shares: data.siShares,
+                    floatShares: data.floatShares,
+                    timestamp: data.timestamp,
+                    status: getStatus(data.siPercent, data.daysTocover)
+                });
+
+                watchlist.push(ticker);
+                saveToStorage();
+                updateUI();
+                tickerInput.clear();
+                selectedTicker = null;
+
+                setStatus('success', 'Data fetched');
+                logActivity(`✅ Added ${ticker} - SI: ${formatPercent(data.siPercent)}, DTC: ${data.daysTocover?.toFixed(1) || 'N/A'}`);
+
+            } catch (error) {
+                setStatus('error', 'Failed to fetch');
+                logActivity(`❌ Failed to add ${ticker}: ${error.message}`);
+            }
+        }
+
+        // Quick add a ticker
+        async function quickAddTicker(ticker) {
+            tickerInput.setValue(ticker);
+            selectedTicker = ticker;
+            await addSelectedTicker();
+        }
+
+        // Remove ticker from watchlist
+        function removeTicker(ticker) {
+            watchlist = watchlist.filter(t => t !== ticker);
+            stockData.delete(ticker);
+            saveToStorage();
+            updateUI();
+            logActivity(`🗑️ Removed ${ticker}`);
+        }
+
+        // Refresh all data
+        async function refreshAllData() {
+            if (watchlist.length === 0) {
+                logActivity('No tickers to refresh');
+                return;
+            }
+
+            const btn = document.getElementById('refreshBtn');
+            btn.disabled = true;
+            btn.innerHTML = '🔄 Refreshing...';
+            setStatus('loading', `Refreshing ${watchlist.length} tickers...`);
+
+            let success = 0;
+            let failed = 0;
+
+            for (const ticker of watchlist) {
+                try {
+                    const data = await TickerService.getShortInterest(ticker);
+                    stockData.set(ticker, {
+                        ticker: data.ticker,
+                        company: data.company,
+                        price: data.price,
+                        priceChange: data.priceChange,
+                        si: data.siPercent,
+                        dtc: data.daysTocover,
+                        shares: data.siShares,
+                        floatShares: data.floatShares,
+                        timestamp: data.timestamp,
+                        status: getStatus(data.siPercent, data.daysTocover)
+                    });
+                    success++;
+                } catch (error) {
+                    console.error(`Failed to refresh ${ticker}:`, error);
+                    failed++;
+                }
+            }
+
+            btn.disabled = false;
+            btn.innerHTML = '🔄 Refresh All';
+            setStatus('success', `Updated ${success}/${watchlist.length}`);
+            logActivity(`🔄 Refreshed: ${success} success, ${failed} failed`);
+            
+            saveToStorage();
+            updateUI();
+        }
+
+        // Determine status based on thresholds
+        function getStatus(si, dtc) {
+            if (si === null || si === undefined) return 'loading';
+            if (si >= siThreshold || (dtc && dtc >= dtcThreshold)) return 'alert';
+            if (si >= siThreshold * 0.7) return 'watch';
+            return 'normal';
+        }
+
+        // Update all UI elements
+        function updateUI() {
+            renderTable();
+            updateStats();
+            updateHighSIList();
+            updateEmptyState();
+        }
+
+        // Render the main table
+        function renderTable() {
             const tbody = document.getElementById('stockTable');
-            tbody.innerHTML = data.map(stock => `
-                <tr>
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const sortField = document.getElementById('sortField').value;
+
+            let filtered = Array.from(stockData.values())
+                .filter(stock => 
+                    stock.ticker.toLowerCase().includes(searchTerm) ||
+                    stock.company.toLowerCase().includes(searchTerm)
+                );
+
+            // Sort
+            filtered.sort((a, b) => {
+                switch (sortField) {
+                    case 'si': return (b.si || 0) - (a.si || 0);
+                    case 'dtc': return (b.dtc || 0) - (a.dtc || 0);
+                    case 'ticker': return a.ticker.localeCompare(b.ticker);
+                    default: return 0;
+                }
+            });
+
+            tbody.innerHTML = filtered.map(stock => `
+                <tr class="${stock.status === 'loading' ? 'loading-row' : ''}">
                     <td>
                         <div class="ticker-cell">
                             <div class="ticker-logo">${stock.ticker.substring(0, 2)}</div>
                             <span class="ticker">${stock.ticker}</span>
                         </div>
                     </td>
-                    <td>${stock.company}</td>
+                    <td>${stock.company || '-'}</td>
+                    <td>
+                        ${stock.price ? `$${stock.price.toFixed(2)}` : '-'}
+                        ${stock.priceChange ? `<span class="${stock.priceChange >= 0 ? 'change positive' : 'change negative'}" style="margin-left: 8px; font-size: 11px;">
+                            ${stock.priceChange >= 0 ? '↑' : '↓'}${Math.abs(stock.priceChange).toFixed(2)}%
+                        </span>` : ''}
+                    </td>
                     <td>
                         <div style="display: flex; align-items: center; gap: 12px;">
-                            <span>${stock.si.toFixed(1)}%</span>
+                            <span>${formatPercent(stock.si)}</span>
                             <div class="si-bar">
-                                <div class="si-bar-fill ${getSIClass(stock.si)}" style="width: ${Math.min(stock.si * 2, 100)}%"></div>
+                                <div class="si-bar-fill ${getSIClass(stock.si)}" style="width: ${Math.min((stock.si || 0) * 2.5, 100)}%"></div>
                             </div>
                         </div>
                     </td>
-                    <td>${stock.dtc.toFixed(1)}</td>
-                    <td class="${stock.change >= 0 ? 'change positive' : 'change negative'}">
-                        ${stock.change >= 0 ? '↑' : '↓'} ${Math.abs(stock.change).toFixed(1)}%
-                    </td>
-                    <td>${stock.shares}</td>
+                    <td>${stock.dtc ? stock.dtc.toFixed(1) : 'N/A'}</td>
+                    <td>${stock.shares ? TickerService.formatNumber(stock.shares) : 'N/A'}</td>
                     <td><span class="badge badge-${stock.status}">${stock.status}</span></td>
+                    <td>
+                        <button class="remove-btn" onclick="removeTicker('${stock.ticker}')" title="Remove">✕</button>
+                    </td>
                 </tr>
             `).join('');
         }
 
+        // Format percentage
+        function formatPercent(val) {
+            if (val === null || val === undefined) return 'N/A';
+            return val.toFixed(2) + '%';
+        }
+
+        // Get SI bar class
         function getSIClass(si) {
-            if (si < 15) return 'si-low';
-            if (si < 25) return 'si-medium';
+            if (!si) return 'si-low';
+            if (si < 10) return 'si-low';
+            if (si < 20) return 'si-medium';
             return 'si-high';
         }
 
-        // Render alerts
-        function renderAlerts() {
-            const feed = document.getElementById('alertFeed');
-            feed.innerHTML = alerts.map(alert => `
-                <div class="alert-item">
-                    <div class="alert-icon ${alert.type}">${alert.icon}</div>
-                    <div class="alert-content">
-                        <div class="alert-title"><strong>${alert.ticker}</strong> - ${alert.title}</div>
-                        <div class="alert-meta">${alert.time}</div>
-                    </div>
-                </div>
-            `).join('');
+        // Update stats
+        function updateStats() {
+            const stocks = Array.from(stockData.values()).filter(s => s.si !== null);
+            
+            // Average SI
+            if (stocks.length > 0) {
+                const avgSI = stocks.reduce((sum, s) => sum + (s.si || 0), 0) / stocks.length;
+                document.getElementById('avgSI').textContent = formatPercent(avgSI);
+                document.getElementById('avgSIChange').textContent = `Based on ${stocks.length} stocks`;
+                document.getElementById('avgSIChange').className = 'change neutral';
+            } else {
+                document.getElementById('avgSI').textContent = '--%';
+                document.getElementById('avgSIChange').textContent = 'Add tickers to track';
+            }
+
+            // High SI count
+            const highSI = stocks.filter(s => s.si >= siThreshold).length;
+            document.getElementById('highSI').textContent = highSI;
+            document.getElementById('highSILabel').textContent = `SI > ${siThreshold}%`;
+            document.getElementById('highSILabel').className = highSI > 0 ? 'change negative' : 'change neutral';
+
+            // Avg DTC
+            const stocksWithDTC = stocks.filter(s => s.dtc);
+            if (stocksWithDTC.length > 0) {
+                const avgDTC = stocksWithDTC.reduce((sum, s) => sum + s.dtc, 0) / stocksWithDTC.length;
+                document.getElementById('avgDTC').textContent = avgDTC.toFixed(1);
+                document.getElementById('avgDTCLabel').textContent = avgDTC >= dtcThreshold ? '⚠️ Above threshold' : 'Normal range';
+            } else {
+                document.getElementById('avgDTC').textContent = '--';
+            }
+
+            // Tracked count
+            document.getElementById('trackedCount').textContent = watchlist.length;
         }
 
-        // Render threshold list
-        function renderThresholdList() {
-            const list = document.getElementById('thresholdList');
-            list.innerHTML = thresholdStocks.map(stock => `
-                <div class="threshold-item">
+        // Update high SI list
+        function updateHighSIList() {
+            const list = document.getElementById('highSIList');
+            const highSI = Array.from(stockData.values())
+                .filter(s => s.si && s.si >= 15)
+                .sort((a, b) => b.si - a.si);
+
+            if (highSI.length === 0) {
+                list.innerHTML = `<div class="empty-state" style="padding: 20px;"><p>No high SI stocks tracked yet</p></div>`;
+                return;
+            }
+
+            list.innerHTML = highSI.map(stock => `
+                <div class="high-si-item">
                     <div>
-                        <span class="threshold-ticker">${stock.ticker}</span>
-                        <span style="color: var(--text-secondary); margin-left: 8px;">${stock.si.toFixed(1)}% SI</span>
+                        <span class="high-si-ticker">${stock.ticker}</span>
+                        <span style="color: var(--text-secondary); margin-left: 8px;">${formatPercent(stock.si)}</span>
                     </div>
-                    <div class="threshold-days">${stock.dtc.toFixed(1)} DTC</div>
+                    <div style="font-size: 12px; color: var(--text-secondary);">${stock.dtc?.toFixed(1) || '-'} DTC</div>
                 </div>
             `).join('');
         }
 
-        // Render chart
-        function updateChart() {
-            const ticker = document.getElementById('chartTicker').value;
-            const data = chartData[ticker] || chartData['GME'];
-            const bars = document.getElementById('chartBars');
-            const max = Math.max(...data);
+        // Update empty state
+        function updateEmptyState() {
+            const table = document.querySelector('table');
+            const emptyState = document.getElementById('emptyState');
             
-            bars.innerHTML = data.map((val, i) => {
-                const height = (val / max) * 100;
-                const isHighlighted = i >= data.length - 3 && val > data[i-1];
-                return `<div class="chart-bar ${isHighlighted ? 'highlighted' : ''}" style="height: ${height}%" title="Week ${i+1}: ${val}%"></div>`;
-            }).join('');
+            if (watchlist.length === 0) {
+                table.style.display = 'none';
+                emptyState.style.display = 'block';
+            } else {
+                table.style.display = 'table';
+                emptyState.style.display = 'none';
+            }
         }
 
-        // Filter table
-        function filterTable() {
-            const search = document.getElementById('searchInput').value.toLowerCase();
-            const status = document.getElementById('statusFilter').value;
+        // Activity log
+        function logActivity(message) {
+            const log = document.getElementById('activityLog');
+            const time = new Date().toLocaleTimeString();
+            activityLog.unshift({ message, time });
             
-            let filtered = stockData.filter(stock => {
-                const matchesSearch = stock.ticker.toLowerCase().includes(search) || 
-                                     stock.company.toLowerCase().includes(search);
-                const matchesStatus = status === 'all' || stock.status === status;
-                return matchesSearch && matchesStatus;
+            if (activityLog.length > 50) activityLog.pop();
+            
+            log.innerHTML = activityLog.map(item => `
+                <div class="activity-item">
+                    <span>${item.message}</span>
+                    <span class="activity-time">${item.time}</span>
+                </div>
+            `).join('');
+        }
+
+        function clearLog() {
+            activityLog = [];
+            document.getElementById('activityLog').innerHTML = '';
+        }
+
+        // Status indicator
+        function setStatus(type, text) {
+            const dot = document.getElementById('statusDot');
+            const statusText = document.getElementById('statusText');
+            
+            dot.className = 'status-dot';
+            if (type === 'loading') dot.classList.add('loading');
+            if (type === 'error') dot.classList.add('error');
+            
+            statusText.textContent = text;
+            
+            // Auto-clear after 3s
+            if (type !== 'loading') {
+                setTimeout(() => {
+                    statusText.textContent = 'Ready';
+                    dot.className = 'status-dot';
+                }, 3000);
+            }
+        }
+
+        // Filter and sort
+        function filterTable() {
+            renderTable();
+        }
+
+        function sortTable() {
+            renderTable();
+        }
+
+        // Update thresholds
+        function updateThresholds() {
+            siThreshold = parseFloat(document.getElementById('siThreshold').value) || 20;
+            dtcThreshold = parseFloat(document.getElementById('dtcThreshold').value) || 5;
+            
+            // Recalculate statuses
+            stockData.forEach((stock, ticker) => {
+                stock.status = getStatus(stock.si, stock.dtc);
             });
             
-            renderTable(filtered);
+            updateUI();
+            logActivity(`Thresholds updated: SI=${siThreshold}%, DTC=${dtcThreshold} days`);
         }
 
-        // Sort table
-        function sortTable() {
-            const field = document.getElementById('sortField').value;
-            let sorted = [...stockData];
-            
-            switch(field) {
-                case 'si':
-                    sorted.sort((a, b) => b.si - a.si);
-                    break;
-                case 'dtc':
-                    sorted.sort((a, b) => b.dtc - a.dtc);
-                    break;
-                case 'change':
-                    sorted.sort((a, b) => b.change - a.change);
-                    break;
-                case 'ticker':
-                    sorted.sort((a, b) => a.ticker.localeCompare(b.ticker));
-                    break;
-            }
-            
-            renderTable(sorted);
-        }
-
-        // Actions
-        function refreshData() {
-            // Simulate refresh
-            document.querySelector('.btn').innerHTML = '🔄 Refreshing...';
-            setTimeout(() => {
-                document.querySelector('.btn').innerHTML = '🔄 Refresh';
-                // In production: fetch new data from FINRA API
-            }, 1500);
-        }
-
+        // Export
         function exportData() {
-            // Generate CSV
+            if (watchlist.length === 0) {
+                logActivity('Nothing to export');
+                return;
+            }
+
             const csv = [
-                ['Ticker', 'Company', 'SI %', 'Days to Cover', 'Change WoW', 'SI Shares', 'Status'],
-                ...stockData.map(s => [s.ticker, s.company, s.si, s.dtc, s.change, s.shares, s.status])
+                ['Ticker', 'Company', 'Price', 'SI %', 'Days to Cover', 'Short Shares', 'Status', 'Timestamp'],
+                ...Array.from(stockData.values()).map(s => [
+                    s.ticker,
+                    s.company,
+                    s.price,
+                    s.si,
+                    s.dtc,
+                    s.shares,
+                    s.status,
+                    new Date(s.timestamp).toISOString()
+                ])
             ].map(row => row.join(',')).join('\n');
-            
+
             const blob = new Blob([csv], { type: 'text/csv' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'short_interest_data.csv';
+            a.download = `short_interest_${new Date().toISOString().split('T')[0]}.csv`;
             a.click();
+            logActivity('📥 Exported CSV');
         }
 
-        function openAlertSettings() {
-            alert('Alert settings panel - would open modal in production');
+        // Local storage
+        function saveToStorage() {
+            localStorage.setItem('si_tracker_watchlist', JSON.stringify(watchlist));
+            localStorage.setItem('si_tracker_data', JSON.stringify(Array.from(stockData.entries())));
         }
 
-        // Initialize
-        renderTable();
-        renderAlerts();
-        renderThresholdList();
-        updateChart();
-
-        // Auto-refresh simulation
-        setInterval(() => {
-            // Simulate real-time updates
-            stockData.forEach(stock => {
-                stock.si += (Math.random() - 0.5) * 0.2;
-                stock.dtc += (Math.random() - 0.5) * 0.1;
-            });
-        }, 30000);
+        function loadFromStorage() {
+            try {
+                const savedWatchlist = localStorage.getItem('si_tracker_watchlist');
+                const savedData = localStorage.getItem('si_tracker_data');
+                
+                if (savedWatchlist) {
+                    watchlist = JSON.parse(savedWatchlist);
+                }
+                
+                if (savedData) {
+                    stockData = new Map(JSON.parse(savedData));
+                }
+                
+                if (watchlist.length > 0) {
+                    logActivity(`Loaded ${watchlist.length} tickers from storage`);
+                }
+            } catch (e) {
+                console.error('Failed to load from storage:', e);
+            }
+        }
     </script>
 </body>
 </html>

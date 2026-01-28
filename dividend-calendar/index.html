@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dividend Calendar & Yield Tracker</title>
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0d1117;
+            --surface: #161b22;
+            --surface-elevated: #1c2128;
+            --border: #30363d;
+            --border-subtle: #21262d;
+            --text: #e6edf3;
+            --text-secondary: #c9d1d9;
+            --text-muted: #8b949e;
+            --accent: #58a6ff;
+            --accent-hover: #79b8ff;
+            --accent-glow: rgba(88, 166, 255, 0.15);
+            --error: #f85149;
+            --success: #3fb950;
+            --warning: #f0c020;
+            --purple: #a371f7;
+            --orange: #f0883e;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
+            --shadow-lg: 0 8px 24px rgba(0,0,0,0.5);
+            --transition-fast: 150ms ease;
+            --transition-normal: 250ms ease;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', Helvetica, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        header {
+            padding: 14px 20px;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: var(--shadow-sm);
+            z-index: 10;
+            flex-wrap: wrap;
+        }
+
+        .logo { font-size: 26px; }
+
+        header h1 {
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+
+        .header-actions {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 14px;
+            color: var(--text-muted);
+            font-size: 13px;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 280px 1fr 300px;
+            gap: 20px;
+            padding: 20px;
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 1200px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .card-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-title .icon { font-size: 16px; }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .stat-value.success { color: var(--success); }
+        .stat-value.warning { color: var(--warning); }
+        .stat-value.error { color: var(--error); }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* Filters */
+        .filter-group {
+            margin-bottom: 12px;
+        }
+
+        .filter-group label {
+            display: block;
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .filter-group input,
+        .filter-group select {
+            width: 100%;
+            padding: 8px 12px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text);
+            font-size: 13px;
+        }
+
+        .filter-group input:focus,
+        .filter-group select:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        /* Calendar */
+        .calendar-container {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            min-height: 600px;
+        }
+
+        .fc {
+            --fc-border-color: var(--border);
+            --fc-button-bg-color: var(--bg);
+            --fc-button-border-color: var(--border);
+            --fc-button-text-color: var(--text-muted);
+            --fc-button-hover-bg-color: var(--surface-elevated);
+            --fc-button-hover-border-color: var(--accent);
+            --fc-button-active-bg-color: var(--accent);
+            --fc-button-active-border-color: var(--accent);
+            --fc-today-bg-color: var(--accent-glow);
+            --fc-event-bg-color: var(--success);
+            --fc-event-border-color: var(--success);
+            --fc-page-bg-color: var(--surface);
+            --fc-neutral-bg-color: var(--bg);
+        }
+
+        .fc .fc-toolbar-title {
+            color: var(--text);
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .fc .fc-col-header-cell-cushion,
+        .fc .fc-daygrid-day-number {
+            color: var(--text-secondary);
+        }
+
+        .fc-event {
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .fc-event.high-yield { background: var(--success) !important; border-color: var(--success) !important; }
+        .fc-event.medium-yield { background: var(--accent) !important; border-color: var(--accent) !important; }
+        .fc-event.low-yield { background: var(--text-muted) !important; border-color: var(--text-muted) !important; }
+        .fc-event.risk { background: var(--error) !important; border-color: var(--error) !important; }
+
+        /* Table */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        th, td {
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        th {
+            background: var(--bg);
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: sticky;
+            top: 0;
+        }
+
+        tr:hover {
+            background: var(--surface-elevated);
+        }
+
+        .ticker-cell {
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .badge-success { background: rgba(63, 185, 80, 0.2); color: var(--success); }
+        .badge-warning { background: rgba(240, 192, 32, 0.2); color: var(--warning); }
+        .badge-error { background: rgba(248, 81, 73, 0.2); color: var(--error); }
+        .badge-info { background: rgba(88, 166, 255, 0.2); color: var(--accent); }
+
+        /* Score bar */
+        .score-bar {
+            width: 60px;
+            height: 6px;
+            background: var(--border);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .score-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        .score-bar-fill.high { background: var(--success); }
+        .score-bar-fill.medium { background: var(--warning); }
+        .score-bar-fill.low { background: var(--error); }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .modal-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-header h3 {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .detail-item {
+            padding: 12px;
+            background: var(--bg);
+            border-radius: 8px;
+        }
+
+        .detail-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .detail-value {
+            font-size: 18px;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+
+        /* Growth chart */
+        .growth-chart {
+            display: flex;
+            align-items: flex-end;
+            gap: 4px;
+            height: 40px;
+        }
+
+        .growth-bar {
+            flex: 1;
+            background: var(--accent);
+            border-radius: 2px 2px 0 0;
+            min-width: 8px;
+            transition: height 0.3s ease;
+        }
+
+        .growth-bar.positive { background: var(--success); }
+        .growth-bar.negative { background: var(--error); }
+
+        /* View tabs */
+        .view-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .view-tab {
+            padding: 8px 16px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-muted);
+            font-size: 13px;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .view-tab:hover {
+            border-color: var(--accent);
+            color: var(--text);
+        }
+
+        .view-tab.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+        }
+
+        /* Watchlist */
+        .watchlist-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border-subtle);
+            gap: 12px;
+        }
+
+        .watchlist-item:last-child {
+            border-bottom: none;
+        }
+
+        .watchlist-ticker {
+            font-weight: 600;
+            color: var(--accent);
+            min-width: 50px;
+        }
+
+        .watchlist-info {
+            flex: 1;
+        }
+
+        .watchlist-name {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .watchlist-yield {
+            font-weight: 600;
+            color: var(--success);
+        }
+
+        /* Loading */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            color: var(--text-muted);
+        }
+
+        .loading::after {
+            content: '';
+            width: 24px;
+            height: 24px;
+            border: 2px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-left: 12px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .container {
+                padding: 12px;
+            }
+            
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <span class="logo">💰</span>
+        <h1>Dividend Calendar & Yield Tracker</h1>
+        <div class="header-actions">
+            <button class="btn" onclick="exportCSV()">📥 Export CSV</button>
+            <button class="btn btn-primary" onclick="refreshData()">🔄 Refresh</button>
+        </div>
+    </header>
+
+    <div class="stats-grid" style="padding: 20px 20px 0; max-width: 1800px; margin: 0 auto;">
+        <div class="stat-card">
+            <div class="stat-value" id="totalStocks">-</div>
+            <div class="stat-label">Tracked Stocks</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value success" id="avgYield">-</div>
+            <div class="stat-label">Avg Yield</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="upcomingEx">-</div>
+            <div class="stat-label">Ex-Dates (30d)</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value warning" id="riskCount">-</div>
+            <div class="stat-label">At-Risk Payouts</div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Left Sidebar - Filters -->
+        <div class="sidebar">
+            <div class="card">
+                <div class="card-title"><span class="icon">🔍</span> Filters</div>
+                <div class="filter-group">
+                    <label>Search Ticker</label>
+                    <input type="text" id="tickerSearch" placeholder="AAPL, MSFT...">
+                </div>
+                <div class="filter-group">
+                    <label>Sector</label>
+                    <select id="sectorFilter">
+                        <option value="">All Sectors</option>
+                        <option value="Technology">Technology</option>
+                        <option value="Financial">Financial Services</option>
+                        <option value="Healthcare">Healthcare</option>
+                        <option value="Consumer">Consumer</option>
+                        <option value="Energy">Energy</option>
+                        <option value="Utilities">Utilities</option>
+                        <option value="Real Estate">Real Estate</option>
+                        <option value="Industrial">Industrial</option>
+                        <option value="Materials">Materials</option>
+                        <option value="Communication">Communication</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Yield Range</label>
+                    <select id="yieldFilter">
+                        <option value="">All Yields</option>
+                        <option value="high">High (>4%)</option>
+                        <option value="medium">Medium (2-4%)</option>
+                        <option value="low">Low (<2%)</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Sustainability</label>
+                    <select id="sustainabilityFilter">
+                        <option value="">All</option>
+                        <option value="safe">Safe (Score >70)</option>
+                        <option value="moderate">Moderate (50-70)</option>
+                        <option value="risky">At Risk (<50)</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Growth Rate</label>
+                    <select id="growthFilter">
+                        <option value="">All</option>
+                        <option value="aristocrat">Aristocrats (25+ yrs)</option>
+                        <option value="growing">Growing (DGR >5%)</option>
+                        <option value="stable">Stable (DGR 0-5%)</option>
+                        <option value="declining">Declining</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><span class="icon">⭐</span> Top Yields</div>
+                <div id="topYields" class="loading">Loading...</div>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><span class="icon">👑</span> Aristocrats</div>
+                <div id="aristocrats" class="loading">Loading...</div>
+            </div>
+        </div>
+
+        <!-- Main Content - Calendar & Table -->
+        <div class="main-content">
+            <div class="view-tabs">
+                <button class="view-tab active" data-view="calendar">📅 Calendar</button>
+                <button class="view-tab" data-view="table">📊 Table View</button>
+                <button class="view-tab" data-view="analytics">📈 Analytics</button>
+            </div>
+
+            <div id="calendarView" class="calendar-container">
+                <div id="calendar"></div>
+            </div>
+
+            <div id="tableView" class="card" style="display: none;">
+                <div class="table-container">
+                    <table id="dividendTable">
+                        <thead>
+                            <tr>
+                                <th>Ticker</th>
+                                <th>Company</th>
+                                <th>Yield</th>
+                                <th>Annual Div</th>
+                                <th>Ex-Date</th>
+                                <th>Pay Date</th>
+                                <th>DGR (5Y)</th>
+                                <th>Payout Ratio</th>
+                                <th>Sustainability</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="analyticsView" class="card" style="display: none;">
+                <div class="card-title"><span class="icon">📊</span> Yield Analytics</div>
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <div class="detail-label">Portfolio Avg Yield</div>
+                        <div class="detail-value" id="portfolioYield">-</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">vs S&P 500 Yield</div>
+                        <div class="detail-value" id="vsSP500">-</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Est. Annual Income</div>
+                        <div class="detail-value" id="annualIncome">-</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Dividend Safety Score</div>
+                        <div class="detail-value" id="safetyScore">-</div>
+                    </div>
+                </div>
+                <div style="margin-top: 20px;">
+                    <div class="card-title"><span class="icon">📈</span> Sector Yield Comparison</div>
+                    <div id="sectorChart" style="margin-top: 12px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Sidebar -->
+        <div class="sidebar">
+            <div class="card">
+                <div class="card-title"><span class="icon">📆</span> Upcoming Ex-Dates</div>
+                <div id="upcomingExDates" class="loading">Loading...</div>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><span class="icon">⚠️</span> Cut Risk Watch</div>
+                <div id="cutRiskWatch" class="loading">Loading...</div>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><span class="icon">📈</span> Recent Increases</div>
+                <div id="recentIncreases" class="loading">Loading...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stock Detail Modal -->
+    <div class="modal-overlay" id="stockModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="modalTitle">Stock Details</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="detail-grid" id="modalDetails">
+                </div>
+                <div style="margin-top: 20px;">
+                    <div class="card-title"><span class="icon">📊</span> Dividend History (8 Quarters)</div>
+                    <div class="growth-chart" id="dividendHistory"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+    <script>
+        let calendar;
+        let dividendData = [];
+        let filteredData = [];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            initCalendar();
+            loadData();
+            setupFilters();
+            setupViewTabs();
+        });
+
+        function initCalendar() {
+            const calendarEl = document.getElementById('calendar');
+            calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,listWeek'
+                },
+                eventClick: function(info) {
+                    showStockDetail(info.event.extendedProps.ticker);
+                },
+                eventDidMount: function(info) {
+                    info.el.title = `${info.event.extendedProps.ticker}: $${info.event.extendedProps.dividend} (${info.event.extendedProps.yield}% yield)`;
+                }
+            });
+            calendar.render();
+        }
+
+        async function loadData() {
+            try {
+                const response = await fetch('dividend_data.json');
+                if (!response.ok) throw new Error('Data not found');
+                dividendData = await response.json();
+                filteredData = [...dividendData.stocks];
+                renderAll();
+            } catch (e) {
+                console.log('Loading sample data...');
+                loadSampleData();
+            }
+        }
+
+        function loadSampleData() {
+            dividendData = {
+                lastUpdated: new Date().toISOString(),
+                stats: {
+                    totalStocks: 50,
+                    avgYield: 3.2,
+                    sp500Yield: 1.4
+                },
+                stocks: generateSampleStocks()
+            };
+            filteredData = [...dividendData.stocks];
+            renderAll();
+        }
+
+        function generateSampleStocks() {
+            const stocks = [
+                { ticker: 'JNJ', name: 'Johnson & Johnson', sector: 'Healthcare', yield: 3.1, annualDiv: 4.76, exDate: '2026-02-14', payDate: '2026-03-05', dgr5y: 5.8, payoutRatio: 45, yearsGrowth: 62, sustainability: 92 },
+                { ticker: 'PG', name: 'Procter & Gamble', sector: 'Consumer', yield: 2.5, annualDiv: 3.76, exDate: '2026-02-21', payDate: '2026-03-15', dgr5y: 5.5, payoutRatio: 62, yearsGrowth: 68, sustainability: 88 },
+                { ticker: 'KO', name: 'Coca-Cola', sector: 'Consumer', yield: 3.0, annualDiv: 1.84, exDate: '2026-03-01', payDate: '2026-04-01', dgr5y: 3.5, payoutRatio: 75, yearsGrowth: 62, sustainability: 78 },
+                { ticker: 'VZ', name: 'Verizon', sector: 'Communication', yield: 6.8, annualDiv: 2.66, exDate: '2026-01-30', payDate: '2026-02-15', dgr5y: 2.0, payoutRatio: 52, yearsGrowth: 18, sustainability: 72 },
+                { ticker: 'T', name: 'AT&T', sector: 'Communication', yield: 5.8, annualDiv: 1.11, exDate: '2026-02-05', payDate: '2026-02-25', dgr5y: -15, payoutRatio: 65, yearsGrowth: 0, sustainability: 55 },
+                { ticker: 'O', name: 'Realty Income', sector: 'Real Estate', yield: 5.5, annualDiv: 3.08, exDate: '2026-01-31', payDate: '2026-02-15', dgr5y: 3.2, payoutRatio: 85, yearsGrowth: 30, sustainability: 70 },
+                { ticker: 'ABBV', name: 'AbbVie', sector: 'Healthcare', yield: 3.9, annualDiv: 6.20, exDate: '2026-02-10', payDate: '2026-03-01', dgr5y: 8.5, payoutRatio: 48, yearsGrowth: 12, sustainability: 85 },
+                { ticker: 'XOM', name: 'Exxon Mobil', sector: 'Energy', yield: 3.5, annualDiv: 3.80, exDate: '2026-02-08', payDate: '2026-03-10', dgr5y: 2.8, payoutRatio: 38, yearsGrowth: 42, sustainability: 82 },
+                { ticker: 'CVX', name: 'Chevron', sector: 'Energy', yield: 4.2, annualDiv: 6.52, exDate: '2026-02-15', payDate: '2026-03-12', dgr5y: 5.5, payoutRatio: 55, yearsGrowth: 37, sustainability: 78 },
+                { ticker: 'MO', name: 'Altria', sector: 'Consumer', yield: 8.5, annualDiv: 3.92, exDate: '2026-03-10', payDate: '2026-04-10', dgr5y: 4.0, payoutRatio: 78, yearsGrowth: 54, sustainability: 45 },
+                { ticker: 'IBM', name: 'IBM', sector: 'Technology', yield: 4.2, annualDiv: 6.64, exDate: '2026-02-07', payDate: '2026-03-10', dgr5y: 1.5, payoutRatio: 65, yearsGrowth: 28, sustainability: 68 },
+                { ticker: 'MMM', name: '3M Company', sector: 'Industrial', yield: 5.8, annualDiv: 6.00, exDate: '2026-02-20', payDate: '2026-03-12', dgr5y: 0.5, payoutRatio: 72, yearsGrowth: 65, sustainability: 52 },
+                { ticker: 'PEP', name: 'PepsiCo', sector: 'Consumer', yield: 2.9, annualDiv: 5.06, exDate: '2026-03-02', payDate: '2026-03-30', dgr5y: 7.2, payoutRatio: 68, yearsGrowth: 52, sustainability: 82 },
+                { ticker: 'MSFT', name: 'Microsoft', sector: 'Technology', yield: 0.8, annualDiv: 3.00, exDate: '2026-02-18', payDate: '2026-03-12', dgr5y: 10.5, payoutRatio: 28, yearsGrowth: 22, sustainability: 98 },
+                { ticker: 'AAPL', name: 'Apple', sector: 'Technology', yield: 0.5, annualDiv: 0.96, exDate: '2026-02-10', payDate: '2026-02-15', dgr5y: 5.8, payoutRatio: 15, yearsGrowth: 12, sustainability: 99 }
+            ];
+            return stocks.map(s => ({
+                ...s,
+                dividendHistory: generateHistory(s.annualDiv / 4)
+            }));
+        }
+
+        function generateHistory(currentDiv) {
+            const history = [];
+            let div = currentDiv * 0.88;
+            for (let i = 0; i < 8; i++) {
+                history.push(Number((div + (Math.random() * div * 0.15)).toFixed(4)));
+                div *= 1.02;
+            }
+            return history;
+        }
+
+        function renderAll() {
+            updateStats();
+            updateCalendar();
+            updateTable();
+            updateSidebars();
+        }
+
+        function updateStats() {
+            const stats = dividendData.stats || {
+                totalStocks: filteredData.length,
+                avgYield: (filteredData.reduce((a, b) => a + b.yield, 0) / filteredData.length).toFixed(1),
+                sp500Yield: 1.4
+            };
+            
+            document.getElementById('totalStocks').textContent = filteredData.length;
+            document.getElementById('avgYield').textContent = stats.avgYield + '%';
+            
+            const now = new Date();
+            const next30 = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+            const upcoming = filteredData.filter(s => {
+                const exDate = new Date(s.exDate);
+                return exDate >= now && exDate <= next30;
+            }).length;
+            document.getElementById('upcomingEx').textContent = upcoming;
+            
+            const atRisk = filteredData.filter(s => s.sustainability < 50).length;
+            document.getElementById('riskCount').textContent = atRisk;
+        }
+
+        function updateCalendar() {
+            calendar.removeAllEvents();
+            
+            const events = filteredData.map(stock => ({
+                title: `${stock.ticker} $${(stock.annualDiv / 4).toFixed(2)}`,
+                start: stock.exDate,
+                className: getYieldClass(stock.yield, stock.sustainability),
+                extendedProps: {
+                    ticker: stock.ticker,
+                    dividend: (stock.annualDiv / 4).toFixed(2),
+                    yield: stock.yield
+                }
+            }));
+            
+            calendar.addEventSource(events);
+        }
+
+        function getYieldClass(yld, sustainability) {
+            if (sustainability < 50) return 'risk';
+            if (yld >= 4) return 'high-yield';
+            if (yld >= 2) return 'medium-yield';
+            return 'low-yield';
+        }
+
+        function updateTable() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = filteredData.map(stock => `
+                <tr>
+                    <td class="ticker-cell">${stock.ticker}</td>
+                    <td>${stock.name}</td>
+                    <td><span class="badge ${stock.yield >= 4 ? 'badge-success' : stock.yield >= 2 ? 'badge-info' : ''}">${stock.yield}%</span></td>
+                    <td>$${stock.annualDiv.toFixed(2)}</td>
+                    <td>${formatDate(stock.exDate)}</td>
+                    <td>${formatDate(stock.payDate)}</td>
+                    <td><span class="${stock.dgr5y > 0 ? 'badge-success' : 'badge-error'}">${stock.dgr5y > 0 ? '+' : ''}${stock.dgr5y}%</span></td>
+                    <td>${stock.payoutRatio}%</td>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div class="score-bar">
+                                <div class="score-bar-fill ${stock.sustainability >= 70 ? 'high' : stock.sustainability >= 50 ? 'medium' : 'low'}" 
+                                     style="width: ${stock.sustainability}%"></div>
+                            </div>
+                            <span>${stock.sustainability}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <button class="btn" onclick="showStockDetail('${stock.ticker}')">📊</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function updateSidebars() {
+            // Top Yields
+            const topYields = [...filteredData].sort((a, b) => b.yield - a.yield).slice(0, 5);
+            document.getElementById('topYields').innerHTML = topYields.map(s => `
+                <div class="watchlist-item">
+                    <span class="watchlist-ticker">${s.ticker}</span>
+                    <div class="watchlist-info">
+                        <div class="watchlist-name">${s.name}</div>
+                    </div>
+                    <span class="watchlist-yield">${s.yield}%</span>
+                </div>
+            `).join('');
+
+            // Aristocrats
+            const aristocrats = filteredData.filter(s => s.yearsGrowth >= 25).slice(0, 5);
+            document.getElementById('aristocrats').innerHTML = aristocrats.length ? aristocrats.map(s => `
+                <div class="watchlist-item">
+                    <span class="watchlist-ticker">${s.ticker}</span>
+                    <div class="watchlist-info">
+                        <div class="watchlist-name">${s.yearsGrowth} years</div>
+                    </div>
+                    <span class="badge badge-success">👑</span>
+                </div>
+            `).join('') : '<div style="color: var(--text-muted); font-size: 13px;">No aristocrats in current filter</div>';
+
+            // Upcoming Ex-Dates
+            const now = new Date();
+            const upcoming = [...filteredData]
+                .filter(s => new Date(s.exDate) >= now)
+                .sort((a, b) => new Date(a.exDate) - new Date(b.exDate))
+                .slice(0, 5);
+            document.getElementById('upcomingExDates').innerHTML = upcoming.map(s => `
+                <div class="watchlist-item">
+                    <span class="watchlist-ticker">${s.ticker}</span>
+                    <div class="watchlist-info">
+                        <div class="watchlist-name">${formatDate(s.exDate)}</div>
+                    </div>
+                    <span style="color: var(--text-muted)">$${(s.annualDiv / 4).toFixed(2)}</span>
+                </div>
+            `).join('') || '<div style="color: var(--text-muted); font-size: 13px;">No upcoming ex-dates</div>';
+
+            // Cut Risk Watch
+            const atRisk = filteredData.filter(s => s.sustainability < 50).slice(0, 5);
+            document.getElementById('cutRiskWatch').innerHTML = atRisk.length ? atRisk.map(s => `
+                <div class="watchlist-item">
+                    <span class="watchlist-ticker">${s.ticker}</span>
+                    <div class="watchlist-info">
+                        <div class="watchlist-name">Score: ${s.sustainability}</div>
+                    </div>
+                    <span class="badge badge-error">⚠️</span>
+                </div>
+            `).join('') : '<div style="color: var(--text-muted); font-size: 13px;">No at-risk dividends 🎉</div>';
+
+            // Recent Increases
+            const growers = filteredData.filter(s => s.dgr5y > 5).sort((a, b) => b.dgr5y - a.dgr5y).slice(0, 5);
+            document.getElementById('recentIncreases').innerHTML = growers.map(s => `
+                <div class="watchlist-item">
+                    <span class="watchlist-ticker">${s.ticker}</span>
+                    <div class="watchlist-info">
+                        <div class="watchlist-name">DGR: +${s.dgr5y}%</div>
+                    </div>
+                    <span class="badge badge-success">📈</span>
+                </div>
+            `).join('') || '<div style="color: var(--text-muted); font-size: 13px;">No recent increases</div>';
+
+            // Analytics
+            updateAnalytics();
+        }
+
+        function updateAnalytics() {
+            if (filteredData.length === 0) return;
+            
+            const avgYield = (filteredData.reduce((a, b) => a + b.yield, 0) / filteredData.length).toFixed(2);
+            const sp500Yield = 1.4;
+            const avgSafety = Math.round(filteredData.reduce((a, b) => a + b.sustainability, 0) / filteredData.length);
+            
+            document.getElementById('portfolioYield').textContent = avgYield + '%';
+            document.getElementById('vsSP500').textContent = `+${(avgYield - sp500Yield).toFixed(1)}%`;
+            document.getElementById('annualIncome').textContent = '$' + (filteredData.reduce((a, b) => a + b.annualDiv, 0) * 100).toLocaleString(); // per $10k invested per stock
+            document.getElementById('safetyScore').textContent = avgSafety + '/100';
+
+            // Sector chart
+            const sectors = {};
+            filteredData.forEach(s => {
+                if (!sectors[s.sector]) sectors[s.sector] = { total: 0, count: 0 };
+                sectors[s.sector].total += s.yield;
+                sectors[s.sector].count++;
+            });
+            
+            const sectorData = Object.entries(sectors).map(([name, data]) => ({
+                name,
+                avgYield: (data.total / data.count).toFixed(1)
+            })).sort((a, b) => b.avgYield - a.avgYield);
+
+            document.getElementById('sectorChart').innerHTML = sectorData.map(s => `
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                    <div style="width: 100px; font-size: 12px; color: var(--text-muted);">${s.name}</div>
+                    <div style="flex: 1; height: 20px; background: var(--bg); border-radius: 4px; overflow: hidden;">
+                        <div style="width: ${s.avgYield * 12}%; height: 100%; background: var(--accent);"></div>
+                    </div>
+                    <div style="width: 50px; font-weight: 600; text-align: right;">${s.avgYield}%</div>
+                </div>
+            `).join('');
+        }
+
+        function showStockDetail(ticker) {
+            const stock = dividendData.stocks.find(s => s.ticker === ticker);
+            if (!stock) return;
+
+            document.getElementById('modalTitle').textContent = `${stock.ticker} - ${stock.name}`;
+            
+            document.getElementById('modalDetails').innerHTML = `
+                <div class="detail-item">
+                    <div class="detail-label">Dividend Yield</div>
+                    <div class="detail-value" style="color: var(--success)">${stock.yield}%</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Annual Dividend</div>
+                    <div class="detail-value">$${stock.annualDiv.toFixed(2)}</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Ex-Dividend Date</div>
+                    <div class="detail-value">${formatDate(stock.exDate)}</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Payment Date</div>
+                    <div class="detail-value">${formatDate(stock.payDate)}</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">5Y Dividend Growth</div>
+                    <div class="detail-value" style="color: ${stock.dgr5y > 0 ? 'var(--success)' : 'var(--error)'}">${stock.dgr5y > 0 ? '+' : ''}${stock.dgr5y}%</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Payout Ratio</div>
+                    <div class="detail-value">${stock.payoutRatio}%</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Years of Growth</div>
+                    <div class="detail-value">${stock.yearsGrowth} ${stock.yearsGrowth >= 25 ? '👑' : ''}</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Sustainability Score</div>
+                    <div class="detail-value">
+                        <span style="color: ${stock.sustainability >= 70 ? 'var(--success)' : stock.sustainability >= 50 ? 'var(--warning)' : 'var(--error)'}">${stock.sustainability}/100</span>
+                    </div>
+                </div>
+            `;
+
+            // Dividend history chart
+            const maxDiv = Math.max(...stock.dividendHistory);
+            document.getElementById('dividendHistory').innerHTML = stock.dividendHistory.map((div, i) => `
+                <div class="growth-bar ${div >= stock.dividendHistory[Math.max(0, i-1)] ? 'positive' : 'negative'}" 
+                     style="height: ${(div / maxDiv) * 100}%"
+                     title="Q${i+1}: $${div.toFixed(4)}"></div>
+            `).join('');
+
+            document.getElementById('stockModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('stockModal').classList.remove('active');
+        }
+
+        function setupFilters() {
+            const filters = ['tickerSearch', 'sectorFilter', 'yieldFilter', 'sustainabilityFilter', 'growthFilter'];
+            filters.forEach(id => {
+                document.getElementById(id).addEventListener('input', applyFilters);
+                document.getElementById(id).addEventListener('change', applyFilters);
+            });
+        }
+
+        function applyFilters() {
+            const tickerSearch = document.getElementById('tickerSearch').value.toUpperCase();
+            const sector = document.getElementById('sectorFilter').value;
+            const yieldRange = document.getElementById('yieldFilter').value;
+            const sustainability = document.getElementById('sustainabilityFilter').value;
+            const growth = document.getElementById('growthFilter').value;
+
+            filteredData = dividendData.stocks.filter(stock => {
+                if (tickerSearch && !stock.ticker.includes(tickerSearch)) return false;
+                if (sector && !stock.sector.includes(sector)) return false;
+                
+                if (yieldRange === 'high' && stock.yield < 4) return false;
+                if (yieldRange === 'medium' && (stock.yield < 2 || stock.yield >= 4)) return false;
+                if (yieldRange === 'low' && stock.yield >= 2) return false;
+                
+                if (sustainability === 'safe' && stock.sustainability < 70) return false;
+                if (sustainability === 'moderate' && (stock.sustainability < 50 || stock.sustainability >= 70)) return false;
+                if (sustainability === 'risky' && stock.sustainability >= 50) return false;
+                
+                if (growth === 'aristocrat' && stock.yearsGrowth < 25) return false;
+                if (growth === 'growing' && stock.dgr5y <= 5) return false;
+                if (growth === 'stable' && (stock.dgr5y <= 0 || stock.dgr5y > 5)) return false;
+                if (growth === 'declining' && stock.dgr5y >= 0) return false;
+                
+                return true;
+            });
+
+            renderAll();
+        }
+
+        function setupViewTabs() {
+            document.querySelectorAll('.view-tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.view-tab').forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    
+                    const view = tab.dataset.view;
+                    document.getElementById('calendarView').style.display = view === 'calendar' ? 'block' : 'none';
+                    document.getElementById('tableView').style.display = view === 'table' ? 'block' : 'none';
+                    document.getElementById('analyticsView').style.display = view === 'analytics' ? 'block' : 'none';
+                });
+            });
+        }
+
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        }
+
+        function exportCSV() {
+            const headers = ['Ticker', 'Company', 'Sector', 'Yield', 'Annual Dividend', 'Ex-Date', 'Pay Date', 'DGR 5Y', 'Payout Ratio', 'Sustainability'];
+            const rows = filteredData.map(s => [
+                s.ticker, s.name, s.sector, s.yield, s.annualDiv, s.exDate, s.payDate, s.dgr5y, s.payoutRatio, s.sustainability
+            ]);
+            
+            const csv = [headers, ...rows].map(r => r.join(',')).join('\n');
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'dividend_data.csv';
+            a.click();
+        }
+
+        function refreshData() {
+            loadData();
+        }
+
+        // Close modal on outside click
+        document.getElementById('stockModal').addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal-overlay')) {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>

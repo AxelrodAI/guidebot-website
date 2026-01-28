@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>H.8 Banking Data Dashboard | Federal Reserve Weekly Data</title>
+    <meta name="description" content="Live Federal Reserve H.8 banking data dashboard. Track commercial bank loans, deposits, and credit trends with interactive charts.">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    
+    <style>
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #111827;
+            --bg-card: #1a2234;
+            --bg-card-hover: #1f2942;
+            --text-primary: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            --accent-blue: #3b82f6;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --accent-yellow: #f59e0b;
+            --accent-purple: #8b5cf6;
+            --border-color: #374151;
+            --chart-grid: #1f2937;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* Header */
+        header {
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-card) 100%);
+            border-bottom: 1px solid var(--border-color);
+            padding: 24px 0;
+            margin-bottom: 30px;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .header-title h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fff 0%, #3b82f6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .header-title p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-top: 4px;
+        }
+        
+        .release-info {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px 20px;
+            text-align: right;
+        }
+        
+        .release-info .label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .release-info .date {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .release-info .as-of {
+            font-size: 0.85rem;
+            color: var(--accent-blue);
+            margin-top: 8px;
+        }
+        
+        /* Summary Cards */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+            margin-bottom: 30px;
+        }
+        
+        .summary-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.2s ease;
+        }
+        
+        .summary-card:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--accent-blue);
+        }
+        
+        .summary-card .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+        
+        .summary-card .title {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        
+        .summary-card .category-badge {
+            font-size: 0.65rem;
+            padding: 3px 8px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+        }
+        
+        .category-badge.loans { background: rgba(59, 130, 246, 0.2); color: var(--accent-blue); }
+        .category-badge.deposits { background: rgba(16, 185, 129, 0.2); color: var(--accent-green); }
+        .category-badge.other { background: rgba(139, 92, 246, 0.2); color: var(--accent-purple); }
+        
+        .summary-card .value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+        
+        .summary-card .changes {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        
+        .change-item {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .change-item .label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+        
+        .change-item .value {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        
+        .change-item .value.positive { color: var(--accent-green); }
+        .change-item .value.negative { color: var(--accent-red); }
+        
+        .sparkline-container {
+            height: 40px;
+            margin-top: 12px;
+        }
+        
+        /* Charts Section */
+        .charts-section {
+            margin-bottom: 40px;
+        }
+        
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 24px;
+            background: var(--accent-blue);
+            border-radius: 2px;
+        }
+        
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 20px;
+        }
+        
+        .chart-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+        }
+        
+        .chart-card.full-width {
+            grid-column: 1 / -1;
+        }
+        
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .chart-header h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .chart-header .subtitle {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+        
+        .chart-controls {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .chart-btn {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .chart-btn:hover, .chart-btn.active {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+            color: white;
+        }
+        
+        .chart-container {
+            height: 350px;
+            position: relative;
+        }
+        
+        .chart-container.tall {
+            height: 450px;
+        }
+        
+        /* Data Table */
+        .data-table-section {
+            margin-top: 40px;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--bg-card);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .data-table th {
+            background: var(--bg-secondary);
+            padding: 14px 16px;
+            text-align: left;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .data-table td {
+            padding: 14px 16px;
+            font-size: 0.9rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .data-table tr:hover {
+            background: var(--bg-card-hover);
+        }
+        
+        .data-table .series-name {
+            font-weight: 500;
+        }
+        
+        .data-table .number {
+            font-family: 'SF Mono', Monaco, 'Fira Code', monospace;
+            text-align: right;
+        }
+        
+        /* Footer */
+        footer {
+            margin-top: 60px;
+            padding: 30px 0;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+        }
+        
+        footer p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+        
+        footer a {
+            color: var(--accent-blue);
+            text-decoration: none;
+        }
+        
+        footer a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Loading State */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+            color: var(--text-secondary);
+        }
+        
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border-color);
+            border-top-color: var(--accent-blue);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 16px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Error State */
+        .error-message {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--accent-red);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            color: var(--accent-red);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 12px;
+            }
+            
+            .header-content {
+                flex-direction: column;
+            }
+            
+            .release-info {
+                text-align: left;
+                width: 100%;
+            }
+            
+            .chart-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .summary-card .value {
+                font-size: 1.5rem;
+            }
+            
+            .data-table {
+                font-size: 0.8rem;
+            }
+            
+            .data-table th, .data-table td {
+                padding: 10px 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="header-title">
+                    <h1>📊 H.8 Banking Dashboard</h1>
+                    <p>Federal Reserve Weekly Commercial Bank Data</p>
+                </div>
+                <div class="release-info" id="releaseInfo">
+                    <div class="label">Latest Release</div>
+                    <div class="date" id="releaseDate">Loading...</div>
+                    <div class="as-of" id="dataAsOf"></div>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <main class="container">
+        <!-- Summary Cards -->
+        <section class="summary-grid" id="summaryCards">
+            <div class="loading">
+                <div class="loading-spinner"></div>
+                <span>Loading H.8 data...</span>
+            </div>
+        </section>
+        
+        <!-- QTD Charts -->
+        <section class="charts-section">
+            <h2 class="section-title">Quarter-to-Date Growth Comparison</h2>
+            <div class="chart-grid">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div>
+                            <h3>Loan Growth (QTD)</h3>
+                            <div class="subtitle">Current quarter vs. same quarter in prior years</div>
+                        </div>
+                        <div class="chart-controls">
+                            <button class="chart-btn active" data-series="TOTLL" onclick="updateQTDChart('loans', 'TOTLL', this)">Total</button>
+                            <button class="chart-btn" data-series="TOTCI" onclick="updateQTDChart('loans', 'TOTCI', this)">C&I</button>
+                            <button class="chart-btn" data-series="RELACBW027SBOG" onclick="updateQTDChart('loans', 'RELACBW027SBOG', this)">Real Estate</button>
+                            <button class="chart-btn" data-series="CLSACBW027SBOG" onclick="updateQTDChart('loans', 'CLSACBW027SBOG', this)">Consumer</button>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="loansQTDChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div>
+                            <h3>Deposit Growth (QTD)</h3>
+                            <div class="subtitle">Current quarter vs. same quarter in prior years</div>
+                        </div>
+                        <div class="chart-controls">
+                            <button class="chart-btn active" data-series="DPSACBW027SBOG" onclick="updateQTDChart('deposits', 'DPSACBW027SBOG', this)">Total</button>
+                            <button class="chart-btn" data-series="LTDACBW027SBOG" onclick="updateQTDChart('deposits', 'LTDACBW027SBOG', this)">Large Time</button>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="depositsQTDChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- YoY Trends Chart -->
+        <section class="charts-section">
+            <h2 class="section-title">Year-over-Year Change Trends</h2>
+            <div class="chart-grid">
+                <div class="chart-card full-width">
+                    <div class="chart-header">
+                        <div>
+                            <h3>YoY % Change: Loans vs Deposits</h3>
+                            <div class="subtitle">Rolling 2-year view of annual growth rates</div>
+                        </div>
+                    </div>
+                    <div class="chart-container tall">
+                        <canvas id="yoyTrendsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Data Table -->
+        <section class="data-table-section">
+            <h2 class="section-title">All H.8 Series Data</h2>
+            <table class="data-table" id="dataTable">
+                <thead>
+                    <tr>
+                        <th>Series</th>
+                        <th>Latest ($B)</th>
+                        <th>WoW Change</th>
+                        <th>WoW %</th>
+                        <th>YoY Change</th>
+                        <th>YoY %</th>
+                        <th>QTD %</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr><td colspan="7" class="loading">Loading...</td></tr>
+                </tbody>
+            </table>
+        </section>
+    </main>
+    
+    <footer>
+        <div class="container">
+            <p>
+                Data Source: <a href="https://www.federalreserve.gov/releases/h8/" target="_blank">Federal Reserve H.8 Release</a> via 
+                <a href="https://fred.stlouisfed.org/" target="_blank">FRED API</a><br>
+                H.8 is released every Friday at 4:15 PM ET. Data reflects balances as of the prior Wednesday.<br>
+                <span id="lastUpdated"></span>
+            </p>
+        </div>
+    </footer>
+    
+    <script>
+        // Global data store
+        let h8Data = null;
+        let charts = {};
+        
+        // Chart.js defaults for dark theme
+        Chart.defaults.color = '#9ca3af';
+        Chart.defaults.borderColor = '#1f2937';
+        Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+        
+        // Color palette for years
+        const yearColors = {
+            '2026': '#3b82f6',
+            '2025': '#10b981',
+            '2024': '#f59e0b',
+            '2023': '#ef4444',
+            '2022': '#8b5cf6',
+            '2021': '#ec4899',
+            '2020': '#6366f1'
+        };
+        
+        // Fetch data
+        async function loadData() {
+            try {
+                const response = await fetch('h8_data.json');
+                if (!response.ok) throw new Error('Data file not found');
+                h8Data = await response.json();
+                renderDashboard();
+            } catch (error) {
+                console.error('Error loading data:', error);
+                showError('Unable to load H.8 data. Please ensure h8_data.json exists.');
+            }
+        }
+        
+        function showError(message) {
+            document.getElementById('summaryCards').innerHTML = `
+                <div class="error-message" style="grid-column: 1 / -1;">
+                    <p><strong>⚠️ Error</strong></p>
+                    <p>${message}</p>
+                    <p style="margin-top: 10px; font-size: 0.85rem;">Run <code>python h8_data_updater.py</code> to generate the data file.</p>
+                </div>
+            `;
+        }
+        
+        function renderDashboard() {
+            renderReleaseInfo();
+            renderSummaryCards();
+            renderQTDCharts();
+            renderYoYChart();
+            renderDataTable();
+        }
+        
+        function renderReleaseInfo() {
+            const meta = h8Data.meta;
+            document.getElementById('releaseDate').textContent = formatDate(meta.release_date);
+            document.getElementById('dataAsOf').innerHTML = `Data as of: <strong>${formatDate(meta.data_as_of)}</strong>`;
+            document.getElementById('lastUpdated').textContent = `Dashboard updated: ${new Date(meta.updated_at).toLocaleString()}`;
+        }
+        
+        function renderSummaryCards() {
+            const container = document.getElementById('summaryCards');
+            const series = h8Data.series;
+            
+            // Order: key loan & deposit series first
+            const order = ['TOTLL', 'DPSACBW027SBOG', 'TOTCI', 'RELACBW027SBOG', 'CLSACBW027SBOG', 'LTDACBW027SBOG'];
+            const orderedKeys = [...order.filter(k => series[k]), ...Object.keys(series).filter(k => !order.includes(k))];
+            
+            container.innerHTML = orderedKeys.slice(0, 6).map(key => {
+                const s = series[key];
+                return `
+                    <div class="summary-card">
+                        <div class="card-header">
+                            <span class="title">${s.name}</span>
+                            <span class="category-badge ${s.category}">${s.category}</span>
+                        </div>
+                        <div class="value">$${formatNumber(s.latest_value)}B</div>
+                        <div class="changes">
+                            <div class="change-item">
+                                <span class="label">WoW</span>
+                                <span class="value ${getChangeClass(s.wow_chg)}">${formatChange(s.wow_chg)}B (${formatPct(s.wow_pct)})</span>
+                            </div>
+                            <div class="change-item">
+                                <span class="label">YoY</span>
+                                <span class="value ${getChangeClass(s.yoy_chg)}">${formatChange(s.yoy_chg)}B (${formatPct(s.yoy_pct)})</span>
+                            </div>
+                            <div class="change-item">
+                                <span class="label">QTD</span>
+                                <span class="value ${getChangeClass(s.qtd_chg)}">${formatPct(s.qtd_pct)}</span>
+                            </div>
+                        </div>
+                        <div class="sparkline-container">
+                            <canvas id="spark-${key}"></canvas>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            // Render sparklines
+            orderedKeys.slice(0, 6).forEach(key => {
+                const s = series[key];
+                if (s.sparkline && s.sparkline.length > 0) {
+                    renderSparkline(`spark-${key}`, s.sparkline, s.category);
+                }
+            });
+        }
+        
+        function renderSparkline(canvasId, data, category) {
+            const ctx = document.getElementById(canvasId);
+            if (!ctx) return;
+            
+            const color = category === 'loans' ? '#3b82f6' : 
+                          category === 'deposits' ? '#10b981' : '#8b5cf6';
+            
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.map((_, i) => i),
+                    datasets: [{
+                        data: data,
+                        borderColor: color,
+                        borderWidth: 2,
+                        fill: true,
+                        backgroundColor: color + '20',
+                        tension: 0.4,
+                        pointRadius: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { display: false },
+                        y: { display: false }
+                    },
+                    interaction: { enabled: false }
+                }
+            });
+        }
+        
+        function renderQTDCharts() {
+            // Loans QTD
+            const loansCtx = document.getElementById('loansQTDChart').getContext('2d');
+            charts.loansQTD = createQTDChart(loansCtx, 'loans', 'TOTLL');
+            
+            // Deposits QTD
+            const depositsCtx = document.getElementById('depositsQTDChart').getContext('2d');
+            charts.depositsQTD = createQTDChart(depositsCtx, 'deposits', 'DPSACBW027SBOG');
+        }
+        
+        function createQTDChart(ctx, category, seriesId) {
+            const qtdData = h8Data.qtd_comparison[category][seriesId];
+            if (!qtdData) return null;
+            
+            const datasets = Object.entries(qtdData.quarters)
+                .sort((a, b) => parseInt(b[0]) - parseInt(a[0]))
+                .slice(0, 6)
+                .map(([year, data], idx) => {
+                    const isCurrentYear = idx === 0;
+                    return {
+                        label: year,
+                        data: data.data.map(d => ({ x: d.week, y: d.qtd_growth_pct })),
+                        borderColor: yearColors[year] || '#6b7280',
+                        backgroundColor: yearColors[year] + '20' || '#6b728020',
+                        borderWidth: isCurrentYear ? 3 : 1.5,
+                        tension: 0.3,
+                        pointRadius: isCurrentYear ? 4 : 0,
+                        pointHoverRadius: 6
+                    };
+                });
+            
+            return new Chart(ctx, {
+                type: 'line',
+                data: { datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: { usePointStyle: true, padding: 15 }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => `${ctx.dataset.label}: ${ctx.parsed.y.toFixed(2)}%`
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'Week of Quarter' },
+                            grid: { color: '#1f2937' }
+                        },
+                        y: {
+                            title: { display: true, text: 'QTD Growth (%)' },
+                            grid: { color: '#1f2937' },
+                            ticks: { callback: (v) => v.toFixed(1) + '%' }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function updateQTDChart(category, seriesId, button) {
+            // Update button states
+            button.parentElement.querySelectorAll('.chart-btn').forEach(b => b.classList.remove('active'));
+            button.classList.add('active');
+            
+            // Destroy old chart
+            const chartKey = category + 'QTD';
+            if (charts[chartKey]) {
+                charts[chartKey].destroy();
+            }
+            
+            // Create new chart
+            const canvasId = category + 'QTDChart';
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            charts[chartKey] = createQTDChart(ctx, category, seriesId);
+        }
+        
+        function renderYoYChart() {
+            const ctx = document.getElementById('yoyTrendsChart').getContext('2d');
+            const trends = h8Data.yoy_trends;
+            
+            // Get loans and deposits series
+            const loansSeries = trends['TOTLL'];
+            const depositsSeries = trends['DPSACBW027SBOG'];
+            
+            if (!loansSeries || !depositsSeries) return;
+            
+            const datasets = [
+                {
+                    label: 'Total Loans YoY %',
+                    data: loansSeries.data.map(d => ({ x: d.date, y: d.yoy_pct })),
+                    borderColor: '#3b82f6',
+                    backgroundColor: '#3b82f620',
+                    borderWidth: 2,
+                    tension: 0.3,
+                    pointRadius: 0,
+                    fill: true
+                },
+                {
+                    label: 'Total Deposits YoY %',
+                    data: depositsSeries.data.map(d => ({ x: d.date, y: d.yoy_pct })),
+                    borderColor: '#10b981',
+                    backgroundColor: '#10b98120',
+                    borderWidth: 2,
+                    tension: 0.3,
+                    pointRadius: 0,
+                    fill: true
+                }
+            ];
+            
+            // Add C&I Loans if available
+            if (trends['TOTCI']) {
+                datasets.push({
+                    label: 'C&I Loans YoY %',
+                    data: trends['TOTCI'].data.map(d => ({ x: d.date, y: d.yoy_pct })),
+                    borderColor: '#f59e0b',
+                    borderWidth: 1.5,
+                    borderDash: [5, 5],
+                    tension: 0.3,
+                    pointRadius: 0,
+                    fill: false
+                });
+            }
+            
+            charts.yoy = new Chart(ctx, {
+                type: 'line',
+                data: { datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: { usePointStyle: true, padding: 20 }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                label: (ctx) => `${ctx.dataset.label}: ${ctx.parsed.y.toFixed(2)}%`
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: { unit: 'month', displayFormats: { month: 'MMM yyyy' } },
+                            title: { display: true, text: 'Date' },
+                            grid: { color: '#1f2937' }
+                        },
+                        y: {
+                            title: { display: true, text: 'Year-over-Year Change (%)' },
+                            grid: { color: '#1f2937' },
+                            ticks: { callback: (v) => v.toFixed(1) + '%' }
+                        }
+                    },
+                    interaction: {
+                        mode: 'nearest',
+                        axis: 'x',
+                        intersect: false
+                    }
+                }
+            });
+        }
+        
+        function renderDataTable() {
+            const tbody = document.getElementById('tableBody');
+            const series = h8Data.series;
+            
+            const rows = Object.entries(series)
+                .sort((a, b) => {
+                    const catOrder = { loans: 0, deposits: 1, other: 2 };
+                    return (catOrder[a[1].category] || 3) - (catOrder[b[1].category] || 3);
+                })
+                .map(([id, s]) => `
+                    <tr>
+                        <td>
+                            <span class="series-name">${s.name}</span><br>
+                            <small style="color: var(--text-muted)">${id}</small>
+                        </td>
+                        <td class="number">$${formatNumber(s.latest_value)}</td>
+                        <td class="number ${getChangeClass(s.wow_chg)}">${formatChange(s.wow_chg)}</td>
+                        <td class="number ${getChangeClass(s.wow_pct)}">${formatPct(s.wow_pct)}</td>
+                        <td class="number ${getChangeClass(s.yoy_chg)}">${formatChange(s.yoy_chg)}</td>
+                        <td class="number ${getChangeClass(s.yoy_pct)}">${formatPct(s.yoy_pct)}</td>
+                        <td class="number ${getChangeClass(s.qtd_pct)}">${formatPct(s.qtd_pct)}</td>
+                    </tr>
+                `).join('');
+            
+            tbody.innerHTML = rows;
+        }
+        
+        // Utility functions
+        function formatNumber(n) {
+            if (n === null || n === undefined) return 'N/A';
+            return n.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+        }
+        
+        function formatChange(n) {
+            if (n === null || n === undefined) return 'N/A';
+            const sign = n >= 0 ? '+' : '';
+            return sign + n.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+        }
+        
+        function formatPct(n) {
+            if (n === null || n === undefined) return 'N/A';
+            const sign = n >= 0 ? '+' : '';
+            return sign + n.toFixed(2) + '%';
+        }
+        
+        function formatDate(dateStr) {
+            if (!dateStr) return 'N/A';
+            const date = new Date(dateStr + 'T00:00:00');
+            return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+        }
+        
+        function getChangeClass(n) {
+            if (n === null || n === undefined) return '';
+            return n >= 0 ? 'positive' : 'negative';
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', loadData);
+    </script>
+</body>
+</html>

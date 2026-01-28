@@ -4,7 +4,7 @@ A professional, modern marketing website for **Guide Bot** - the AI-powered Exce
 
 ## Live Site
 
-🌐 **https://guidebot.vercel.app** (or the deployed URL)
+🌐 **https://axelrodai.github.io/guidebot-website/**
 
 ## Tech Stack
 

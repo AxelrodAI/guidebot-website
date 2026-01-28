@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guidance vs Actuals Tracker</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg: #0d1117;
+            --surface: #161b22;
+            --surface-elevated: #1c2128;
+            --border: #30363d;
+            --border-subtle: #21262d;
+            --text: #e6edf3;
+            --text-secondary: #c9d1d9;
+            --text-muted: #8b949e;
+            --accent: #58a6ff;
+            --accent-hover: #79b8ff;
+            --accent-glow: rgba(88, 166, 255, 0.15);
+            --error: #f85149;
+            --success: #3fb950;
+            --warning: #f0c020;
+            --purple: #a371f7;
+            --orange: #f0883e;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
+            --shadow-lg: 0 8px 24px rgba(0,0,0,0.5);
+            --transition-fast: 150ms ease;
+            --transition-normal: 250ms ease;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', Helvetica, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        header {
+            padding: 14px 20px;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: var(--shadow-sm);
+            z-index: 10;
+            flex-wrap: wrap;
+        }
+
+        .logo { font-size: 26px; }
+
+        header h1 {
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+
+        .header-actions {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 14px;
+            color: var(--text-muted);
+            font-size: 13px;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            min-height: calc(100vh - 52px);
+        }
+
+        .sidebar {
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            padding: 16px;
+            overflow-y: auto;
+        }
+
+        .sidebar h3 {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+
+        .search-box {
+            width: 100%;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 12px;
+            color: var(--text);
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .filter-group {
+            margin-bottom: 20px;
+        }
+
+        .filter-group label {
+            display: block;
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .filter-group select {
+            width: 100%;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 8px 10px;
+            color: var(--text);
+            font-size: 13px;
+        }
+
+        .main-content {
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        .stat-card .label {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .stat-card .value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .stat-card .delta {
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        .delta.positive { color: var(--success); }
+        .delta.negative { color: var(--error); }
+        .delta.neutral { color: var(--text-muted); }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        th {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            font-weight: 600;
+            background: var(--bg);
+            position: sticky;
+            top: 0;
+        }
+
+        tr:hover {
+            background: var(--surface-elevated);
+        }
+
+        .ticker-cell {
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .badge-beat { background: rgba(63, 185, 80, 0.15); color: var(--success); }
+        .badge-miss { background: rgba(248, 81, 73, 0.15); color: var(--error); }
+        .badge-inline { background: rgba(240, 192, 32, 0.15); color: var(--warning); }
+
+        .credibility-score {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .score-bar {
+            width: 60px;
+            height: 8px;
+            background: var(--bg);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .score-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width var(--transition-normal);
+        }
+
+        .score-fill.excellent { background: var(--success); }
+        .score-fill.good { background: #7ee787; }
+        .score-fill.fair { background: var(--warning); }
+        .score-fill.poor { background: var(--orange); }
+        .score-fill.bad { background: var(--error); }
+
+        .sandbagging-indicator {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .sandbagging-dots {
+            display: flex;
+            gap: 2px;
+        }
+
+        .sandbagging-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--border);
+        }
+
+        .sandbagging-dot.active { background: var(--purple); }
+        .sandbagging-dot.high { background: var(--warning); }
+
+        .guidance-history {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .guidance-item {
+            display: grid;
+            grid-template-columns: 100px 1fr 80px 80px 80px;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-subtle);
+            align-items: center;
+        }
+
+        .guidance-item:last-child {
+            border-bottom: none;
+        }
+
+        .quarter-label {
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .metric-label {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .value-cell {
+            text-align: right;
+            font-family: 'SF Mono', 'Monaco', monospace;
+            font-size: 13px;
+        }
+
+        .variance {
+            text-align: right;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .variance.positive { color: var(--success); }
+        .variance.negative { color: var(--error); }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+        }
+
+        .empty-state .icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            .sidebar {
+                display: none;
+            }
+            .stats-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <span class="logo">📊</span>
+        <h1>Guidance vs Actuals Tracker</h1>
+        <div class="header-actions">
+            <button class="btn" onclick="exportCSV()">📥 Export CSV</button>
+            <button class="btn btn-primary" onclick="refreshData()">🔄 Refresh</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <aside class="sidebar">
+            <input type="text" class="search-box" id="searchInput" placeholder="Search ticker..." onkeyup="filterTable()">
+            
+            <div class="filter-group">
+                <label>Sector</label>
+                <select id="sectorFilter" onchange="filterTable()">
+                    <option value="">All Sectors</option>
+                    <option value="Technology">Technology</option>
+                    <option value="Financial">Financial</option>
+                    <option value="Healthcare">Healthcare</option>
+                    <option value="Consumer">Consumer</option>
+                    <option value="Industrial">Industrial</option>
+                    <option value="Energy">Energy</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>Credibility Score</label>
+                <select id="credibilityFilter" onchange="filterTable()">
+                    <option value="">All Scores</option>
+                    <option value="excellent">Excellent (90+)</option>
+                    <option value="good">Good (70-89)</option>
+                    <option value="fair">Fair (50-69)</option>
+                    <option value="poor">Poor (<50)</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>Pattern</label>
+                <select id="patternFilter" onchange="filterTable()">
+                    <option value="">All Patterns</option>
+                    <option value="sandbagger">Consistent Sandbagger</option>
+                    <option value="accurate">Highly Accurate</option>
+                    <option value="volatile">Volatile Guidance</option>
+                    <option value="optimistic">Optimistic Bias</option>
+                </select>
+            </div>
+
+            <h3 style="margin-top: 24px;">📈 Top Sandbaggers</h3>
+            <div id="topSandbaggers"></div>
+
+            <h3 style="margin-top: 24px;">⚠️ Watch List</h3>
+            <div id="watchList"></div>
+        </aside>
+
+        <main class="main-content">
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="label">Companies Tracked</div>
+                    <div class="value" id="totalCompanies">0</div>
+                    <div class="delta neutral" id="companiesDelta">Loading...</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">Avg Beat Rate (EPS)</div>
+                    <div class="value" id="avgBeatRate">0%</div>
+                    <div class="delta positive" id="beatRateDelta">vs historical</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">Avg Credibility Score</div>
+                    <div class="value" id="avgCredibility">0</div>
+                    <div class="delta neutral" id="credibilityDelta">out of 100</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">Sandbaggers Identified</div>
+                    <div class="value" id="sandbaggerCount">0</div>
+                    <div class="delta neutral">consistent beat >80%</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">📉 Guidance Accuracy Trend</span>
+                    <select id="chartMetric" onchange="updateChart()" style="background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; color: var(--text); font-size: 12px;">
+                        <option value="eps">EPS</option>
+                        <option value="revenue">Revenue</option>
+                        <option value="margins">Margins</option>
+                    </select>
+                </div>
+                <div class="chart-container">
+                    <canvas id="accuracyChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">🏢 Company Guidance Tracker</span>
+                    <span style="font-size: 12px; color: var(--text-muted);" id="lastUpdated">Last updated: --</span>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table id="guidanceTable">
+                        <thead>
+                            <tr>
+                                <th>Ticker</th>
+                                <th>Company</th>
+                                <th>Sector</th>
+                                <th>Last Quarter</th>
+                                <th>EPS Guide</th>
+                                <th>EPS Actual</th>
+                                <th>Variance</th>
+                                <th>Beat Rate</th>
+                                <th>Credibility</th>
+                                <th>Pattern</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <!-- Data populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card" id="detailCard" style="display: none;">
+                <div class="card-header">
+                    <span class="card-title" id="detailTitle">Company Details</span>
+                    <button class="btn" onclick="closeDetail()">✕ Close</button>
+                </div>
+                <div id="detailContent"></div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Sample data - in production, load from guidance_data.json
+        let guidanceData = {
+            lastUpdated: new Date().toISOString(),
+            companies: [
+                {
+                    ticker: "AAPL",
+                    name: "Apple Inc.",
+                    sector: "Technology",
+                    quarters: [
+                        { q: "Q1 2025", epsGuide: 2.10, epsActual: 2.18, revGuide: 118.5, revActual: 119.6 },
+                        { q: "Q4 2024", epsGuide: 1.85, epsActual: 1.95, revGuide: 89.5, revActual: 90.1 },
+                        { q: "Q3 2024", epsGuide: 1.90, epsActual: 1.92, revGuide: 94.0, revActual: 94.9 },
+                        { q: "Q2 2024", epsGuide: 1.45, epsActual: 1.53, revGuide: 78.0, revActual: 81.8 }
+                    ],
+                    beatRate: 100,
+                    credibilityScore: 92,
+                    pattern: "sandbagger"
+                },
+                {
+                    ticker: "MSFT",
+                    name: "Microsoft Corp.",
+                    sector: "Technology",
+                    quarters: [
+                        { q: "Q1 2025", epsGuide: 2.90, epsActual: 3.03, revGuide: 61.0, revActual: 62.0 },
+                        { q: "Q4 2024", epsGuide: 2.75, epsActual: 2.94, revGuide: 58.0, revActual: 60.1 },
+                        { q: "Q3 2024", epsGuide: 2.65, epsActual: 2.69, revGuide: 55.0, revActual: 56.2 },
+                        { q: "Q2 2024", epsGuide: 2.50, epsActual: 2.45, revGuide: 52.0, revActual: 51.9 }
+                    ],
+                    beatRate: 75,
+                    credibilityScore: 85,
+                    pattern: "accurate"
+                },
+                {
+                    ticker: "GOOGL",
+                    name: "Alphabet Inc.",
+                    sector: "Technology",
+                    quarters: [
+                        { q: "Q1 2025", epsGuide: 1.75, epsActual: 1.89, revGuide: 76.0, revActual: 80.5 },
+                        { q: "Q4 2024", epsGuide: 1.60, epsActual: 1.76, revGuide: 72.0, revActual: 76.0 },
+                        { q: "Q3 2024", epsGuide: 1.50, epsActual: 1.55, revGuide: 68.0, revActual: 69.8 },
+                        { q: "Q2 2024", epsGuide: 1.40, epsActual: 1.44, revGuide: 65.0, revActual: 66.3 }
+                    ],
+                    beatRate: 100,
+                    credibilityScore: 88,
+                    pattern: "sandbagger"
+                },
+                {
+                    ticker: "JPM",
+                    name: "JPMorgan Chase",
+                    sector: "Financial",
+                    quarters: [
+                        { q: "Q1 2025", epsGuide: 4.20, epsActual: 4.44, revGuide: 41.0, revActual: 42.5 },
+                        { q: "Q4 2024", epsGuide: 4.00, epsActual: 4.33, revGuide: 39.0, revActual: 40.3 },
+                        { q: "Q3 2024", epsGuide: 3.80, epsActual: 4.37, revGuide: 38.0, revActual: 39.9 },
+                        { q: "Q2 2024", epsGuide: 3.50, epsActual: 4.26, revGuide: 36.0, revActual: 41.3 }
+                    ],
+                    beatRate: 100,
+                    credibilityScore: 65,
+                    pattern: "sandbagger"
+                },
+                {
+                    ticker: "AMZN",
+                    name: "Amazon.com Inc.",
+                    sector: "Consumer",
+                    quarters: [
+                        { q: "Q1 2025", epsGuide: 0.95, epsActual: 1.00, revGuide: 140.0, revActual: 143.3 },
+                        { q: "Q4 2024", epsGuide: 0.85, epsActual: 1.29, revGuide: 167.0, revActual: 169.6 },
+                        { q: "Q3 2024", epsGuide: 0.70, epsActual: 0.94, revGuide: 154.0, revActual: 158.9 },
+                        { q: "Q2 2024", epsGuide: 0.60, epsActual: 1.26, revGuide: 144.0, revActual: 148.0 }
+                    ],
+                    beatRate: 100,
+                    credibilityScore: 55,
+                    pattern: "sandbagger"
+                },
+                {
+                    ticker: "NVDA",
+                    name: "NVIDIA Corp.",
+                    sector: "Technology",
+                    quarters: [
+                        { q: "Q1 2025", epsGuide: 0.64, epsActual: 0.67, revGuide: 24.0, revActual: 26.0 },
+                        { q: "Q4 2024", epsGuide: 0.55, epsActual: 0.78, revGuide: 20.0, revActual: 22.1 },
+                        { q: "Q3 2024", epsGuide: 0.45, epsActual: 0.57, revGuide: 16.0, revActual: 18.1 },
+                        { q: "Q2 2024", epsGuide: 0.38, epsActual: 0.68, revGuide: 11.0, revActual: 13.5 }
+                    ],
+                    beatRate: 100,
+                    credibilityScore: 45,
+                    pattern: "sandbagger"
+                },
+                {
+                    ticker: "META",
+                    name: "Meta Platforms",
+                    sector: "Technology",
+                    quarters: [
+                        { q: "Q1 2025", epsGuide: 4.50, epsActual: 4.71, revGuide: 36.0, revActual: 36.5 },
+                        { q: "Q4 2024", epsGuide: 4.25, epsActual: 5.33, revGuide: 38.0, revActual: 40.1 },
+                        { q: "Q3 2024", epsGuide: 3.80, epsActual: 4.39, revGuide: 32.0, revActual: 34.1 },
+                        { q: "Q2 2024", epsGuide: 3.50, epsActual: 4.71, revGuide: 30.0, revActual: 32.0 }
+                    ],
+                    beatRate: 100,
+                    credibilityScore: 58,
+                    pattern: "sandbagger"
+                },
+                {
+                    ticker: "TSLA",
+                    name: "Tesla Inc.",
+                    sector: "Consumer",
+                    quarters: [
+                        { q: "Q1 2025", epsGuide: 0.65, epsActual: 0.45, revGuide: 25.0, revActual: 21.3 },
+                        { q: "Q4 2024", epsGuide: 0.70, epsActual: 0.71, revGuide: 26.0, revActual: 25.2 },
+                        { q: "Q3 2024", epsGuide: 0.58, epsActual: 0.52, revGuide: 24.0, revActual: 23.4 },
+                        { q: "Q2 2024", epsGuide: 0.55, epsActual: 0.42, revGuide: 23.0, revActual: 21.3 }
+                    ],
+                    beatRate: 25,
+                    credibilityScore: 35,
+                    pattern: "optimistic"
+                },
+                {
+                    ticker: "UNH",
+                    name: "UnitedHealth Group",
+                    sector: "Healthcare",
+                    quarters: [
+                        { q: "Q1 2025", epsGuide: 6.50, epsActual: 6.91, revGuide: 94.0, revActual: 99.8 },
+                        { q: "Q4 2024", epsGuide: 6.20, epsActual: 6.16, revGuide: 91.0, revActual: 94.4 },
+                        { q: "Q3 2024", epsGuide: 5.90, epsActual: 6.56, revGuide: 89.0, revActual: 92.4 },
+                        { q: "Q2 2024", epsGuide: 5.70, epsActual: 5.98, revGuide: 87.0, revActual: 91.2 }
+                    ],
+                    beatRate: 75,
+                    credibilityScore: 82,
+                    pattern: "accurate"
+                },
+                {
+                    ticker: "XOM",
+                    name: "Exxon Mobil Corp.",
+                    sector: "Energy",
+                    quarters: [
+                        { q: "Q1 2025", epsGuide: 2.10, epsActual: 2.06, revGuide: 85.0, revActual: 83.4 },
+                        { q: "Q4 2024", epsGuide: 2.30, epsActual: 2.12, revGuide: 90.0, revActual: 84.3 },
+                        { q: "Q3 2024", epsGuide: 2.40, epsActual: 2.27, revGuide: 92.0, revActual: 90.0 },
+                        { q: "Q2 2024", epsGuide: 2.20, epsActual: 2.14, revGuide: 88.0, revActual: 93.1 }
+                    ],
+                    beatRate: 0,
+                    credibilityScore: 48,
+                    pattern: "optimistic"
+                }
+            ]
+        };
+
+        let chart = null;
+
+        function init() {
+            loadData();
+            renderTable();
+            renderStats();
+            renderSidebar();
+            initChart();
+        }
+
+        function loadData() {
+            fetch('guidance_data.json')
+                .then(response => response.json())
+                .then(data => {
+                    guidanceData = data;
+                    renderTable();
+                    renderStats();
+                    renderSidebar();
+                    updateChart();
+                })
+                .catch(err => {
+                    console.log('Using sample data');
+                });
+        }
+
+        function renderStats() {
+            document.getElementById('totalCompanies').textContent = guidanceData.companies.length;
+            
+            const avgBeat = Math.round(guidanceData.companies.reduce((a, c) => a + c.beatRate, 0) / guidanceData.companies.length);
+            document.getElementById('avgBeatRate').textContent = avgBeat + '%';
+            
+            const avgCred = Math.round(guidanceData.companies.reduce((a, c) => a + c.credibilityScore, 0) / guidanceData.companies.length);
+            document.getElementById('avgCredibility').textContent = avgCred;
+            
+            const sandbaggers = guidanceData.companies.filter(c => c.beatRate >= 80).length;
+            document.getElementById('sandbaggerCount').textContent = sandbaggers;
+            
+            document.getElementById('lastUpdated').textContent = 'Last updated: ' + new Date(guidanceData.lastUpdated).toLocaleString();
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const sector = document.getElementById('sectorFilter').value;
+            const credFilter = document.getElementById('credibilityFilter').value;
+            const pattern = document.getElementById('patternFilter').value;
+
+            let filtered = guidanceData.companies.filter(c => {
+                if (search && !c.ticker.toLowerCase().includes(search) && !c.name.toLowerCase().includes(search)) return false;
+                if (sector && c.sector !== sector) return false;
+                if (pattern && c.pattern !== pattern) return false;
+                if (credFilter) {
+                    if (credFilter === 'excellent' && c.credibilityScore < 90) return false;
+                    if (credFilter === 'good' && (c.credibilityScore < 70 || c.credibilityScore >= 90)) return false;
+                    if (credFilter === 'fair' && (c.credibilityScore < 50 || c.credibilityScore >= 70)) return false;
+                    if (credFilter === 'poor' && c.credibilityScore >= 50) return false;
+                }
+                return true;
+            });
+
+            filtered.forEach(company => {
+                const lastQ = company.quarters[0];
+                const variance = ((lastQ.epsActual - lastQ.epsGuide) / lastQ.epsGuide * 100).toFixed(1);
+                
+                const tr = document.createElement('tr');
+                tr.onclick = () => showDetail(company);
+                tr.style.cursor = 'pointer';
+                
+                tr.innerHTML = `
+                    <td class="ticker-cell">${company.ticker}</td>
+                    <td>${company.name}</td>
+                    <td>${company.sector}</td>
+                    <td>${lastQ.q}</td>
+                    <td style="font-family: monospace;">$${lastQ.epsGuide.toFixed(2)}</td>
+                    <td style="font-family: monospace;">$${lastQ.epsActual.toFixed(2)}</td>
+                    <td class="variance ${parseFloat(variance) >= 0 ? 'positive' : 'negative'}">${variance >= 0 ? '+' : ''}${variance}%</td>
+                    <td>
+                        <span class="badge ${company.beatRate >= 75 ? 'badge-beat' : company.beatRate >= 50 ? 'badge-inline' : 'badge-miss'}">
+                            ${company.beatRate}%
+                        </span>
+                    </td>
+                    <td>
+                        <div class="credibility-score">
+                            <div class="score-bar">
+                                <div class="score-fill ${getCredibilityClass(company.credibilityScore)}" style="width: ${company.credibilityScore}%"></div>
+                            </div>
+                            <span>${company.credibilityScore}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="sandbagging-indicator">
+                            ${getPatternBadge(company.pattern)}
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function getCredibilityClass(score) {
+            if (score >= 90) return 'excellent';
+            if (score >= 70) return 'good';
+            if (score >= 50) return 'fair';
+            if (score >= 30) return 'poor';
+            return 'bad';
+        }
+
+        function getPatternBadge(pattern) {
+            const badges = {
+                sandbagger: '<span class="badge" style="background: rgba(163,113,247,0.15); color: #a371f7;">🎯 Sandbagger</span>',
+                accurate: '<span class="badge" style="background: rgba(63,185,80,0.15); color: #3fb950;">✓ Accurate</span>',
+                volatile: '<span class="badge" style="background: rgba(240,136,62,0.15); color: #f0883e;">📊 Volatile</span>',
+                optimistic: '<span class="badge" style="background: rgba(248,81,73,0.15); color: #f85149;">⚠️ Optimistic</span>'
+            };
+            return badges[pattern] || '';
+        }
+
+        function filterTable() {
+            renderTable();
+        }
+
+        function renderSidebar() {
+            // Top Sandbaggers
+            const sandbaggers = guidanceData.companies
+                .filter(c => c.beatRate >= 80)
+                .sort((a, b) => b.beatRate - a.beatRate)
+                .slice(0, 5);
+
+            document.getElementById('topSandbaggers').innerHTML = sandbaggers.map(c => `
+                <div style="padding: 8px 0; border-bottom: 1px solid var(--border-subtle); cursor: pointer;" onclick="showDetail(guidanceData.companies.find(x => x.ticker === '${c.ticker}'))">
+                    <span style="color: var(--accent); font-weight: 600;">${c.ticker}</span>
+                    <span style="float: right; color: var(--purple);">${c.beatRate}% beat</span>
+                </div>
+            `).join('');
+
+            // Watch List (low credibility)
+            const watchList = guidanceData.companies
+                .filter(c => c.credibilityScore < 50)
+                .sort((a, b) => a.credibilityScore - b.credibilityScore)
+                .slice(0, 5);
+
+            document.getElementById('watchList').innerHTML = watchList.map(c => `
+                <div style="padding: 8px 0; border-bottom: 1px solid var(--border-subtle); cursor: pointer;" onclick="showDetail(guidanceData.companies.find(x => x.ticker === '${c.ticker}'))">
+                    <span style="color: var(--accent); font-weight: 600;">${c.ticker}</span>
+                    <span style="float: right; color: var(--error);">${c.credibilityScore} score</span>
+                </div>
+            `).join('');
+        }
+
+        function initChart() {
+            const ctx = document.getElementById('accuracyChart').getContext('2d');
+            
+            const quarters = ['Q2 2024', 'Q3 2024', 'Q4 2024', 'Q1 2025'];
+            const beatRates = quarters.map(q => {
+                const beats = guidanceData.companies.filter(c => {
+                    const qData = c.quarters.find(x => x.q === q);
+                    return qData && qData.epsActual > qData.epsGuide;
+                }).length;
+                return (beats / guidanceData.companies.length * 100).toFixed(0);
+            });
+
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: quarters,
+                    datasets: [{
+                        label: 'Beat Rate %',
+                        data: beatRates,
+                        borderColor: '#58a6ff',
+                        backgroundColor: 'rgba(88, 166, 255, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: { color: '#30363d' },
+                            ticks: { color: '#8b949e' }
+                        },
+                        x: {
+                            grid: { color: '#30363d' },
+                            ticks: { color: '#8b949e' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateChart() {
+            // Update chart based on metric selection
+            const metric = document.getElementById('chartMetric').value;
+            // In production, recalculate based on metric
+        }
+
+        function showDetail(company) {
+            document.getElementById('detailCard').style.display = 'block';
+            document.getElementById('detailTitle').textContent = `${company.ticker} - ${company.name}`;
+            
+            const content = `
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px;">
+                    <div class="stat-card">
+                        <div class="label">Beat Rate</div>
+                        <div class="value">${company.beatRate}%</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="label">Credibility Score</div>
+                        <div class="value">${company.credibilityScore}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="label">Pattern</div>
+                        <div class="value" style="font-size: 18px;">${getPatternBadge(company.pattern)}</div>
+                    </div>
+                </div>
+                <h4 style="margin-bottom: 12px; color: var(--text-secondary);">Quarterly History</h4>
+                <div class="guidance-history">
+                    ${company.quarters.map(q => {
+                        const epsVar = ((q.epsActual - q.epsGuide) / q.epsGuide * 100).toFixed(1);
+                        const revVar = ((q.revActual - q.revGuide) / q.revGuide * 100).toFixed(1);
+                        return `
+                            <div class="guidance-item">
+                                <span class="quarter-label">${q.q}</span>
+                                <span class="metric-label">EPS: $${q.epsGuide.toFixed(2)} → $${q.epsActual.toFixed(2)}</span>
+                                <span class="variance ${parseFloat(epsVar) >= 0 ? 'positive' : 'negative'}">${epsVar >= 0 ? '+' : ''}${epsVar}%</span>
+                                <span class="metric-label">Rev: $${q.revGuide}B → $${q.revActual}B</span>
+                                <span class="variance ${parseFloat(revVar) >= 0 ? 'positive' : 'negative'}">${revVar >= 0 ? '+' : ''}${revVar}%</span>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+            document.getElementById('detailContent').innerHTML = content;
+            document.getElementById('detailCard').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function closeDetail() {
+            document.getElementById('detailCard').style.display = 'none';
+        }
+
+        function exportCSV() {
+            let csv = 'Ticker,Company,Sector,Beat Rate,Credibility,Pattern,Last EPS Guide,Last EPS Actual,Variance\n';
+            guidanceData.companies.forEach(c => {
+                const lastQ = c.quarters[0];
+                const variance = ((lastQ.epsActual - lastQ.epsGuide) / lastQ.epsGuide * 100).toFixed(1);
+                csv += `${c.ticker},${c.name},${c.sector},${c.beatRate}%,${c.credibilityScore},${c.pattern},$${lastQ.epsGuide.toFixed(2)},$${lastQ.epsActual.toFixed(2)},${variance}%\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'guidance_tracker_export.csv';
+            a.click();
+        }
+
+        function refreshData() {
+            loadData();
+        }
+
+        // Initialize on load
+        init();
+    </script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+[
+  {
+    "language_code": "fr",
+    "language_name": "French",
+    "confidence": 1.0,
+    "all_detected": [
+      {
+        "code": "fr",
+        "name": "French",
+        "confidence": 1.0
+      }
+    ],
+    "text_sample": "Bonjour, comment allez-vous?",
+    "timestamp": "2026-01-27T21:20:04.418058",
+    "using_langdetect": false
+  },
+  {
+    "language_code": "en",
+    "language_name": "English",
+    "confidence": 0.5,
+    "all_detected": [
+      {
+        "code": "en",
+        "name": "English",
+        "confidence": 0.5
+      }
+    ],
+    "text_sample": "Ahora estoy hablando en español",
+    "timestamp": "2026-01-27T21:20:08.739163",
+    "using_langdetect": false
+  }
+]

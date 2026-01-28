@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Language Code Switching</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #fff;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            padding: 30px 0 40px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, #00d4ff, #7b2cbf, #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #94a3b8;
+            font-size: 1.1rem;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .card-title {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #64748b;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-title::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #00d4ff;
+        }
+
+        /* Current Language Detection */
+        .current-language {
+            grid-column: span 2;
+        }
+
+        .detection-area {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .language-display {
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(123, 44, 191, 0.1));
+            border-radius: 20px;
+            min-width: 200px;
+        }
+
+        .flag-emoji {
+            font-size: 4rem;
+            margin-bottom: 10px;
+        }
+
+        .language-name {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .language-code {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        .confidence-meter {
+            flex: 1;
+        }
+
+        .meter-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .meter-bar {
+            height: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .meter-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00d4ff, #7b2cbf);
+            border-radius: 6px;
+            transition: width 0.5s ease;
+        }
+
+        .alt-languages {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .alt-lang {
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .alt-lang .prob {
+            color: #64748b;
+        }
+
+        /* Supported Languages */
+        .supported-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .lang-item {
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .lang-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(0, 212, 255, 0.3);
+        }
+
+        .lang-item.active {
+            border-color: #00d4ff;
+            background: rgba(0, 212, 255, 0.1);
+        }
+
+        .lang-item .flag {
+            font-size: 1.5rem;
+        }
+
+        .lang-item .info {
+            flex: 1;
+        }
+
+        .lang-item .name {
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .lang-item .native {
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+
+        /* Live Transcript */
+        .transcript-card {
+            grid-column: span 2;
+        }
+
+        .transcript-area {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Consolas', monospace;
+            line-height: 1.8;
+        }
+
+        .transcript-line {
+            margin-bottom: 8px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .transcript-line .lang-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-right: 10px;
+            text-transform: uppercase;
+        }
+
+        .lang-en { background: #3b82f6; }
+        .lang-es { background: #f59e0b; }
+        .lang-fr { background: #ef4444; }
+        .lang-de { background: #10b981; }
+        .lang-ja { background: #ec4899; }
+        .lang-zh { background: #8b5cf6; }
+        .lang-ko { background: #06b6d4; }
+        .lang-pt { background: #84cc16; }
+        .lang-it { background: #f97316; }
+        .lang-ru { background: #6366f1; }
+
+        /* Switch History */
+        .switch-history {
+            grid-column: span 1;
+        }
+
+        .history-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .history-item:last-child {
+            border-bottom: none;
+        }
+
+        .switch-arrow {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .switch-arrow .from, .switch-arrow .to {
+            font-size: 1.2rem;
+        }
+
+        .switch-arrow .arrow {
+            color: #00d4ff;
+            font-size: 1.2rem;
+        }
+
+        .switch-time {
+            margin-left: auto;
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        /* Stats Row */
+        .stats-row {
+            grid-column: span 3;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, #00d4ff, #7b2cbf);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-label {
+            color: #64748b;
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+
+        /* Settings Panel */
+        .settings-card {
+            grid-column: span 3;
+        }
+
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+        }
+
+        .setting-info h4 {
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .setting-info p {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        /* Toggle Switch */
+        .toggle {
+            width: 50px;
+            height: 26px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 13px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .toggle.active {
+            background: linear-gradient(90deg, #00d4ff, #7b2cbf);
+        }
+
+        .toggle::after {
+            content: '';
+            width: 22px;
+            height: 22px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.3s;
+        }
+
+        .toggle.active::after {
+            transform: translateX(24px);
+        }
+
+        /* Waveform animation */
+        .waveform {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            height: 30px;
+            margin-bottom: 20px;
+        }
+
+        .wave-bar {
+            width: 4px;
+            background: linear-gradient(180deg, #00d4ff, #7b2cbf);
+            border-radius: 2px;
+            animation: wave 0.5s ease-in-out infinite alternate;
+        }
+
+        @keyframes wave {
+            from { height: 5px; }
+            to { height: 25px; }
+        }
+
+        .wave-bar:nth-child(1) { animation-delay: 0s; }
+        .wave-bar:nth-child(2) { animation-delay: 0.1s; }
+        .wave-bar:nth-child(3) { animation-delay: 0.2s; }
+        .wave-bar:nth-child(4) { animation-delay: 0.3s; }
+        .wave-bar:nth-child(5) { animation-delay: 0.4s; }
+        .wave-bar:nth-child(6) { animation-delay: 0.3s; }
+        .wave-bar:nth-child(7) { animation-delay: 0.2s; }
+        .wave-bar:nth-child(8) { animation-delay: 0.1s; }
+
+        .listening-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #00d4ff;
+            font-size: 0.9rem;
+        }
+
+        .pulse {
+            width: 10px;
+            height: 10px;
+            background: #00d4ff;
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.5); opacity: 0.5; }
+        }
+
+        @media (max-width: 1200px) {
+            .dashboard {
+                grid-template-columns: 1fr 1fr;
+            }
+            .current-language, .transcript-card, .stats-row, .settings-card {
+                grid-column: span 2;
+            }
+            .stats-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .settings-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            .current-language, .transcript-card, .stats-row, .settings-card, .switch-history {
+                grid-column: span 1;
+            }
+            .stats-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .detection-area {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌍 Multi-Language Code Switching</h1>
+            <p class="subtitle">Seamlessly switch languages mid-conversation — AI detects and responds in your language</p>
+        </header>
+
+        <div class="dashboard">
+            <!-- Current Language Detection -->
+            <div class="card current-language">
+                <div class="card-title">Current Language Detection</div>
+                <div class="waveform">
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                </div>
+                <div class="listening-status">
+                    <div class="pulse"></div>
+                    <span>Listening and detecting...</span>
+                </div>
+                <div class="detection-area">
+                    <div class="language-display">
+                        <div class="flag-emoji" id="currentFlag">🇺🇸</div>
+                        <div class="language-name" id="currentLang">English</div>
+                        <div class="language-code" id="currentCode">en-US</div>
+                    </div>
+                    <div class="confidence-meter">
+                        <div class="meter-label">
+                            <span>Detection Confidence</span>
+                            <span id="confidenceValue">94%</span>
+                        </div>
+                        <div class="meter-bar">
+                            <div class="meter-fill" id="confidenceFill" style="width: 94%"></div>
+                        </div>
+                        <div style="color: #64748b; font-size: 0.85rem; margin-bottom: 10px;">Alternative detections:</div>
+                        <div class="alt-languages" id="altLanguages">
+                            <div class="alt-lang">🇬🇧 British English <span class="prob">4%</span></div>
+                            <div class="alt-lang">🇦🇺 Australian English <span class="prob">2%</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Supported Languages -->
+            <div class="card">
+                <div class="card-title">Supported Languages</div>
+                <div class="supported-grid" id="supportedLangs">
+                    <!-- Filled by JS -->
+                </div>
+            </div>
+
+            <!-- Live Transcript -->
+            <div class="card transcript-card">
+                <div class="card-title">Live Transcript with Language Tags</div>
+                <div class="transcript-area" id="transcript">
+                    <!-- Filled by JS simulation -->
+                </div>
+            </div>
+
+            <!-- Switch History -->
+            <div class="card switch-history">
+                <div class="card-title">Language Switch History</div>
+                <div class="history-list" id="historyList">
+                    <!-- Filled by JS -->
+                </div>
+            </div>
+
+            <!-- Stats Row -->
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-value" id="statSwitches">7</div>
+                    <div class="stat-label">Language Switches</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statLanguages">3</div>
+                    <div class="stat-label">Languages Used</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statAccuracy">98%</div>
+                    <div class="stat-label">Detection Accuracy</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statLatency">45ms</div>
+                    <div class="stat-label">Avg Switch Latency</div>
+                </div>
+            </div>
+
+            <!-- Settings -->
+            <div class="card settings-card">
+                <div class="card-title">Settings</div>
+                <div class="settings-grid">
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h4>Auto Language Detection</h4>
+                            <p>Automatically detect language changes</p>
+                        </div>
+                        <div class="toggle active" onclick="this.classList.toggle('active')"></div>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h4>Response Language Match</h4>
+                            <p>Respond in detected language</p>
+                        </div>
+                        <div class="toggle active" onclick="this.classList.toggle('active')"></div>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h4>Mixed Language Support</h4>
+                            <p>Allow code-mixing in single utterance</p>
+                        </div>
+                        <div class="toggle active" onclick="this.classList.toggle('active')"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const languages = [
+            { code: 'en', name: 'English', native: 'English', flag: '🇺🇸' },
+            { code: 'es', name: 'Spanish', native: 'Español', flag: '🇪🇸' },
+            { code: 'fr', name: 'French', native: 'Français', flag: '🇫🇷' },
+            { code: 'de', name: 'German', native: 'Deutsch', flag: '🇩🇪' },
+            { code: 'ja', name: 'Japanese', native: '日本語', flag: '🇯🇵' },
+            { code: 'zh', name: 'Chinese', native: '中文', flag: '🇨🇳' },
+            { code: 'ko', name: 'Korean', native: '한국어', flag: '🇰🇷' },
+            { code: 'pt', name: 'Portuguese', native: 'Português', flag: '🇧🇷' },
+            { code: 'it', name: 'Italian', native: 'Italiano', flag: '🇮🇹' },
+            { code: 'ru', name: 'Russian', native: 'Русский', flag: '🇷🇺' },
+            { code: 'ar', name: 'Arabic', native: 'العربية', flag: '🇸🇦' },
+            { code: 'hi', name: 'Hindi', native: 'हिन्दी', flag: '🇮🇳' }
+        ];
+
+        const conversation = [
+            { lang: 'en', text: "Hey, how's the project going?" },
+            { lang: 'en', text: "Pretty good! We finished the main features." },
+            { lang: 'es', text: "¡Excelente! ¿Cuándo podemos hacer la demo?" },
+            { lang: 'es', text: "Mañana por la tarde sería perfecto." },
+            { lang: 'en', text: "Sounds good, I'll set up the meeting." },
+            { lang: 'fr', text: "D'accord, n'oublie pas d'inviter Marie." },
+            { lang: 'fr', text: "Bien sûr, je l'ajouterai tout de suite." },
+            { lang: 'en', text: "Perfect, see you tomorrow then!" },
+            { lang: 'ja', text: "明日の会議、楽しみにしています！" },
+            { lang: 'ja', text: "はい、準備はできています。" },
+            { lang: 'de', text: "Wunderbar! Das wird ein tolles Meeting." },
+            { lang: 'en', text: "Alright, let's wrap this up for today." },
+            { lang: 'zh', text: "好的，明天见！" },
+            { lang: 'ko', text: "네, 내일 봐요!" },
+            { lang: 'pt', text: "Até amanhã, pessoal!" },
+            { lang: 'it', text: "Arrivederci a tutti!" }
+        ];
+
+        const switchHistory = [
+            { from: '🇺🇸', to: '🇪🇸', time: '2 min ago' },
+            { from: '🇪🇸', to: '🇫🇷', time: '5 min ago' },
+            { from: '🇫🇷', to: '🇺🇸', time: '8 min ago' },
+            { from: '🇺🇸', to: '🇯🇵', time: '12 min ago' },
+            { from: '🇯🇵', to: '🇩🇪', time: '15 min ago' },
+            { from: '🇩🇪', to: '🇨🇳', time: '18 min ago' },
+            { from: '🇨🇳', to: '🇰🇷', time: '20 min ago' }
+        ];
+
+        // Populate supported languages
+        const supportedGrid = document.getElementById('supportedLangs');
+        languages.forEach((lang, i) => {
+            const item = document.createElement('div');
+            item.className = 'lang-item' + (i === 0 ? ' active' : '');
+            item.innerHTML = `
+                <span class="flag">${lang.flag}</span>
+                <div class="info">
+                    <div class="name">${lang.name}</div>
+                    <div class="native">${lang.native}</div>
+                </div>
+            `;
+            item.onclick = () => {
+                document.querySelectorAll('.lang-item').forEach(el => el.classList.remove('active'));
+                item.classList.add('active');
+                updateCurrentLanguage(lang);
+            };
+            supportedGrid.appendChild(item);
+        });
+
+        // Populate switch history
+        const historyList = document.getElementById('historyList');
+        switchHistory.forEach(item => {
+            const historyItem = document.createElement('div');
+            historyItem.className = 'history-item';
+            historyItem.innerHTML = `
+                <div class="switch-arrow">
+                    <span class="from">${item.from}</span>
+                    <span class="arrow">→</span>
+                    <span class="to">${item.to}</span>
+                </div>
+                <span class="switch-time">${item.time}</span>
+            `;
+            historyList.appendChild(historyItem);
+        });
+
+        function updateCurrentLanguage(lang) {
+            document.getElementById('currentFlag').textContent = lang.flag;
+            document.getElementById('currentLang').textContent = lang.name;
+            document.getElementById('currentCode').textContent = lang.code + '-' + lang.code.toUpperCase();
+            
+            const confidence = 85 + Math.floor(Math.random() * 15);
+            document.getElementById('confidenceValue').textContent = confidence + '%';
+            document.getElementById('confidenceFill').style.width = confidence + '%';
+        }
+
+        // Simulate live transcript
+        const transcript = document.getElementById('transcript');
+        let convIndex = 0;
+
+        function addTranscriptLine() {
+            const conv = conversation[convIndex % conversation.length];
+            const line = document.createElement('div');
+            line.className = 'transcript-line';
+            line.innerHTML = `<span class="lang-tag lang-${conv.lang}">${conv.lang.toUpperCase()}</span>${conv.text}`;
+            transcript.appendChild(line);
+            transcript.scrollTop = transcript.scrollHeight;
+
+            // Update current language display
+            const langData = languages.find(l => l.code === conv.lang);
+            if (langData) {
+                updateCurrentLanguage(langData);
+                
+                // Update active state in supported languages
+                document.querySelectorAll('.lang-item').forEach((el, i) => {
+                    if (languages[i].code === conv.lang) {
+                        el.classList.add('active');
+                    } else {
+                        el.classList.remove('active');
+                    }
+                });
+            }
+
+            convIndex++;
+            
+            // Keep transcript manageable
+            if (transcript.children.length > 15) {
+                transcript.removeChild(transcript.children[0]);
+            }
+        }
+
+        // Start simulation
+        setInterval(addTranscriptLine, 3000);
+        
+        // Add initial lines
+        for (let i = 0; i < 4; i++) {
+            addTranscriptLine();
+        }
+
+        // Randomly update stats
+        setInterval(() => {
+            const switches = parseInt(document.getElementById('statSwitches').textContent);
+            document.getElementById('statSwitches').textContent = switches + 1;
+            document.getElementById('statLatency').textContent = (30 + Math.floor(Math.random() * 40)) + 'ms';
+        }, 10000);
+    </script>
+</body>
+</html>

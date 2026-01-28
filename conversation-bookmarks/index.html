@@ -1,0 +1,1376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversation Bookmarks | Guide Bot</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-card: #1a1a25;
+            --bg-hover: #252535;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0b0;
+            --text-muted: #606070;
+            --accent: #8b5cf6;
+            --accent-hover: #a78bfa;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --border: #2a2a3a;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+        
+        /* Header */
+        .header {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        
+        .logo i {
+            color: var(--accent);
+            font-size: 1.5rem;
+        }
+        
+        .header-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .search-box {
+            position: relative;
+            width: 300px;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 0.625rem 1rem 0.625rem 2.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+        }
+        
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        
+        .search-box i {
+            position: absolute;
+            left: 0.875rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+        
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: var(--accent-hover);
+        }
+        
+        .btn-secondary {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--bg-hover);
+        }
+        
+        .btn-icon {
+            background: transparent;
+            color: var(--text-muted);
+            padding: 0.5rem;
+        }
+        
+        .btn-icon:hover {
+            color: var(--text-primary);
+            background: var(--bg-hover);
+        }
+        
+        /* Main Layout */
+        .main-container {
+            display: grid;
+            grid-template-columns: 260px 1fr 320px;
+            min-height: calc(100vh - 65px);
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            padding: 1.5rem;
+        }
+        
+        .sidebar-section {
+            margin-bottom: 2rem;
+        }
+        
+        .sidebar-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
+            letter-spacing: 0.05em;
+        }
+        
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .stat-row:last-child {
+            border-bottom: none;
+        }
+        
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+        
+        .stat-value {
+            color: var(--accent);
+            font-weight: 600;
+        }
+        
+        .filter-list {
+            list-style: none;
+        }
+        
+        .filter-item {
+            padding: 0.625rem 0.875rem;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.25rem;
+            transition: all 0.2s;
+            font-size: 0.875rem;
+        }
+        
+        .filter-item:hover, .filter-item.active {
+            background: var(--bg-hover);
+        }
+        
+        .filter-item.active {
+            border-left: 3px solid var(--accent);
+            color: var(--accent);
+        }
+        
+        .filter-icon {
+            margin-right: 0.625rem;
+            width: 16px;
+        }
+        
+        .filter-count {
+            background: var(--bg-primary);
+            padding: 0.125rem 0.5rem;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+        
+        .tag-cloud {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        
+        .tag {
+            padding: 0.25rem 0.625rem;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .tag:hover, .tag.active {
+            background: var(--accent);
+            color: white;
+        }
+        
+        /* Content Area */
+        .content {
+            padding: 1.5rem;
+            overflow-y: auto;
+        }
+        
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .content-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        
+        .view-toggle {
+            display: flex;
+            background: var(--bg-card);
+            border-radius: 8px;
+            padding: 0.25rem;
+        }
+        
+        .view-btn {
+            padding: 0.5rem 0.75rem;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+        
+        .view-btn.active {
+            background: var(--accent);
+            color: white;
+        }
+        
+        /* Bookmark Cards */
+        .bookmarks-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .bookmark-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1.25rem;
+            border: 1px solid var(--border);
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        
+        .bookmark-card:hover {
+            border-color: var(--accent);
+        }
+        
+        .bookmark-card.selected {
+            border-color: var(--accent);
+            background: var(--bg-hover);
+        }
+        
+        .bookmark-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.75rem;
+        }
+        
+        .bookmark-meta {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .bookmark-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        
+        .bookmark-info h3 {
+            font-size: 0.9375rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        
+        .bookmark-time {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .bookmark-actions {
+            display: flex;
+            gap: 0.375rem;
+        }
+        
+        .bookmark-actions button {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 0.375rem;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+        
+        .bookmark-actions button:hover {
+            color: var(--text-primary);
+            background: var(--bg-primary);
+        }
+        
+        .bookmark-actions button.delete:hover {
+            color: var(--danger);
+        }
+        
+        .bookmark-actions button.favorite.active {
+            color: var(--warning);
+        }
+        
+        .bookmark-transcript {
+            background: var(--bg-primary);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            font-size: 0.875rem;
+            line-height: 1.6;
+            color: var(--text-secondary);
+        }
+        
+        .transcript-speaker {
+            color: var(--accent);
+            font-weight: 500;
+        }
+        
+        .transcript-highlight {
+            background: rgba(139, 92, 246, 0.3);
+            padding: 0 0.25rem;
+            border-radius: 3px;
+        }
+        
+        .bookmark-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .bookmark-tags {
+            display: flex;
+            gap: 0.375rem;
+        }
+        
+        .bookmark-tag {
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.6875rem;
+            background: var(--bg-primary);
+            color: var(--text-muted);
+        }
+        
+        .bookmark-duration {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+        }
+        
+        /* Detail Panel */
+        .detail-panel {
+            background: var(--bg-secondary);
+            border-left: 1px solid var(--border);
+            padding: 1.5rem;
+            overflow-y: auto;
+        }
+        
+        .detail-empty {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-muted);
+            text-align: center;
+        }
+        
+        .detail-empty i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+        
+        .detail-header {
+            margin-bottom: 1.5rem;
+        }
+        
+        .detail-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .detail-date {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+        
+        .detail-section {
+            margin-bottom: 1.5rem;
+        }
+        
+        .detail-section-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
+            letter-spacing: 0.05em;
+        }
+        
+        .detail-transcript {
+            background: var(--bg-card);
+            border-radius: 8px;
+            padding: 1rem;
+            font-size: 0.875rem;
+            line-height: 1.7;
+        }
+        
+        .detail-context {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        
+        .context-item {
+            display: flex;
+            gap: 0.75rem;
+            align-items: flex-start;
+            padding: 0.75rem;
+            background: var(--bg-card);
+            border-radius: 8px;
+            font-size: 0.875rem;
+        }
+        
+        .context-item i {
+            color: var(--accent);
+            margin-top: 0.125rem;
+        }
+        
+        .audio-player {
+            background: var(--bg-card);
+            border-radius: 8px;
+            padding: 1rem;
+        }
+        
+        .audio-waveform {
+            height: 60px;
+            background: var(--bg-primary);
+            border-radius: 6px;
+            margin-bottom: 0.75rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .waveform-bars {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            gap: 2px;
+            padding: 0 0.5rem;
+        }
+        
+        .waveform-bar {
+            width: 3px;
+            background: var(--accent);
+            border-radius: 2px;
+            opacity: 0.5;
+        }
+        
+        .waveform-bar.active {
+            opacity: 1;
+        }
+        
+        .audio-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .play-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--accent);
+            border: none;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        
+        .play-btn:hover {
+            background: var(--accent-hover);
+            transform: scale(1.05);
+        }
+        
+        .audio-time {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-family: monospace;
+        }
+        
+        .audio-progress {
+            flex: 1;
+            height: 4px;
+            background: var(--bg-primary);
+            border-radius: 2px;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .audio-progress-fill {
+            height: 100%;
+            background: var(--accent);
+            border-radius: 2px;
+            width: 35%;
+        }
+        
+        .notes-textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 0.75rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            resize: vertical;
+        }
+        
+        .notes-textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        
+        .tag-input-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            background: var(--bg-card);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+        
+        .tag-input-container .tag {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+        }
+        
+        .tag-remove {
+            cursor: pointer;
+            opacity: 0.7;
+        }
+        
+        .tag-remove:hover {
+            opacity: 1;
+        }
+        
+        .tag-input {
+            flex: 1;
+            min-width: 100px;
+            border: none;
+            background: transparent;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            padding: 0.25rem;
+        }
+        
+        .tag-input:focus {
+            outline: none;
+        }
+        
+        /* Empty State */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 4rem 2rem;
+            text-align: center;
+        }
+        
+        .empty-state i {
+            font-size: 4rem;
+            color: var(--accent);
+            opacity: 0.5;
+            margin-bottom: 1rem;
+        }
+        
+        .empty-state h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .empty-state p {
+            color: var(--text-muted);
+            max-width: 300px;
+        }
+        
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 1001;
+        }
+        
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .toast.success i { color: var(--success); }
+        .toast.error i { color: var(--danger); }
+        
+        /* Mobile */
+        @media (max-width: 1024px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar, .detail-panel {
+                display: none;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .search-box {
+                width: 100%;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .header-controls {
+                width: 100%;
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <i class="fas fa-bookmark"></i>
+            <span>Conversation Bookmarks</span>
+        </div>
+        <div class="header-controls">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search bookmarks..." id="searchInput" oninput="filterBookmarks()">
+            </div>
+            <button class="btn btn-secondary" onclick="exportBookmarks()">
+                <i class="fas fa-download"></i> Export
+            </button>
+            <button class="btn btn-primary" onclick="createBookmark()">
+                <i class="fas fa-plus"></i> Add Bookmark
+            </button>
+        </div>
+    </header>
+    
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-title">Overview</div>
+                <div class="stat-row">
+                    <span class="stat-label">Total Bookmarks</span>
+                    <span class="stat-value" id="totalCount">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Favorites</span>
+                    <span class="stat-value" id="favoritesCount">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">This Week</span>
+                    <span class="stat-value" id="weekCount">0</span>
+                </div>
+            </div>
+            
+            <div class="sidebar-section">
+                <div class="sidebar-title">Filter By</div>
+                <ul class="filter-list" id="filterList">
+                    <li class="filter-item active" data-filter="all">
+                        <span><i class="fas fa-layer-group filter-icon"></i> All Bookmarks</span>
+                        <span class="filter-count" id="countAll">0</span>
+                    </li>
+                    <li class="filter-item" data-filter="favorite">
+                        <span><i class="fas fa-star filter-icon"></i> Favorites</span>
+                        <span class="filter-count" id="countFavorite">0</span>
+                    </li>
+                    <li class="filter-item" data-filter="insight">
+                        <span><i class="fas fa-lightbulb filter-icon"></i> Insights</span>
+                        <span class="filter-count" id="countInsight">0</span>
+                    </li>
+                    <li class="filter-item" data-filter="action">
+                        <span><i class="fas fa-bolt filter-icon"></i> Action Items</span>
+                        <span class="filter-count" id="countAction">0</span>
+                    </li>
+                    <li class="filter-item" data-filter="question">
+                        <span><i class="fas fa-question-circle filter-icon"></i> Questions</span>
+                        <span class="filter-count" id="countQuestion">0</span>
+                    </li>
+                    <li class="filter-item" data-filter="reference">
+                        <span><i class="fas fa-link filter-icon"></i> References</span>
+                        <span class="filter-count" id="countReference">0</span>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="sidebar-section">
+                <div class="sidebar-title">Popular Tags</div>
+                <div class="tag-cloud" id="tagCloud">
+                    <!-- Tags will be rendered here -->
+                </div>
+            </div>
+        </aside>
+        
+        <!-- Content -->
+        <main class="content">
+            <div class="content-header">
+                <h1 class="content-title">All Bookmarks</h1>
+                <div class="view-toggle">
+                    <button class="view-btn active" data-view="list" title="List View">
+                        <i class="fas fa-list"></i>
+                    </button>
+                    <button class="view-btn" data-view="grid" title="Grid View">
+                        <i class="fas fa-th"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="bookmarks-list" id="bookmarksList">
+                <!-- Bookmarks will be rendered here -->
+            </div>
+            
+            <div class="empty-state" id="emptyState" style="display: none;">
+                <i class="fas fa-bookmark"></i>
+                <h3>No bookmarks yet</h3>
+                <p>Say "bookmark this" during a conversation to save important moments.</p>
+            </div>
+        </main>
+        
+        <!-- Detail Panel -->
+        <aside class="detail-panel" id="detailPanel">
+            <div class="detail-empty" id="detailEmpty">
+                <i class="fas fa-hand-pointer"></i>
+                <p>Select a bookmark to view details</p>
+            </div>
+            
+            <div id="detailContent" style="display: none;">
+                <div class="detail-header">
+                    <h2 class="detail-title" id="detailTitle">Bookmark Title</h2>
+                    <div class="detail-date" id="detailDate">January 27, 2026 at 2:30 PM</div>
+                </div>
+                
+                <div class="detail-section">
+                    <div class="detail-section-title">Audio Clip</div>
+                    <div class="audio-player">
+                        <div class="audio-waveform">
+                            <div class="waveform-bars" id="waveformBars">
+                                <!-- Waveform bars will be generated -->
+                            </div>
+                        </div>
+                        <div class="audio-controls">
+                            <button class="play-btn" id="playBtn" onclick="togglePlay()">
+                                <i class="fas fa-play"></i>
+                            </button>
+                            <span class="audio-time" id="currentTime">0:00</span>
+                            <div class="audio-progress" onclick="seekAudio(event)">
+                                <div class="audio-progress-fill" id="progressFill"></div>
+                            </div>
+                            <span class="audio-time" id="totalTime">0:45</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <div class="detail-section-title">Transcript</div>
+                    <div class="detail-transcript" id="detailTranscript">
+                        <!-- Transcript content -->
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <div class="detail-section-title">Context</div>
+                    <div class="detail-context" id="detailContext">
+                        <!-- Context items -->
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <div class="detail-section-title">Notes</div>
+                    <textarea class="notes-textarea" id="notesTextarea" placeholder="Add your notes here..." oninput="saveNotes()"></textarea>
+                </div>
+                
+                <div class="detail-section">
+                    <div class="detail-section-title">Tags</div>
+                    <div class="tag-input-container" id="tagInputContainer">
+                        <input type="text" class="tag-input" id="tagInput" placeholder="Add tag..." onkeydown="handleTagInput(event)">
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+    
+    <!-- Toast -->
+    <div class="toast" id="toast">
+        <i class="fas fa-check-circle"></i>
+        <span id="toastMessage">Bookmark saved!</span>
+    </div>
+    
+    <script>
+        // Sample bookmarks data
+        let bookmarks = [
+            {
+                id: 1,
+                title: "Market Analysis Summary",
+                timestamp: "2026-01-27T14:30:00",
+                duration: 45,
+                type: "insight",
+                favorite: true,
+                transcript: {
+                    user: "What's your take on the current market conditions?",
+                    assistant: "Based on recent data, we're seeing a divergence between large-cap and small-cap performance. The Russell 2000 is underperforming the S&P 500 by about 8% YTD, which historically signals increased risk aversion..."
+                },
+                context: [
+                    { icon: "chart-line", text: "During portfolio review session" },
+                    { icon: "clock", text: "10 mins into conversation" }
+                ],
+                tags: ["market", "analysis", "large-cap", "small-cap"],
+                notes: ""
+            },
+            {
+                id: 2,
+                title: "EWBC Earnings Play",
+                timestamp: "2026-01-26T10:15:00",
+                duration: 32,
+                type: "action",
+                favorite: false,
+                transcript: {
+                    user: "Should we position ahead of EWBC earnings?",
+                    assistant: "Looking at the setup, EWBC has beaten estimates 6 of the last 8 quarters. Current implied move is 5.2%, below the historical average of 6.8%. Could be an opportunity for a long straddle if you want the exposure without directional risk."
+                },
+                context: [
+                    { icon: "calendar", text: "1 day before earnings" },
+                    { icon: "chart-bar", text: "Reviewing options strategies" }
+                ],
+                tags: ["EWBC", "earnings", "options", "straddle"],
+                notes: "Decided to buy the straddle. Monitor IV closely."
+            },
+            {
+                id: 3,
+                title: "Technical Setup Question",
+                timestamp: "2026-01-25T16:45:00",
+                duration: 28,
+                type: "question",
+                favorite: true,
+                transcript: {
+                    user: "What does the MACD divergence mean for SPY?",
+                    assistant: "The bearish divergence we're seeing - where price makes higher highs but MACD makes lower highs - often precedes pullbacks. However, in strong uptrends, these divergences can persist. I'd watch the 20-day MA as first support..."
+                },
+                context: [
+                    { icon: "chart-area", text: "Technical analysis discussion" },
+                    { icon: "info-circle", text: "Follow-up to morning brief" }
+                ],
+                tags: ["technical", "MACD", "SPY", "divergence"],
+                notes: ""
+            },
+            {
+                id: 4,
+                title: "13F Filing Alert",
+                timestamp: "2026-01-24T09:30:00",
+                duration: 55,
+                type: "reference",
+                favorite: false,
+                transcript: {
+                    user: "Bookmark this - the Pershing Square filing details",
+                    assistant: "Noted. Pershing Square increased their UBER position by 15% to 30.2M shares. They also initiated a new position in Brookfield Corp. The 13F shows total portfolio value of $12.8B, up from $11.2B last quarter."
+                },
+                context: [
+                    { icon: "file-alt", text: "13F filing review" },
+                    { icon: "building", text: "Pershing Square analysis" }
+                ],
+                tags: ["13F", "Pershing Square", "UBER", "Brookfield"],
+                notes: "Good signal on UBER conviction. Check entry points."
+            },
+            {
+                id: 5,
+                title: "Sector Rotation Insight",
+                timestamp: "2026-01-23T11:20:00",
+                duration: 40,
+                type: "insight",
+                favorite: false,
+                transcript: {
+                    user: "Where is money flowing right now?",
+                    assistant: "We're seeing clear rotation into defensive sectors - Utilities up 3.2% this week, Healthcare up 2.8%. Money is leaving high-beta tech names. This pattern typically occurs 3-6 months before Fed rate cuts historically..."
+                },
+                context: [
+                    { icon: "exchange-alt", text: "Sector rotation discussion" },
+                    { icon: "dollar-sign", text: "Weekly flow review" }
+                ],
+                tags: ["rotation", "utilities", "healthcare", "Fed"],
+                notes: ""
+            }
+        ];
+        
+        let currentFilter = 'all';
+        let currentTag = null;
+        let selectedBookmark = null;
+        let isPlaying = false;
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            const saved = localStorage.getItem('conversationBookmarks');
+            if (saved) {
+                bookmarks = JSON.parse(saved);
+            }
+            renderBookmarks();
+            updateStats();
+            setupFilters();
+            generateWaveform();
+        });
+        
+        // Render bookmarks
+        function renderBookmarks() {
+            const list = document.getElementById('bookmarksList');
+            const emptyState = document.getElementById('emptyState');
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            let filtered = bookmarks;
+            
+            // Apply filter
+            if (currentFilter === 'favorite') {
+                filtered = filtered.filter(b => b.favorite);
+            } else if (currentFilter !== 'all') {
+                filtered = filtered.filter(b => b.type === currentFilter);
+            }
+            
+            // Apply tag filter
+            if (currentTag) {
+                filtered = filtered.filter(b => b.tags.includes(currentTag));
+            }
+            
+            // Apply search
+            if (searchTerm) {
+                filtered = filtered.filter(b =>
+                    b.title.toLowerCase().includes(searchTerm) ||
+                    b.transcript.user.toLowerCase().includes(searchTerm) ||
+                    b.transcript.assistant.toLowerCase().includes(searchTerm) ||
+                    b.tags.some(t => t.toLowerCase().includes(searchTerm))
+                );
+            }
+            
+            if (filtered.length === 0) {
+                list.innerHTML = '';
+                emptyState.style.display = 'flex';
+                return;
+            }
+            
+            emptyState.style.display = 'none';
+            
+            list.innerHTML = filtered.map(b => `
+                <div class="bookmark-card ${selectedBookmark === b.id ? 'selected' : ''}" 
+                     onclick="selectBookmark(${b.id})">
+                    <div class="bookmark-header">
+                        <div class="bookmark-meta">
+                            <div class="bookmark-icon">
+                                <i class="fas fa-${getTypeIcon(b.type)}"></i>
+                            </div>
+                            <div class="bookmark-info">
+                                <h3>${b.title}</h3>
+                                <div class="bookmark-time">
+                                    <i class="far fa-calendar"></i>
+                                    ${formatDate(b.timestamp)}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bookmark-actions" onclick="event.stopPropagation()">
+                            <button class="favorite ${b.favorite ? 'active' : ''}" 
+                                    onclick="toggleFavorite(${b.id})" title="Favorite">
+                                <i class="fas fa-star"></i>
+                            </button>
+                            <button onclick="shareBookmark(${b.id})" title="Share">
+                                <i class="fas fa-share"></i>
+                            </button>
+                            <button class="delete" onclick="deleteBookmark(${b.id})" title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="bookmark-transcript">
+                        <span class="transcript-speaker">You:</span> ${truncate(b.transcript.user, 100)}<br><br>
+                        <span class="transcript-speaker">ClawD:</span> ${truncate(b.transcript.assistant, 150)}
+                    </div>
+                    <div class="bookmark-footer">
+                        <div class="bookmark-tags">
+                            ${b.tags.slice(0, 3).map(t => `<span class="bookmark-tag">${t}</span>`).join('')}
+                            ${b.tags.length > 3 ? `<span class="bookmark-tag">+${b.tags.length - 3}</span>` : ''}
+                        </div>
+                        <div class="bookmark-duration">
+                            <i class="fas fa-clock"></i>
+                            ${formatDuration(b.duration)}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Helper functions
+        function getTypeIcon(type) {
+            const icons = {
+                insight: 'lightbulb',
+                action: 'bolt',
+                question: 'question-circle',
+                reference: 'link'
+            };
+            return icons[type] || 'bookmark';
+        }
+        
+        function formatDate(timestamp) {
+            const date = new Date(timestamp);
+            return date.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit'
+            });
+        }
+        
+        function formatDuration(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+        
+        function truncate(str, len) {
+            return str.length > len ? str.substring(0, len) + '...' : str;
+        }
+        
+        // Update stats
+        function updateStats() {
+            const now = new Date();
+            const weekAgo = new Date(now - 7 * 24 * 60 * 60 * 1000);
+            
+            document.getElementById('totalCount').textContent = bookmarks.length;
+            document.getElementById('favoritesCount').textContent = bookmarks.filter(b => b.favorite).length;
+            document.getElementById('weekCount').textContent = bookmarks.filter(b => new Date(b.timestamp) > weekAgo).length;
+            
+            // Update filter counts
+            document.getElementById('countAll').textContent = bookmarks.length;
+            document.getElementById('countFavorite').textContent = bookmarks.filter(b => b.favorite).length;
+            document.getElementById('countInsight').textContent = bookmarks.filter(b => b.type === 'insight').length;
+            document.getElementById('countAction').textContent = bookmarks.filter(b => b.type === 'action').length;
+            document.getElementById('countQuestion').textContent = bookmarks.filter(b => b.type === 'question').length;
+            document.getElementById('countReference').textContent = bookmarks.filter(b => b.type === 'reference').length;
+            
+            // Update tag cloud
+            const tagCounts = {};
+            bookmarks.forEach(b => b.tags.forEach(t => tagCounts[t] = (tagCounts[t] || 0) + 1));
+            const sortedTags = Object.entries(tagCounts).sort((a, b) => b[1] - a[1]).slice(0, 10);
+            
+            document.getElementById('tagCloud').innerHTML = sortedTags.map(([tag, count]) => 
+                `<span class="tag ${currentTag === tag ? 'active' : ''}" onclick="filterByTag('${tag}')">${tag}</span>`
+            ).join('');
+        }
+        
+        // Setup filters
+        function setupFilters() {
+            document.querySelectorAll('.filter-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    document.querySelectorAll('.filter-item').forEach(i => i.classList.remove('active'));
+                    item.classList.add('active');
+                    currentFilter = item.dataset.filter;
+                    currentTag = null;
+                    document.getElementById('content-title')?.textContent = item.querySelector('span').textContent.trim();
+                    renderBookmarks();
+                    updateStats();
+                });
+            });
+        }
+        
+        // Filter functions
+        function filterBookmarks() {
+            renderBookmarks();
+        }
+        
+        function filterByTag(tag) {
+            currentTag = currentTag === tag ? null : tag;
+            renderBookmarks();
+            updateStats();
+        }
+        
+        // Select bookmark
+        function selectBookmark(id) {
+            selectedBookmark = id;
+            const bookmark = bookmarks.find(b => b.id === id);
+            
+            document.getElementById('detailEmpty').style.display = 'none';
+            document.getElementById('detailContent').style.display = 'block';
+            
+            document.getElementById('detailTitle').textContent = bookmark.title;
+            document.getElementById('detailDate').textContent = new Date(bookmark.timestamp).toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit'
+            });
+            
+            document.getElementById('detailTranscript').innerHTML = `
+                <p><span class="transcript-speaker">You:</span> ${bookmark.transcript.user}</p>
+                <br>
+                <p><span class="transcript-speaker">ClawD:</span> ${bookmark.transcript.assistant}</p>
+            `;
+            
+            document.getElementById('detailContext').innerHTML = bookmark.context.map(c => `
+                <div class="context-item">
+                    <i class="fas fa-${c.icon}"></i>
+                    <span>${c.text}</span>
+                </div>
+            `).join('');
+            
+            document.getElementById('notesTextarea').value = bookmark.notes || '';
+            
+            // Render tags
+            const tagContainer = document.getElementById('tagInputContainer');
+            const tagInput = document.getElementById('tagInput');
+            tagContainer.innerHTML = bookmark.tags.map(t => `
+                <span class="tag">
+                    ${t}
+                    <span class="tag-remove" onclick="removeTag('${t}')">&times;</span>
+                </span>
+            `).join('') + '<input type="text" class="tag-input" id="tagInput" placeholder="Add tag..." onkeydown="handleTagInput(event)">';
+            
+            document.getElementById('totalTime').textContent = formatDuration(bookmark.duration);
+            
+            renderBookmarks();
+        }
+        
+        // Toggle favorite
+        function toggleFavorite(id) {
+            const bookmark = bookmarks.find(b => b.id === id);
+            bookmark.favorite = !bookmark.favorite;
+            saveToStorage();
+            renderBookmarks();
+            updateStats();
+            showToast(bookmark.favorite ? 'Added to favorites' : 'Removed from favorites');
+        }
+        
+        // Delete bookmark
+        function deleteBookmark(id) {
+            if (confirm('Delete this bookmark?')) {
+                bookmarks = bookmarks.filter(b => b.id !== id);
+                if (selectedBookmark === id) {
+                    selectedBookmark = null;
+                    document.getElementById('detailEmpty').style.display = 'flex';
+                    document.getElementById('detailContent').style.display = 'none';
+                }
+                saveToStorage();
+                renderBookmarks();
+                updateStats();
+                showToast('Bookmark deleted');
+            }
+        }
+        
+        // Share bookmark
+        function shareBookmark(id) {
+            const bookmark = bookmarks.find(b => b.id === id);
+            const text = `${bookmark.title}\n\nYou: ${bookmark.transcript.user}\n\nClawD: ${bookmark.transcript.assistant}`;
+            navigator.clipboard.writeText(text);
+            showToast('Copied to clipboard!');
+        }
+        
+        // Save notes
+        function saveNotes() {
+            if (selectedBookmark) {
+                const bookmark = bookmarks.find(b => b.id === selectedBookmark);
+                bookmark.notes = document.getElementById('notesTextarea').value;
+                saveToStorage();
+            }
+        }
+        
+        // Tag management
+        function handleTagInput(event) {
+            if (event.key === 'Enter' && event.target.value.trim()) {
+                const tag = event.target.value.trim().toLowerCase();
+                const bookmark = bookmarks.find(b => b.id === selectedBookmark);
+                if (!bookmark.tags.includes(tag)) {
+                    bookmark.tags.push(tag);
+                    saveToStorage();
+                    selectBookmark(selectedBookmark);
+                    updateStats();
+                }
+                event.target.value = '';
+            }
+        }
+        
+        function removeTag(tag) {
+            const bookmark = bookmarks.find(b => b.id === selectedBookmark);
+            bookmark.tags = bookmark.tags.filter(t => t !== tag);
+            saveToStorage();
+            selectBookmark(selectedBookmark);
+            updateStats();
+        }
+        
+        // Audio player (simulated)
+        function generateWaveform() {
+            const container = document.getElementById('waveformBars');
+            let bars = '';
+            for (let i = 0; i < 60; i++) {
+                const height = Math.random() * 40 + 10;
+                bars += `<div class="waveform-bar" style="height: ${height}px"></div>`;
+            }
+            container.innerHTML = bars;
+        }
+        
+        function togglePlay() {
+            isPlaying = !isPlaying;
+            const btn = document.getElementById('playBtn');
+            btn.innerHTML = `<i class="fas fa-${isPlaying ? 'pause' : 'play'}"></i>`;
+        }
+        
+        function seekAudio(event) {
+            const progress = event.currentTarget;
+            const percent = event.offsetX / progress.offsetWidth;
+            document.getElementById('progressFill').style.width = `${percent * 100}%`;
+        }
+        
+        // Create new bookmark
+        function createBookmark() {
+            const newBookmark = {
+                id: Date.now(),
+                title: "New Bookmark",
+                timestamp: new Date().toISOString(),
+                duration: 0,
+                type: "insight",
+                favorite: false,
+                transcript: {
+                    user: "Your message here...",
+                    assistant: "ClawD's response here..."
+                },
+                context: [],
+                tags: [],
+                notes: ""
+            };
+            bookmarks.unshift(newBookmark);
+            saveToStorage();
+            renderBookmarks();
+            updateStats();
+            selectBookmark(newBookmark.id);
+            showToast('Bookmark created!');
+        }
+        
+        // Export
+        function exportBookmarks() {
+            const data = JSON.stringify(bookmarks, null, 2);
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'conversation-bookmarks.json';
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('Bookmarks exported!');
+        }
+        
+        // Storage
+        function saveToStorage() {
+            localStorage.setItem('conversationBookmarks', JSON.stringify(bookmarks));
+        }
+        
+        // Toast
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            const icon = toast.querySelector('i');
+            
+            toastMessage.textContent = message;
+            toast.className = `toast ${type}`;
+            icon.className = type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
+            
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+    </script>
+</body>
+</html>

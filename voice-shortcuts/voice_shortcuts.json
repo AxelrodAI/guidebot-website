@@ -1,0 +1,42 @@
+[
+  {
+    "id": 1,
+    "trigger": "check my portfolio",
+    "description": "Get a quick summary of current positions and P&L",
+    "category": "query",
+    "steps": [
+      "Open portfolio dashboard",
+      "Calculate current P&L",
+      "Summarize top movers"
+    ],
+    "usage": 0,
+    "created": "2026-01-27T21:12:23.826889"
+  },
+  {
+    "id": 2,
+    "trigger": "morning routine",
+    "description": "Start the daily analysis workflow",
+    "category": "workflow",
+    "steps": [
+      "Check pre-market futures",
+      "Scan overnight news",
+      "Review earnings calendar",
+      "Check analyst upgrades/downgrades"
+    ],
+    "usage": 0,
+    "created": "2026-01-27T21:12:23.826889"
+  },
+  {
+    "id": 3,
+    "trigger": "what's moving",
+    "description": "Quick summary of biggest market movers",
+    "category": "query",
+    "steps": [
+      "Get top gainers",
+      "Get top losers",
+      "Check sector performance"
+    ],
+    "usage": 0,
+    "created": "2026-01-27T21:12:23.826889"
+  }
+]

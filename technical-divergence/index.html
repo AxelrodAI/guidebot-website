@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Technical Divergence Alert System | Guide Bot - AI Equity Research</title>
+    <meta name="description" content="Detect price vs indicator divergences (RSI, MACD, OBV). Alert on bullish/bearish divergences with historical accuracy tracking.">
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0"></script>
+    
+    <style>
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #111827;
+            --bg-card: #1a2234;
+            --bg-card-hover: #1f2942;
+            --text-primary: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --accent-blue: #3b82f6;
+            --accent-yellow: #f59e0b;
+            --accent-purple: #8b5cf6;
+            --accent-orange: #f97316;
+            --border-color: #374151;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        .container { max-width: 1600px; margin: 0 auto; padding: 20px; }
+        
+        header {
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-card) 100%);
+            border-bottom: 1px solid var(--border-color);
+            padding: 20px 0;
+            margin-bottom: 24px;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .header-title h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-orange) 0%, var(--accent-yellow) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .header-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        .back-link {
+            color: var(--accent-blue);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+        
+        .back-link:hover { text-decoration: underline; }
+        
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .stat-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+        }
+        
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+        }
+        
+        .stat-green { color: var(--accent-green); }
+        .stat-red { color: var(--accent-red); }
+        .stat-blue { color: var(--accent-blue); }
+        .stat-yellow { color: var(--accent-yellow); }
+        
+        /* Filters */
+        .filters {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 24px;
+            border: 1px solid var(--border-color);
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .filter-label {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        
+        .filter-select {
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+        
+        .filter-btn {
+            padding: 8px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .filter-btn:hover, .filter-btn.active {
+            border-color: var(--accent-orange);
+            color: var(--accent-orange);
+        }
+        
+        /* Main Grid */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+        }
+        
+        @media (max-width: 1200px) {
+            .main-grid { grid-template-columns: 1fr; }
+        }
+        
+        .card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        /* Divergence Table */
+        .divergence-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .divergence-table th,
+        .divergence-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .divergence-table th {
+            color: var(--text-muted);
+            font-weight: 500;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+        
+        .divergence-table th:hover { color: var(--text-primary); }
+        
+        .divergence-table tbody tr {
+            transition: background 0.2s;
+        }
+        
+        .divergence-table tbody tr:hover {
+            background: var(--bg-card-hover);
+        }
+        
+        .ticker-cell {
+            font-weight: 600;
+            color: var(--accent-blue);
+        }
+        
+        .type-badge {
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .type-bullish {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent-green);
+        }
+        
+        .type-bearish {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--accent-red);
+        }
+        
+        .type-hidden-bullish {
+            background: rgba(16, 185, 129, 0.1);
+            color: #34d399;
+            border: 1px dashed var(--accent-green);
+        }
+        
+        .type-hidden-bearish {
+            background: rgba(239, 68, 68, 0.1);
+            color: #f87171;
+            border: 1px dashed var(--accent-red);
+        }
+        
+        .indicator-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+        }
+        
+        .strength-strong { color: var(--accent-yellow); }
+        .strength-moderate { color: var(--text-primary); }
+        .strength-weak { color: var(--text-muted); }
+        
+        .confidence-bar {
+            height: 6px;
+            width: 60px;
+            background: var(--bg-secondary);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .confidence-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.5s;
+        }
+        
+        .confidence-high { background: var(--accent-green); }
+        .confidence-medium { background: var(--accent-yellow); }
+        .confidence-low { background: var(--accent-red); }
+        
+        /* Accuracy Panel */
+        .accuracy-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border-radius: 8px;
+            background: var(--bg-secondary);
+            margin-bottom: 8px;
+        }
+        
+        .accuracy-indicator {
+            font-weight: 600;
+        }
+        
+        .accuracy-stats {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+        
+        .accuracy-rate {
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+        
+        .accuracy-count {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        
+        /* Signal Detail Modal */
+        .signal-detail {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .signal-detail.active { display: flex; }
+        
+        .signal-modal {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        
+        .modal-close:hover { color: var(--text-primary); }
+        
+        .signal-visual {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .signal-point {
+            text-align: center;
+        }
+        
+        .signal-point-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+        
+        .signal-point-value {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        .signal-arrow {
+            font-size: 2rem;
+            color: var(--text-muted);
+        }
+        
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        
+        .detail-item {
+            padding: 12px;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+        
+        .detail-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+        
+        .detail-value {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        
+        /* Chart */
+        .chart-container {
+            height: 200px;
+            margin-top: 16px;
+        }
+        
+        /* Divergence Explanation */
+        .explanation-box {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 16px;
+        }
+        
+        .explanation-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .explanation-text {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+        
+        /* Footer */
+        footer {
+            margin-top: 40px;
+            padding: 20px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            border-top: 1px solid var(--border-color);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="header-title">
+                <div>
+                    <h1>📊 Technical Divergence Alerts</h1>
+                    <p class="header-subtitle">Detect price vs indicator divergences • RSI, MACD, OBV, Stochastic</p>
+                </div>
+            </div>
+            <a href="../index.html" class="back-link">
+                ← Back to Dashboard
+            </a>
+        </div>
+    </header>
+    
+    <div class="container">
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Active Signals</div>
+                <div class="stat-value stat-yellow" id="totalSignals">24</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Bullish Divergences</div>
+                <div class="stat-value stat-green" id="bullishCount">14</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Bearish Divergences</div>
+                <div class="stat-value stat-red" id="bearishCount">10</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Strong Signals</div>
+                <div class="stat-value stat-blue" id="strongCount">6</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Avg Accuracy (30d)</div>
+                <div class="stat-value stat-green" id="avgAccuracy">72%</div>
+            </div>
+        </div>
+        
+        <!-- Filters -->
+        <div class="filters">
+            <div class="filter-group">
+                <span class="filter-label">Type:</span>
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="bullish">🟢 Bullish</button>
+                <button class="filter-btn" data-filter="bearish">🔴 Bearish</button>
+            </div>
+            <div class="filter-group">
+                <span class="filter-label">Indicator:</span>
+                <select class="filter-select" id="indicatorFilter">
+                    <option value="all">All Indicators</option>
+                    <option value="RSI">RSI</option>
+                    <option value="MACD">MACD</option>
+                    <option value="OBV">OBV</option>
+                    <option value="Stochastic">Stochastic</option>
+                    <option value="MFI">MFI</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <span class="filter-label">Strength:</span>
+                <select class="filter-select" id="strengthFilter">
+                    <option value="all">All Strengths</option>
+                    <option value="strong">⚡ Strong Only</option>
+                    <option value="moderate">● Moderate+</option>
+                </select>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-grid">
+            <!-- Divergence Signals Table -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">📈 Recent Divergence Signals</h3>
+                    <span style="color: var(--text-muted); font-size: 0.85rem;">Last 24 hours</span>
+                </div>
+                <table class="divergence-table">
+                    <thead>
+                        <tr>
+                            <th>Ticker</th>
+                            <th>Type</th>
+                            <th>Indicator</th>
+                            <th>Strength</th>
+                            <th>Confidence</th>
+                            <th>Timeframe</th>
+                            <th>Time</th>
+                        </tr>
+                    </thead>
+                    <tbody id="signalTable">
+                        <!-- Signals populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Right Panel -->
+            <div>
+                <!-- Accuracy Stats -->
+                <div class="card" style="margin-bottom: 24px;">
+                    <div class="card-header">
+                        <h3 class="card-title">📊 Indicator Accuracy</h3>
+                    </div>
+                    <div id="accuracyPanel">
+                        <!-- Accuracy items populated by JS -->
+                    </div>
+                </div>
+                
+                <!-- Explanation Box -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">💡 How to Use</h3>
+                    </div>
+                    <div class="explanation-box">
+                        <div class="explanation-title">🟢 Bullish Divergence</div>
+                        <p class="explanation-text">Price makes lower lows, but indicator makes higher lows. Suggests weakening selling pressure — potential reversal up.</p>
+                    </div>
+                    <div class="explanation-box">
+                        <div class="explanation-title">🔴 Bearish Divergence</div>
+                        <p class="explanation-text">Price makes higher highs, but indicator makes lower highs. Suggests weakening buying pressure — potential reversal down.</p>
+                    </div>
+                    <div class="explanation-box">
+                        <div class="explanation-title">⚡ Signal Strength</div>
+                        <p class="explanation-text">
+                            <strong>Strong:</strong> Large divergence, high conviction<br>
+                            <strong>Moderate:</strong> Clear signal, standard setup<br>
+                            <strong>Weak:</strong> Minor divergence, lower reliability
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Signal Detail Modal -->
+    <div class="signal-detail" id="signalModal">
+        <div class="signal-modal">
+            <div class="modal-header">
+                <h3 id="modalTitle">Signal Details</h3>
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+            <div id="modalContent">
+                <!-- Modal content populated by JS -->
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <p>Technical Divergence Alert System • Part of the Guide Bot AI Equity Research Suite</p>
+        <p style="margin-top: 8px;">Indicators: RSI (14), MACD (12/26/9), OBV, Stochastic (14,3), MFI (14), CCI (20)</p>
+    </footer>
+    
+    <script>
+        // Demo data
+        const tickers = ['NVDA', 'AAPL', 'TSLA', 'AMD', 'MSFT', 'META', 'GOOGL', 'AMZN', 'NFLX', 'JPM', 'V', 'DIS', 'BA', 'INTC', 'COIN'];
+        const indicators = ['RSI', 'MACD', 'OBV', 'Stochastic', 'MFI', 'CCI'];
+        const strengths = ['strong', 'moderate', 'weak'];
+        const timeframes = ['1D', '4H', '1H'];
+        
+        function generateSignals() {
+            const signals = [];
+            const now = Date.now();
+            
+            for (let i = 0; i < 24; i++) {
+                const isBullish = Math.random() > 0.45;
+                const isHidden = Math.random() > 0.7;
+                const strength = strengths[Math.floor(Math.random() * 3)];
+                const confidence = strength === 'strong' ? 0.75 + Math.random() * 0.2 :
+                                  strength === 'moderate' ? 0.55 + Math.random() * 0.2 :
+                                  0.4 + Math.random() * 0.2;
+                
+                signals.push({
+                    ticker: tickers[Math.floor(Math.random() * tickers.length)],
+                    type: (isHidden ? 'hidden_' : '') + (isBullish ? 'bullish' : 'bearish'),
+                    indicator: indicators[Math.floor(Math.random() * indicators.length)],
+                    strength,
+                    confidence,
+                    timeframe: timeframes[Math.floor(Math.random() * timeframes.length)],
+                    time: new Date(now - Math.random() * 24 * 60 * 60 * 1000),
+                    priceStart: 100 + Math.random() * 400,
+                    priceEnd: 100 + Math.random() * 400,
+                    indicatorStart: Math.random() * 100,
+                    indicatorEnd: Math.random() * 100,
+                    lookbackBars: 5 + Math.floor(Math.random() * 15)
+                });
+            }
+            
+            return signals.sort((a, b) => b.time - a.time);
+        }
+        
+        const signals = generateSignals();
+        let filteredSignals = [...signals];
+        
+        // Accuracy data
+        const accuracyData = [
+            { indicator: 'RSI', winRate: 0.74, signals: 156 },
+            { indicator: 'MACD', winRate: 0.71, signals: 132 },
+            { indicator: 'OBV', winRate: 0.68, signals: 98 },
+            { indicator: 'Stochastic', winRate: 0.66, signals: 87 },
+            { indicator: 'MFI', winRate: 0.63, signals: 74 },
+            { indicator: 'CCI', winRate: 0.61, signals: 52 }
+        ];
+        
+        function renderStats() {
+            const bullish = filteredSignals.filter(s => s.type.includes('bullish')).length;
+            const bearish = filteredSignals.filter(s => s.type.includes('bearish')).length;
+            const strong = filteredSignals.filter(s => s.strength === 'strong').length;
+            
+            document.getElementById('totalSignals').textContent = filteredSignals.length;
+            document.getElementById('bullishCount').textContent = bullish;
+            document.getElementById('bearishCount').textContent = bearish;
+            document.getElementById('strongCount').textContent = strong;
+        }
+        
+        function renderTable() {
+            const tbody = document.getElementById('signalTable');
+            tbody.innerHTML = filteredSignals.map(s => {
+                const typeClass = s.type.replace('_', '-');
+                const typeLabel = s.type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+                const strengthIcon = s.strength === 'strong' ? '⚡' : s.strength === 'moderate' ? '●' : '○';
+                const confClass = s.confidence > 0.7 ? 'high' : s.confidence > 0.55 ? 'medium' : 'low';
+                const timeStr = s.time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                
+                return `
+                    <tr onclick="showSignalDetail('${s.ticker}', '${s.type}', '${s.indicator}')" style="cursor: pointer;">
+                        <td class="ticker-cell">${s.ticker}</td>
+                        <td><span class="type-badge type-${typeClass}">${typeLabel}</span></td>
+                        <td><span class="indicator-badge">${s.indicator}</span></td>
+                        <td class="strength-${s.strength}">${strengthIcon} ${s.strength}</td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div class="confidence-bar">
+                                    <div class="confidence-fill confidence-${confClass}" style="width: ${s.confidence * 100}%"></div>
+                                </div>
+                                <span style="font-size: 0.85rem;">${(s.confidence * 100).toFixed(0)}%</span>
+                            </div>
+                        </td>
+                        <td>${s.timeframe}</td>
+                        <td style="color: var(--text-muted);">${timeStr}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        
+        function renderAccuracy() {
+            const panel = document.getElementById('accuracyPanel');
+            panel.innerHTML = accuracyData.map(a => {
+                const rateClass = a.winRate > 0.7 ? 'stat-green' : a.winRate > 0.6 ? 'stat-yellow' : 'stat-red';
+                return `
+                    <div class="accuracy-item">
+                        <span class="accuracy-indicator">${a.indicator}</span>
+                        <div class="accuracy-stats">
+                            <span class="accuracy-rate ${rateClass}">${(a.winRate * 100).toFixed(0)}%</span>
+                            <span class="accuracy-count">${a.signals} signals</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function applyFilters() {
+            const typeFilter = document.querySelector('.filter-btn.active').dataset.filter;
+            const indicatorFilter = document.getElementById('indicatorFilter').value;
+            const strengthFilter = document.getElementById('strengthFilter').value;
+            
+            filteredSignals = signals.filter(s => {
+                if (typeFilter === 'bullish' && !s.type.includes('bullish')) return false;
+                if (typeFilter === 'bearish' && !s.type.includes('bearish')) return false;
+                if (indicatorFilter !== 'all' && s.indicator !== indicatorFilter) return false;
+                if (strengthFilter === 'strong' && s.strength !== 'strong') return false;
+                if (strengthFilter === 'moderate' && s.strength === 'weak') return false;
+                return true;
+            });
+            
+            renderStats();
+            renderTable();
+        }
+        
+        function showSignalDetail(ticker, type, indicator) {
+            const signal = signals.find(s => s.ticker === ticker && s.type === type && s.indicator === indicator);
+            if (!signal) return;
+            
+            const isBullish = type.includes('bullish');
+            document.getElementById('modalTitle').textContent = `${ticker} - ${type.replace('_', ' ').toUpperCase()} Divergence`;
+            
+            document.getElementById('modalContent').innerHTML = `
+                <div class="signal-visual">
+                    <div class="signal-point">
+                        <div class="signal-point-label">Price Start</div>
+                        <div class="signal-point-value">$${signal.priceStart.toFixed(2)}</div>
+                    </div>
+                    <div class="signal-arrow">${isBullish ? '📉' : '📈'}</div>
+                    <div class="signal-point">
+                        <div class="signal-point-label">Price End</div>
+                        <div class="signal-point-value">$${signal.priceEnd.toFixed(2)}</div>
+                    </div>
+                </div>
+                <div class="signal-visual">
+                    <div class="signal-point">
+                        <div class="signal-point-label">${signal.indicator} Start</div>
+                        <div class="signal-point-value">${signal.indicatorStart.toFixed(1)}</div>
+                    </div>
+                    <div class="signal-arrow">${isBullish ? '📈' : '📉'}</div>
+                    <div class="signal-point">
+                        <div class="signal-point-label">${signal.indicator} End</div>
+                        <div class="signal-point-value">${signal.indicatorEnd.toFixed(1)}</div>
+                    </div>
+                </div>
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <div class="detail-label">Divergence Type</div>
+                        <div class="detail-value" style="color: ${isBullish ? 'var(--accent-green)' : 'var(--accent-red)'}">
+                            ${type.replace('_', ' ').toUpperCase()}
+                        </div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Indicator</div>
+                        <div class="detail-value">${signal.indicator}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Signal Strength</div>
+                        <div class="detail-value">${signal.strength.toUpperCase()}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Confidence</div>
+                        <div class="detail-value">${(signal.confidence * 100).toFixed(0)}%</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Timeframe</div>
+                        <div class="detail-value">${signal.timeframe}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Lookback Bars</div>
+                        <div class="detail-value">${signal.lookbackBars}</div>
+                    </div>
+                </div>
+                <div class="explanation-box" style="margin-top: 16px;">
+                    <div class="explanation-title">${isBullish ? '🎯 Bullish Setup' : '⚠️ Bearish Setup'}</div>
+                    <p class="explanation-text">
+                        ${isBullish 
+                            ? `Price made lower lows while ${signal.indicator} made higher lows. This suggests weakening selling pressure and a potential reversal to the upside. Consider long entries on confirmation with a stop below the recent swing low.`
+                            : `Price made higher highs while ${signal.indicator} made lower highs. This suggests weakening buying pressure and a potential reversal to the downside. Consider short entries or profit-taking on confirmation with a stop above the recent swing high.`
+                        }
+                    </p>
+                </div>
+            `;
+            
+            document.getElementById('signalModal').classList.add('active');
+        }
+        
+        function closeModal() {
+            document.getElementById('signalModal').classList.remove('active');
+        }
+        
+        // Event listeners
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                applyFilters();
+            });
+        });
+        
+        document.getElementById('indicatorFilter').addEventListener('change', applyFilters);
+        document.getElementById('strengthFilter').addEventListener('change', applyFilters);
+        
+        document.getElementById('signalModal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('signalModal')) closeModal();
+        });
+        
+        // Initialize
+        renderStats();
+        renderTable();
+        renderAccuracy();
+    </script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+{
+  "name": "congress-tracker",
+  "version": "1.0.0",
+  "description": "Track congressional stock trades disclosed under STOCK Act",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts",
+    "fetch": "tsx src/cli.ts fetch",
+    "analyze": "tsx src/cli.ts analyze",
+    "alerts": "tsx src/cli.ts alerts",
+    "dashboard": "tsx src/cli.ts dashboard",
+    "test": "tsx src/cli.ts test"
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "cheerio": "^1.0.0-rc.12",
+    "date-fns": "^3.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "tsx": "^4.6.0",
+    "typescript": "^5.3.0"
+  }
+}

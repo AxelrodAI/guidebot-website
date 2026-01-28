@@ -1,1034 +1,187 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Macro Economic Calendar + Event Risk Tracker</title>
-    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        :root {
-            --bg: #0d1117;
-            --surface: #161b22;
-            --surface-elevated: #1c2128;
-            --border: #30363d;
-            --border-subtle: #21262d;
-            --text: #e6edf3;
-            --text-secondary: #c9d1d9;
-            --text-muted: #8b949e;
-            --accent: #58a6ff;
-            --accent-hover: #79b8ff;
-            --error: #f85149;
-            --success: #3fb950;
-            --warning: #f0c020;
-            --purple: #a371f7;
-            --orange: #f0883e;
-            --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
-            --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', Helvetica, Arial, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        header {
-            padding: 14px 20px;
-            background: var(--surface);
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        .logo { font-size: 26px; }
-
-        header h1 {
-            font-size: 18px;
-            font-weight: 600;
-        }
-
-        .header-actions {
-            margin-left: auto;
-            display: flex;
-            gap: 12px;
-        }
-
-        .btn {
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 8px 14px;
-            color: var(--text-muted);
-            font-size: 13px;
-            cursor: pointer;
-            transition: all 150ms ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .btn:hover {
-            border-color: var(--accent);
-            color: var(--accent);
-        }
-
-        .btn-primary {
-            background: var(--accent);
-            border-color: var(--accent);
-            color: #fff;
-        }
-
-        .container {
-            display: grid;
-            grid-template-columns: 300px 1fr;
-            min-height: calc(100vh - 52px);
-        }
-
-        .sidebar {
-            background: var(--surface);
-            border-right: 1px solid var(--border);
-            padding: 16px;
-            overflow-y: auto;
-        }
-
-        .sidebar h3 {
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: var(--text-muted);
-            margin-bottom: 12px;
-            margin-top: 20px;
-        }
-
-        .sidebar h3:first-child { margin-top: 0; }
-
-        .main-content {
-            padding: 20px;
-            overflow-y: auto;
-        }
-
-        .stats-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 16px;
-            margin-bottom: 24px;
-        }
-
-        .stat-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 16px;
-        }
-
-        .stat-card .label {
-            font-size: 12px;
-            color: var(--text-muted);
-            margin-bottom: 4px;
-        }
-
-        .stat-card .value {
-            font-size: 28px;
-            font-weight: 700;
-        }
-
-        .stat-card .delta {
-            font-size: 12px;
-            margin-top: 4px;
-        }
-
-        .delta.positive { color: var(--success); }
-        .delta.negative { color: var(--error); }
-
-        .card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        .card-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 16px;
-        }
-
-        .card-title {
-            font-size: 16px;
-            font-weight: 600;
-        }
-
-        /* Countdown Timer */
-        .countdown-item {
-            background: var(--surface-elevated);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 14px;
-            margin-bottom: 12px;
-        }
-
-        .countdown-event {
-            font-size: 13px;
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-
-        .countdown-timer {
-            font-size: 22px;
-            font-weight: 700;
-            font-family: 'SF Mono', monospace;
-            color: var(--accent);
-            margin: 8px 0;
-        }
-
-        .countdown-date {
-            font-size: 11px;
-            color: var(--text-muted);
-        }
-
-        .impact-badge {
-            display: inline-block;
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-
-        .impact-high { background: rgba(248, 81, 73, 0.15); color: var(--error); }
-        .impact-medium { background: rgba(240, 192, 32, 0.15); color: var(--warning); }
-        .impact-low { background: rgba(63, 185, 80, 0.15); color: var(--success); }
-
-        /* Event List */
-        .event-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px;
-            border-bottom: 1px solid var(--border-subtle);
-            cursor: pointer;
-            transition: background 150ms;
-        }
-
-        .event-item:hover {
-            background: var(--surface-elevated);
-        }
-
-        .event-date {
-            min-width: 60px;
-            text-align: center;
-        }
-
-        .event-date .day {
-            font-size: 20px;
-            font-weight: 700;
-        }
-
-        .event-date .month {
-            font-size: 10px;
-            color: var(--text-muted);
-            text-transform: uppercase;
-        }
-
-        .event-info {
-            flex: 1;
-        }
-
-        .event-name {
-            font-weight: 600;
-            font-size: 14px;
-            margin-bottom: 2px;
-        }
-
-        .event-time {
-            font-size: 11px;
-            color: var(--text-muted);
-        }
-
-        .event-values {
-            text-align: right;
-            font-family: 'SF Mono', monospace;
-            font-size: 12px;
-        }
-
-        .event-actual {
-            font-weight: 600;
-        }
-
-        .event-estimate {
-            color: var(--text-muted);
-        }
-
-        .event-reaction {
-            font-size: 11px;
-            margin-top: 4px;
-        }
-
-        /* Calendar Styling */
-        .fc {
-            background: var(--surface);
-            border-radius: 12px;
-        }
-
-        .fc-theme-standard td, .fc-theme-standard th {
-            border-color: var(--border);
-        }
-
-        .fc-theme-standard .fc-scrollgrid {
-            border-color: var(--border);
-        }
-
-        .fc .fc-button-primary {
-            background: var(--surface-elevated);
-            border-color: var(--border);
-        }
-
-        .fc .fc-button-primary:hover {
-            background: var(--bg);
-            border-color: var(--accent);
-        }
-
-        .fc .fc-button-primary:disabled {
-            background: var(--surface);
-        }
-
-        .fc .fc-toolbar-title {
-            color: var(--text);
-        }
-
-        .fc .fc-col-header-cell-cushion,
-        .fc .fc-daygrid-day-number {
-            color: var(--text);
-        }
-
-        .fc-daygrid-event {
-            border-radius: 4px;
-            font-size: 11px;
-            padding: 2px 4px;
-        }
-
-        .fc-event-high {
-            background: var(--error) !important;
-            border-color: var(--error) !important;
-        }
-
-        .fc-event-medium {
-            background: var(--warning) !important;
-            border-color: var(--warning) !important;
-            color: #000 !important;
-        }
-
-        .fc-event-low {
-            background: var(--success) !important;
-            border-color: var(--success) !important;
-        }
-
-        /* Historical Reactions */
-        .reaction-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-            gap: 12px;
-        }
-
-        .reaction-card {
-            background: var(--surface-elevated);
-            border-radius: 8px;
-            padding: 12px;
-            text-align: center;
-        }
-
-        .reaction-event {
-            font-size: 11px;
-            color: var(--text-muted);
-            margin-bottom: 6px;
-        }
-
-        .reaction-value {
-            font-size: 18px;
-            font-weight: 700;
-        }
-
-        .reaction-label {
-            font-size: 10px;
-            color: var(--text-muted);
-        }
-
-        /* Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.7);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal.active { display: flex; }
-
-        .modal-content {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            width: 90%;
-            max-width: 600px;
-            max-height: 80vh;
-            overflow-y: auto;
-            padding: 24px;
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .modal-title {
-            font-size: 20px;
-            font-weight: 700;
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            font-size: 24px;
-            cursor: pointer;
-        }
-
-        .chart-container {
-            height: 200px;
-            margin: 20px 0;
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                grid-template-columns: 1fr;
-            }
-            .sidebar {
-                display: none;
-            }
-            .stats-row {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-    </style>
+    <title>Macro Economic Calendar | Event Risk Tracker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <header>
-        <span class="logo">📅</span>
-        <h1>Macro Economic Calendar</h1>
-        <div class="header-actions">
-            <select id="filterImpact" onchange="filterEvents()" style="background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; color: var(--text); font-size: 12px;">
-                <option value="">All Impact</option>
-                <option value="HIGH">High Impact</option>
-                <option value="MEDIUM">Medium Impact</option>
-                <option value="LOW">Low Impact</option>
-            </select>
-            <button class="btn" onclick="exportCSV()">📥 Export</button>
-            <button class="btn btn-primary" onclick="refreshData()">🔄 Refresh</button>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <div class="logo">
+                    <span class="logo-icon">📅</span>
+                    <h1>Macro Calendar</h1>
+                </div>
+                <span class="subtitle">Economic Event Risk Tracker</span>
+            </div>
+            <div class="header-center">
+                <div class="live-clock" id="liveClock">
+                    <span class="clock-time">--:--:--</span>
+                    <span class="clock-zone">ET</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="market-status" id="marketStatus">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Loading...</span>
+                </div>
+                <button class="btn-icon" id="settingsBtn" title="Settings">⚙️</button>
+                <button class="btn-icon" id="refreshBtn" title="Refresh">🔄</button>
+            </div>
+        </header>
+
+        <!-- Alert Banner -->
+        <div class="alert-banner" id="alertBanner" style="display: none;">
+            <span class="alert-icon">⚠️</span>
+            <span class="alert-message" id="alertMessage"></span>
+            <span class="alert-countdown" id="alertCountdown"></span>
+            <button class="alert-dismiss" id="dismissAlert">×</button>
         </div>
-    </header>
 
-    <div class="container">
-        <aside class="sidebar">
-            <h3>⏰ Next Events</h3>
-            <div id="countdownTimers"></div>
-
-            <h3>📊 Event Types</h3>
-            <div id="eventTypes" style="font-size: 12px;"></div>
-
-            <h3>📈 Avg. Market Reaction</h3>
-            <div class="reaction-grid" id="avgReactions"></div>
-        </aside>
-
+        <!-- Main Content -->
         <main class="main-content">
-            <div class="stats-row">
-                <div class="stat-card">
-                    <div class="label">Events This Week</div>
-                    <div class="value" id="eventsThisWeek">0</div>
-                    <div class="delta" id="weekDelta">Loading...</div>
-                </div>
-                <div class="stat-card">
-                    <div class="label">High Impact</div>
-                    <div class="value" id="highImpactCount">0</div>
-                    <div class="delta negative">requires attention</div>
-                </div>
-                <div class="stat-card">
-                    <div class="label">Avg SPY Reaction</div>
-                    <div class="value" id="avgSPYMove">-</div>
-                    <div class="delta" id="spyDelta">on release days</div>
-                </div>
-                <div class="stat-card">
-                    <div class="label">Next High Impact</div>
-                    <div class="value" id="nextHighImpact" style="font-size: 16px;">-</div>
-                    <div class="delta" id="nextHighDelta">-</div>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-header">
-                    <span class="card-title">📅 Economic Calendar</span>
-                    <div style="display: flex; gap: 8px;">
-                        <button class="btn" onclick="setView('dayGridMonth')">Month</button>
-                        <button class="btn" onclick="setView('listWeek')">List</button>
+            <!-- Left Panel: Upcoming Events -->
+            <section class="panel upcoming-panel">
+                <div class="panel-header">
+                    <h2>🚀 Upcoming Events</h2>
+                    <div class="filter-pills">
+                        <button class="pill active" data-filter="all">All</button>
+                        <button class="pill" data-filter="high">High Impact</button>
+                        <button class="pill" data-filter="fed">Fed</button>
+                        <button class="pill" data-filter="inflation">Inflation</button>
                     </div>
                 </div>
-                <div id="calendar"></div>
-            </div>
+                <div class="events-timeline" id="upcomingEvents">
+                    <!-- Events populated by JS -->
+                </div>
+            </section>
 
-            <div class="card">
-                <div class="card-header">
-                    <span class="card-title">📋 Upcoming Events</span>
-                    <span style="font-size: 12px; color: var(--text-muted);" id="lastUpdated">Last updated: --</span>
+            <!-- Center Panel: Calendar View -->
+            <section class="panel calendar-panel">
+                <div class="panel-header">
+                    <h2>📆 Calendar</h2>
+                    <div class="calendar-nav">
+                        <button class="btn-nav" id="prevMonth">←</button>
+                        <span class="current-month" id="currentMonth">January 2025</span>
+                        <button class="btn-nav" id="nextMonth">→</button>
+                    </div>
                 </div>
-                <div id="eventList"></div>
-            </div>
+                <div class="calendar-container">
+                    <div class="calendar-header-row">
+                        <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+                    </div>
+                    <div class="calendar-grid" id="calendarGrid">
+                        <!-- Calendar days populated by JS -->
+                    </div>
+                </div>
+                <div class="calendar-legend">
+                    <span class="legend-item"><span class="legend-dot high"></span>High Impact</span>
+                    <span class="legend-item"><span class="legend-dot medium"></span>Medium</span>
+                    <span class="legend-item"><span class="legend-dot low"></span>Low</span>
+                </div>
+            </section>
 
-            <div class="card">
-                <div class="card-header">
-                    <span class="card-title">📊 Historical Market Reactions (SPY)</span>
+            <!-- Right Panel: Historical Reactions -->
+            <section class="panel history-panel">
+                <div class="panel-header">
+                    <h2>📊 Market Reactions</h2>
+                    <select class="event-select" id="eventSelect">
+                        <option value="cpi">CPI Release</option>
+                        <option value="fomc">FOMC Decision</option>
+                        <option value="nfp">Jobs Report</option>
+                        <option value="gdp">GDP</option>
+                        <option value="ppi">PPI</option>
+                        <option value="pmi">PMI</option>
+                        <option value="retail">Retail Sales</option>
+                    </select>
                 </div>
-                <div class="chart-container">
-                    <canvas id="reactionChart"></canvas>
+                <div class="reaction-stats" id="reactionStats">
+                    <!-- Stats populated by JS -->
                 </div>
-            </div>
+                <div class="reaction-chart" id="reactionChart">
+                    <!-- Chart populated by JS -->
+                </div>
+            </section>
         </main>
-    </div>
 
-    <!-- Event Detail Modal -->
-    <div class="modal" id="eventModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <span class="modal-title" id="modalTitle">Event Details</span>
-                <button class="modal-close" onclick="closeModal()">&times;</button>
+        <!-- Bottom Panel: Recent Releases -->
+        <section class="bottom-panel">
+            <div class="panel-header">
+                <h2>📋 Recent Releases</h2>
+                <div class="toggle-group">
+                    <button class="toggle-btn active" data-view="table">Table</button>
+                    <button class="toggle-btn" data-view="cards">Cards</button>
+                </div>
             </div>
-            <div id="modalBody"></div>
+            <div class="recent-releases" id="recentReleases">
+                <!-- Recent releases populated by JS -->
+            </div>
+        </section>
+
+        <!-- Event Detail Modal -->
+        <div class="modal" id="eventModal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="modalTitle">Event Details</h3>
+                    <button class="modal-close" id="closeModal">×</button>
+                </div>
+                <div class="modal-body" id="modalBody">
+                    <!-- Modal content populated by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Modal -->
+        <div class="modal" id="settingsModal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>⚙️ Settings</h3>
+                    <button class="modal-close" id="closeSettings">×</button>
+                </div>
+                <div class="modal-body">
+                    <div class="settings-group">
+                        <label>Alert Lead Time</label>
+                        <select id="alertLeadTime">
+                            <option value="5">5 minutes</option>
+                            <option value="15" selected>15 minutes</option>
+                            <option value="30">30 minutes</option>
+                            <option value="60">1 hour</option>
+                        </select>
+                    </div>
+                    <div class="settings-group">
+                        <label>Show Impact Levels</label>
+                        <div class="checkbox-group">
+                            <label><input type="checkbox" id="showHigh" checked> High</label>
+                            <label><input type="checkbox" id="showMedium" checked> Medium</label>
+                            <label><input type="checkbox" id="showLow"> Low</label>
+                        </div>
+                    </div>
+                    <div class="settings-group">
+                        <label>Sound Alerts</label>
+                        <label class="switch">
+                            <input type="checkbox" id="soundAlerts" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="settings-group">
+                        <label>Dark Mode</label>
+                        <label class="switch">
+                            <input type="checkbox" id="darkMode" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <script>
-        // Sample economic calendar data
-        let calendarData = {
-            lastUpdated: new Date().toISOString(),
-            events: [
-                {
-                    id: 1,
-                    name: "FOMC Meeting",
-                    type: "fed_meeting",
-                    date: "2025-01-29",
-                    time: "14:00 ET",
-                    impact: "HIGH",
-                    estimate: "Hold (4.25-4.50%)",
-                    actual: null,
-                    previous: "4.25-4.50%",
-                    avgSPYReaction: 1.2,
-                    description: "Federal Reserve interest rate decision and monetary policy statement"
-                },
-                {
-                    id: 2,
-                    name: "GDP (Q4 Advance)",
-                    type: "gdp",
-                    date: "2025-01-30",
-                    time: "08:30 ET",
-                    impact: "HIGH",
-                    estimate: "2.6%",
-                    actual: null,
-                    previous: "3.1%",
-                    avgSPYReaction: 0.8,
-                    description: "Advance estimate of Q4 2024 GDP growth"
-                },
-                {
-                    id: 3,
-                    name: "PCE Price Index",
-                    type: "pce",
-                    date: "2025-01-31",
-                    time: "08:30 ET",
-                    impact: "HIGH",
-                    estimate: "2.6%",
-                    actual: null,
-                    previous: "2.4%",
-                    avgSPYReaction: 0.9,
-                    description: "Fed's preferred inflation measure"
-                },
-                {
-                    id: 4,
-                    name: "Non-Farm Payrolls",
-                    type: "nfp",
-                    date: "2025-02-07",
-                    time: "08:30 ET",
-                    impact: "HIGH",
-                    estimate: "170K",
-                    actual: null,
-                    previous: "256K",
-                    avgSPYReaction: 1.1,
-                    description: "January employment report"
-                },
-                {
-                    id: 5,
-                    name: "CPI (January)",
-                    type: "cpi",
-                    date: "2025-02-12",
-                    time: "08:30 ET",
-                    impact: "HIGH",
-                    estimate: "2.9%",
-                    actual: null,
-                    previous: "2.9%",
-                    avgSPYReaction: 1.3,
-                    description: "Consumer Price Index year-over-year"
-                },
-                {
-                    id: 6,
-                    name: "Retail Sales",
-                    type: "retail",
-                    date: "2025-02-14",
-                    time: "08:30 ET",
-                    impact: "MEDIUM",
-                    estimate: "0.3%",
-                    actual: null,
-                    previous: "0.4%",
-                    avgSPYReaction: 0.5,
-                    description: "Monthly retail sales growth"
-                },
-                {
-                    id: 7,
-                    name: "PPI (January)",
-                    type: "ppi",
-                    date: "2025-02-13",
-                    time: "08:30 ET",
-                    impact: "MEDIUM",
-                    estimate: "3.2%",
-                    actual: null,
-                    previous: "3.3%",
-                    avgSPYReaction: 0.6,
-                    description: "Producer Price Index year-over-year"
-                },
-                {
-                    id: 8,
-                    name: "Industrial Production",
-                    type: "industrial",
-                    date: "2025-02-14",
-                    time: "09:15 ET",
-                    impact: "LOW",
-                    estimate: "0.2%",
-                    actual: null,
-                    previous: "-0.1%",
-                    avgSPYReaction: 0.3,
-                    description: "Monthly industrial production change"
-                },
-                {
-                    id: 9,
-                    name: "FOMC Minutes",
-                    type: "fed_minutes",
-                    date: "2025-02-19",
-                    time: "14:00 ET",
-                    impact: "MEDIUM",
-                    estimate: null,
-                    actual: null,
-                    previous: null,
-                    avgSPYReaction: 0.7,
-                    description: "Minutes from January FOMC meeting"
-                },
-                {
-                    id: 10,
-                    name: "Initial Jobless Claims",
-                    type: "jobless",
-                    date: "2025-01-30",
-                    time: "08:30 ET",
-                    impact: "LOW",
-                    estimate: "225K",
-                    actual: null,
-                    previous: "223K",
-                    avgSPYReaction: 0.2,
-                    description: "Weekly unemployment claims"
-                }
-            ],
-            historicalReactions: {
-                fed_meeting: { avgMove: 1.2, beatReaction: 0.8, missReaction: -1.5, count: 8 },
-                cpi: { avgMove: 1.3, beatReaction: 1.2, missReaction: -1.8, count: 12 },
-                nfp: { avgMove: 1.1, beatReaction: 0.6, missReaction: -0.9, count: 12 },
-                gdp: { avgMove: 0.8, beatReaction: 0.5, missReaction: -0.7, count: 4 },
-                ppi: { avgMove: 0.6, beatReaction: 0.4, missReaction: -0.5, count: 12 },
-                retail: { avgMove: 0.5, beatReaction: 0.4, missReaction: -0.4, count: 12 }
-            }
-        };
-
-        let calendar;
-        let reactionChart;
-
-        function init() {
-            loadData();
-            initCalendar();
-            renderStats();
-            renderCountdowns();
-            renderEventList();
-            renderEventTypes();
-            renderAvgReactions();
-            initReactionChart();
-        }
-
-        function loadData() {
-            fetch('events_data.json')
-                .then(r => r.json())
-                .then(data => {
-                    calendarData = data;
-                    renderAll();
-                })
-                .catch(() => console.log('Using sample data'));
-        }
-
-        function renderAll() {
-            renderStats();
-            renderCountdowns();
-            renderEventList();
-            renderEventTypes();
-            renderAvgReactions();
-            updateCalendar();
-            updateReactionChart();
-        }
-
-        function initCalendar() {
-            const calendarEl = document.getElementById('calendar');
-            calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'dayGridMonth',
-                headerToolbar: {
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: ''
-                },
-                events: calendarData.events.map(e => ({
-                    id: e.id,
-                    title: e.name,
-                    start: e.date,
-                    className: `fc-event-${e.impact.toLowerCase()}`,
-                    extendedProps: e
-                })),
-                eventClick: function(info) {
-                    showEventModal(info.event.extendedProps);
-                },
-                height: 500
-            });
-            calendar.render();
-        }
-
-        function setView(view) {
-            calendar.changeView(view);
-        }
-
-        function updateCalendar() {
-            calendar.removeAllEvents();
-            calendar.addEventSource(calendarData.events.map(e => ({
-                id: e.id,
-                title: e.name,
-                start: e.date,
-                className: `fc-event-${e.impact.toLowerCase()}`,
-                extendedProps: e
-            })));
-        }
-
-        function renderStats() {
-            const now = new Date();
-            const weekEnd = new Date(now);
-            weekEnd.setDate(now.getDate() + 7);
-
-            const thisWeek = calendarData.events.filter(e => {
-                const d = new Date(e.date);
-                return d >= now && d <= weekEnd;
-            });
-
-            document.getElementById('eventsThisWeek').textContent = thisWeek.length;
-            document.getElementById('weekDelta').textContent = `${thisWeek.filter(e => e.impact === 'HIGH').length} high impact`;
-            document.getElementById('weekDelta').className = 'delta ' + (thisWeek.some(e => e.impact === 'HIGH') ? 'negative' : 'positive');
-
-            const highImpact = calendarData.events.filter(e => e.impact === 'HIGH' && new Date(e.date) >= now);
-            document.getElementById('highImpactCount').textContent = highImpact.length;
-
-            const avgReaction = calendarData.events.reduce((a, e) => a + (e.avgSPYReaction || 0), 0) / calendarData.events.length;
-            document.getElementById('avgSPYMove').textContent = `±${avgReaction.toFixed(1)}%`;
-
-            const nextHigh = calendarData.events
-                .filter(e => e.impact === 'HIGH' && new Date(e.date) >= now)
-                .sort((a, b) => new Date(a.date) - new Date(b.date))[0];
-
-            if (nextHigh) {
-                document.getElementById('nextHighImpact').textContent = nextHigh.name;
-                document.getElementById('nextHighDelta').textContent = formatDate(nextHigh.date);
-            }
-
-            document.getElementById('lastUpdated').textContent = 'Last updated: ' + new Date(calendarData.lastUpdated).toLocaleString();
-        }
-
-        function renderCountdowns() {
-            const container = document.getElementById('countdownTimers');
-            const now = new Date();
-            
-            const upcoming = calendarData.events
-                .filter(e => new Date(e.date) >= now)
-                .sort((a, b) => new Date(a.date) - new Date(b.date))
-                .slice(0, 3);
-
-            container.innerHTML = upcoming.map(e => {
-                const eventDate = new Date(e.date + 'T' + (e.time?.split(' ')[0] || '09:00'));
-                const diff = eventDate - now;
-                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-
-                return `
-                    <div class="countdown-item" onclick="showEventModal(calendarData.events.find(x => x.id === ${e.id}))">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span class="countdown-event">${e.name}</span>
-                            <span class="impact-badge impact-${e.impact.toLowerCase()}">${e.impact}</span>
-                        </div>
-                        <div class="countdown-timer">${days}d ${hours}h ${mins}m</div>
-                        <div class="countdown-date">${formatDate(e.date)} • ${e.time || ''}</div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function renderEventList() {
-            const container = document.getElementById('eventList');
-            const filter = document.getElementById('filterImpact').value;
-            const now = new Date();
-
-            let events = calendarData.events
-                .filter(e => new Date(e.date) >= now)
-                .sort((a, b) => new Date(a.date) - new Date(b.date));
-
-            if (filter) {
-                events = events.filter(e => e.impact === filter);
-            }
-
-            container.innerHTML = events.slice(0, 10).map(e => {
-                const d = new Date(e.date);
-                const beat = e.actual && e.estimate && parseFloat(e.actual) > parseFloat(e.estimate);
-                
-                return `
-                    <div class="event-item" onclick="showEventModal(calendarData.events.find(x => x.id === ${e.id}))">
-                        <div class="event-date">
-                            <div class="day">${d.getDate()}</div>
-                            <div class="month">${d.toLocaleString('en', { month: 'short' })}</div>
-                        </div>
-                        <div class="event-info">
-                            <div class="event-name">${e.name}</div>
-                            <div class="event-time">${e.time || ''} <span class="impact-badge impact-${e.impact.toLowerCase()}">${e.impact}</span></div>
-                        </div>
-                        <div class="event-values">
-                            <div class="event-estimate">Est: ${e.estimate || '-'}</div>
-                            <div class="event-actual" style="color: ${e.actual ? (beat ? 'var(--success)' : 'var(--error)') : 'var(--text-muted)'}">
-                                Act: ${e.actual || 'Pending'}
-                            </div>
-                            <div class="event-reaction ${e.avgSPYReaction >= 0 ? 'positive' : 'negative'}">
-                                Avg SPY: ±${e.avgSPYReaction?.toFixed(1) || 0}%
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function renderEventTypes() {
-            const types = {
-                fed_meeting: { name: 'Fed Meeting', icon: '🏛️' },
-                cpi: { name: 'CPI', icon: '📊' },
-                ppi: { name: 'PPI', icon: '🏭' },
-                nfp: { name: 'Jobs Report', icon: '👔' },
-                gdp: { name: 'GDP', icon: '📈' },
-                retail: { name: 'Retail Sales', icon: '🛒' }
-            };
-
-            const container = document.getElementById('eventTypes');
-            container.innerHTML = Object.entries(types).map(([key, val]) => {
-                const count = calendarData.events.filter(e => e.type === key).length;
-                return `<div style="padding: 6px 0; border-bottom: 1px solid var(--border-subtle);">
-                    ${val.icon} ${val.name} <span style="float: right; color: var(--text-muted);">${count}</span>
-                </div>`;
-            }).join('');
-        }
-
-        function renderAvgReactions() {
-            const container = document.getElementById('avgReactions');
-            const reactions = calendarData.historicalReactions || {};
-
-            container.innerHTML = Object.entries(reactions).slice(0, 4).map(([type, data]) => `
-                <div class="reaction-card">
-                    <div class="reaction-event">${type.toUpperCase()}</div>
-                    <div class="reaction-value ${data.avgMove >= 0 ? 'positive' : 'negative'}">±${data.avgMove?.toFixed(1) || 0}%</div>
-                    <div class="reaction-label">avg SPY move</div>
-                </div>
-            `).join('');
-        }
-
-        function initReactionChart() {
-            const ctx = document.getElementById('reactionChart').getContext('2d');
-            const reactions = calendarData.historicalReactions || {};
-
-            reactionChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: Object.keys(reactions).map(k => k.toUpperCase()),
-                    datasets: [
-                        {
-                            label: 'Beat Estimate',
-                            data: Object.values(reactions).map(r => r.beatReaction || 0),
-                            backgroundColor: 'rgba(63, 185, 80, 0.7)'
-                        },
-                        {
-                            label: 'Miss Estimate',
-                            data: Object.values(reactions).map(r => r.missReaction || 0),
-                            backgroundColor: 'rgba(248, 81, 73, 0.7)'
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            labels: { color: '#8b949e' }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            grid: { color: '#30363d' },
-                            ticks: { color: '#8b949e' }
-                        },
-                        x: {
-                            grid: { color: '#30363d' },
-                            ticks: { color: '#8b949e' }
-                        }
-                    }
-                }
-            });
-        }
-
-        function updateReactionChart() {
-            if (!reactionChart) return;
-            const reactions = calendarData.historicalReactions || {};
-            reactionChart.data.labels = Object.keys(reactions).map(k => k.toUpperCase());
-            reactionChart.data.datasets[0].data = Object.values(reactions).map(r => r.beatReaction || 0);
-            reactionChart.data.datasets[1].data = Object.values(reactions).map(r => r.missReaction || 0);
-            reactionChart.update();
-        }
-
-        function showEventModal(event) {
-            document.getElementById('modalTitle').textContent = event.name;
-            const reactions = calendarData.historicalReactions?.[event.type] || {};
-
-            document.getElementById('modalBody').innerHTML = `
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px;">
-                    <div class="stat-card">
-                        <div class="label">Date</div>
-                        <div class="value" style="font-size: 18px;">${formatDate(event.date)}</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="label">Time</div>
-                        <div class="value" style="font-size: 18px;">${event.time || '-'}</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="label">Impact</div>
-                        <div class="value"><span class="impact-badge impact-${event.impact.toLowerCase()}">${event.impact}</span></div>
-                    </div>
-                </div>
-                
-                <p style="color: var(--text-secondary); margin-bottom: 20px;">${event.description || ''}</p>
-                
-                <h4 style="margin-bottom: 12px;">Expected Values</h4>
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px;">
-                    <div class="reaction-card">
-                        <div class="reaction-event">Estimate</div>
-                        <div class="reaction-value">${event.estimate || '-'}</div>
-                    </div>
-                    <div class="reaction-card">
-                        <div class="reaction-event">Previous</div>
-                        <div class="reaction-value">${event.previous || '-'}</div>
-                    </div>
-                    <div class="reaction-card">
-                        <div class="reaction-event">Actual</div>
-                        <div class="reaction-value">${event.actual || 'Pending'}</div>
-                    </div>
-                </div>
-                
-                <h4 style="margin-bottom: 12px;">Historical Market Reactions</h4>
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
-                    <div class="reaction-card">
-                        <div class="reaction-event">Avg Move</div>
-                        <div class="reaction-value">±${reactions.avgMove?.toFixed(1) || event.avgSPYReaction?.toFixed(1) || '0'}%</div>
-                    </div>
-                    <div class="reaction-card">
-                        <div class="reaction-event">Beat Est.</div>
-                        <div class="reaction-value positive">+${reactions.beatReaction?.toFixed(1) || '0'}%</div>
-                    </div>
-                    <div class="reaction-card">
-                        <div class="reaction-event">Miss Est.</div>
-                        <div class="reaction-value negative">${reactions.missReaction?.toFixed(1) || '0'}%</div>
-                    </div>
-                </div>
-            `;
-
-            document.getElementById('eventModal').classList.add('active');
-        }
-
-        function closeModal() {
-            document.getElementById('eventModal').classList.remove('active');
-        }
-
-        function filterEvents() {
-            renderEventList();
-        }
-
-        function formatDate(dateStr) {
-            const d = new Date(dateStr);
-            return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-        }
-
-        function exportCSV() {
-            let csv = 'Date,Event,Type,Time,Impact,Estimate,Previous,Actual,Avg SPY Reaction\n';
-            calendarData.events.forEach(e => {
-                csv += `${e.date},"${e.name}",${e.type},${e.time || ''},${e.impact},${e.estimate || ''},${e.previous || ''},${e.actual || ''},${e.avgSPYReaction || ''}\n`;
-            });
-
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'macro_calendar_export.csv';
-            a.click();
-        }
-
-        function refreshData() {
-            loadData();
-        }
-
-        // Update countdowns every minute
-        setInterval(renderCountdowns, 60000);
-
-        // Close modal on escape
-        document.addEventListener('keydown', e => {
-            if (e.key === 'Escape') closeModal();
-        });
-
-        document.getElementById('eventModal').addEventListener('click', e => {
-            if (e.target.id === 'eventModal') closeModal();
-        });
-
-        // Initialize
-        init();
-    </script>
+    <script src="data.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>

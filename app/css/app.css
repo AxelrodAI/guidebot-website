@@ -1,0 +1,125 @@
+/**
+ * Guide Bot - Custom Styles
+ * Additional styles beyond Tailwind
+ */
+
+/* Smooth transitions */
+* {
+    scroll-behavior: smooth;
+}
+
+/* Input autofill styling for dark mode */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px #1f2937 inset !important;
+    -webkit-text-fill-color: #fff !important;
+    caret-color: #fff;
+}
+
+/* Custom scrollbar for dark theme */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #1f2937;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #4b5563;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #6b7280;
+}
+
+/* Focus ring for accessibility */
+*:focus-visible {
+    outline: 2px solid #10b981;
+    outline-offset: 2px;
+}
+
+/* Ticker input uppercase */
+#ticker-input {
+    text-transform: uppercase;
+}
+
+#ticker-input::placeholder {
+    text-transform: none;
+}
+
+/* Modal backdrop animation */
+#download-modal {
+    animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Button hover effects */
+button {
+    transform: translateY(0);
+    transition: transform 0.1s ease, background-color 0.2s ease;
+}
+
+button:active:not(:disabled) {
+    transform: translateY(1px);
+}
+
+/* Card hover effect */
+[data-ticker]:hover {
+    background-color: rgba(55, 65, 81, 0.5);
+}
+
+/* Loading skeleton animation */
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Success animation */
+@keyframes checkmark {
+    0% {
+        transform: scale(0);
+    }
+    50% {
+        transform: scale(1.2);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+#modal-success > div:first-child {
+    animation: checkmark 0.3s ease-out;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+    nav {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+    
+    #user-email {
+        display: none;
+    }
+}

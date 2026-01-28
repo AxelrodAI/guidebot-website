@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Guide Bot</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#ecfdf5',
+                            100: '#d1fae5',
+                            200: '#a7f3d0',
+                            300: '#6ee7b7',
+                            400: '#34d399',
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857',
+                            800: '#065f46',
+                            900: '#064e3b',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="css/app.css">
+</head>
+<body class="h-full bg-gray-900">
+    <div class="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
+        <!-- Logo/Header -->
+        <div class="sm:mx-auto sm:w-full sm:max-w-sm">
+            <a href="../index.html" class="flex items-center justify-center gap-2 text-2xl font-bold text-white hover:opacity-80 transition-opacity">
+                <span class="text-3xl">🤖</span>
+                <span>Guide Bot</span>
+            </a>
+            <h2 class="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-white">
+                Sign in to your account
+            </h2>
+        </div>
+
+        <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
+            <!-- Error Message -->
+            <div id="error-message" class="hidden mb-4 p-4 rounded-lg bg-red-500/10 border border-red-500/50 text-red-400 text-sm">
+            </div>
+
+            <!-- Success Message -->
+            <div id="success-message" class="hidden mb-4 p-4 rounded-lg bg-brand-500/10 border border-brand-500/50 text-brand-400 text-sm">
+            </div>
+
+            <form id="login-form" class="space-y-6">
+                <div>
+                    <label for="email" class="block text-sm font-medium leading-6 text-gray-200">
+                        Email address
+                    </label>
+                    <div class="mt-2">
+                        <input id="email" name="email" type="email" autocomplete="email" required
+                            class="block w-full rounded-lg border-0 bg-gray-800 py-3 px-4 text-white shadow-sm ring-1 ring-inset ring-gray-700 placeholder:text-gray-500 focus:ring-2 focus:ring-inset focus:ring-brand-500 sm:text-sm sm:leading-6 transition-all"
+                            placeholder="you@example.com">
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex items-center justify-between">
+                        <label for="password" class="block text-sm font-medium leading-6 text-gray-200">
+                            Password
+                        </label>
+                        <div class="text-sm">
+                            <a href="#" class="font-semibold text-brand-400 hover:text-brand-300 transition-colors">
+                                Forgot password?
+                            </a>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <input id="password" name="password" type="password" autocomplete="current-password" required
+                            class="block w-full rounded-lg border-0 bg-gray-800 py-3 px-4 text-white shadow-sm ring-1 ring-inset ring-gray-700 placeholder:text-gray-500 focus:ring-2 focus:ring-inset focus:ring-brand-500 sm:text-sm sm:leading-6 transition-all"
+                            placeholder="••••••••">
+                    </div>
+                </div>
+
+                <div>
+                    <button type="submit" id="submit-btn"
+                        class="flex w-full justify-center rounded-lg bg-brand-600 px-4 py-3 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-brand-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                        <span id="btn-text">Sign in</span>
+                        <svg id="btn-spinner" class="hidden animate-spin ml-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </form>
+
+            <p class="mt-10 text-center text-sm text-gray-400">
+                Don't have an account?
+                <a href="signup.html" class="font-semibold leading-6 text-brand-400 hover:text-brand-300 transition-colors">
+                    Create one now
+                </a>
+            </p>
+
+            <div class="mt-6 text-center">
+                <a href="../index.html" class="text-sm text-gray-500 hover:text-gray-400 transition-colors">
+                    ← Back to homepage
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script>
+        // Check if already logged in
+        if (localStorage.getItem('token')) {
+            window.location.href = 'dashboard.html';
+        }
+
+        // Handle login form
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            await handleLogin(email, password);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+name: Update H.8 Data
+
+on:
+  schedule:
+    # Run every Friday at 4:30 PM ET (21:30 UTC in winter, 20:30 UTC in summer)
+    # Using 21:30 UTC to catch winter time
+    - cron: '30 21 * * 5'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  update-h8-data:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: pip install fredapi pandas
+      
+      - name: Update H.8 data
+        env:
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+        run: python h8-dashboard/h8_data_updater.py
+      
+      - name: Check for changes
+        id: git-check
+        run: |
+          git diff --quiet h8-dashboard/h8_data.json || echo "changes=true" >> $GITHUB_OUTPUT
+      
+      - name: Commit and push if changed
+        if: steps.git-check.outputs.changes == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add h8-dashboard/h8_data.json
+          git commit -m "📊 Update H.8 data [automated]"
+          git push

@@ -1,0 +1,558 @@
+{
+  "meta": {
+    "updated_at": "2025-01-31T16:30:00",
+    "source": "Federal Reserve H.8 Release via FRED",
+    "release_date": "2025-01-31",
+    "data_as_of": "2025-01-29",
+    "release_day": "Friday",
+    "release_time": "4:15 PM ET",
+    "next_release": "2025-02-07"
+  },
+  "series": {
+    "TOTLL": {
+      "name": "Total Loans & Leases",
+      "category": "loans",
+      "latest_value": 12456.78,
+      "latest_date": "2025-01-29",
+      "wow_chg": 15.34,
+      "wow_pct": 0.123,
+      "yoy_chg": 412.56,
+      "yoy_pct": 3.42,
+      "qtd_chg": 89.45,
+      "qtd_pct": 0.723,
+      "sparkline": [12050, 12080, 12095, 12110, 12090, 12120, 12150, 12175, 12190, 12210, 12225, 12240, 12260, 12275, 12290, 12310, 12330, 12350, 12370, 12390, 12410, 12430, 12445, 12457]
+    },
+    "TOTCI": {
+      "name": "C&I Loans",
+      "category": "loans",
+      "latest_value": 2789.45,
+      "latest_date": "2025-01-29",
+      "wow_chg": -3.21,
+      "wow_pct": -0.115,
+      "yoy_chg": 78.34,
+      "yoy_pct": 2.89,
+      "qtd_chg": 12.56,
+      "qtd_pct": 0.453,
+      "sparkline": [2710, 2718, 2725, 2730, 2728, 2735, 2742, 2750, 2755, 2760, 2758, 2765, 2770, 2775, 2780, 2778, 2782, 2785, 2788, 2790, 2787, 2789]
+    },
+    "RELACBW027SBOG": {
+      "name": "Real Estate Loans",
+      "category": "loans",
+      "latest_value": 5234.67,
+      "latest_date": "2025-01-29",
+      "wow_chg": 8.45,
+      "wow_pct": 0.162,
+      "yoy_chg": 198.23,
+      "yoy_pct": 3.94,
+      "qtd_chg": 45.12,
+      "qtd_pct": 0.869,
+      "sparkline": [5030, 5050, 5065, 5080, 5095, 5110, 5120, 5135, 5150, 5160, 5175, 5190, 5200, 5210, 5220, 5230]
+    },
+    "CLSACBW027SBOG": {
+      "name": "Consumer Loans",
+      "category": "loans",
+      "latest_value": 1876.54,
+      "latest_date": "2025-01-29",
+      "wow_chg": 4.23,
+      "wow_pct": 0.226,
+      "yoy_chg": 67.89,
+      "yoy_pct": 3.75,
+      "qtd_chg": 18.34,
+      "qtd_pct": 0.987,
+      "sparkline": [1805, 1815, 1822, 1830, 1838, 1845, 1852, 1858, 1865, 1870, 1877]
+    },
+    "DPSACBW027SBOG": {
+      "name": "Total Deposits",
+      "category": "deposits",
+      "latest_value": 17823.45,
+      "latest_date": "2025-01-29",
+      "wow_chg": 45.67,
+      "wow_pct": 0.257,
+      "yoy_chg": 534.12,
+      "yoy_pct": 3.09,
+      "qtd_chg": 156.78,
+      "qtd_pct": 0.889,
+      "sparkline": [17280, 17320, 17360, 17400, 17440, 17480, 17520, 17560, 17600, 17640, 17680, 17720, 17760, 17800, 17823]
+    },
+    "LTDACBW027SBOG": {
+      "name": "Large Time Deposits",
+      "category": "deposits",
+      "latest_value": 2156.78,
+      "latest_date": "2025-01-29",
+      "wow_chg": 12.34,
+      "wow_pct": 0.576,
+      "yoy_chg": 234.56,
+      "yoy_pct": 12.21,
+      "qtd_chg": 67.89,
+      "qtd_pct": 3.249,
+      "sparkline": [1920, 1945, 1970, 1995, 2020, 2045, 2070, 2095, 2120, 2145, 2157]
+    },
+    "TOTBKCR": {
+      "name": "Total Bank Credit",
+      "category": "other",
+      "latest_value": 17456.89,
+      "latest_date": "2025-01-29",
+      "wow_chg": 23.45,
+      "wow_pct": 0.135,
+      "yoy_chg": 567.89,
+      "yoy_pct": 3.36,
+      "qtd_chg": 112.34,
+      "qtd_pct": 0.648,
+      "sparkline": [16890, 16950, 17010, 17070, 17130, 17190, 17250, 17310, 17370, 17430, 17457]
+    },
+    "SBCACBW027SBOG": {
+      "name": "Securities",
+      "category": "other",
+      "latest_value": 4987.65,
+      "latest_date": "2025-01-29",
+      "wow_chg": 8.12,
+      "wow_pct": 0.163,
+      "yoy_chg": 145.67,
+      "yoy_pct": 3.01,
+      "qtd_chg": 34.56,
+      "qtd_pct": 0.698,
+      "sparkline": [4840, 4860, 4880, 4900, 4920, 4940, 4960, 4980, 4988]
+    },
+    "CASACBW027SBOG": {
+      "name": "Cash Assets",
+      "category": "other",
+      "latest_value": 3245.12,
+      "latest_date": "2025-01-29",
+      "wow_chg": -15.34,
+      "wow_pct": -0.47,
+      "yoy_chg": -89.45,
+      "yoy_pct": -2.68,
+      "qtd_chg": -23.67,
+      "qtd_pct": -0.724,
+      "sparkline": [3340, 3325, 3310, 3295, 3280, 3265, 3250, 3245]
+    }
+  },
+  "qtd_comparison": {
+    "loans": {
+      "TOTLL": {
+        "name": "Total Loans & Leases",
+        "quarters": {
+          "2025": {
+            "quarter": "Q1",
+            "data": [
+              {"week": 1, "date": "2025-01-01", "value": 12367.33, "qtd_growth_pct": 0},
+              {"week": 2, "date": "2025-01-08", "value": 12389.45, "qtd_growth_pct": 0.179},
+              {"week": 3, "date": "2025-01-15", "value": 12412.67, "qtd_growth_pct": 0.367},
+              {"week": 4, "date": "2025-01-22", "value": 12441.44, "qtd_growth_pct": 0.599},
+              {"week": 5, "date": "2025-01-29", "value": 12456.78, "qtd_growth_pct": 0.723}
+            ]
+          },
+          "2024": {
+            "quarter": "Q1",
+            "data": [
+              {"week": 1, "date": "2024-01-03", "value": 12044.22, "qtd_growth_pct": 0},
+              {"week": 2, "date": "2024-01-10", "value": 12062.34, "qtd_growth_pct": 0.150},
+              {"week": 3, "date": "2024-01-17", "value": 12078.56, "qtd_growth_pct": 0.285},
+              {"week": 4, "date": "2024-01-24", "value": 12098.23, "qtd_growth_pct": 0.449},
+              {"week": 5, "date": "2024-01-31", "value": 12118.45, "qtd_growth_pct": 0.616}
+            ]
+          },
+          "2023": {
+            "quarter": "Q1",
+            "data": [
+              {"week": 1, "date": "2023-01-04", "value": 11678.90, "qtd_growth_pct": 0},
+              {"week": 2, "date": "2023-01-11", "value": 11701.23, "qtd_growth_pct": 0.191},
+              {"week": 3, "date": "2023-01-18", "value": 11725.67, "qtd_growth_pct": 0.400},
+              {"week": 4, "date": "2023-01-25", "value": 11752.34, "qtd_growth_pct": 0.629},
+              {"week": 5, "date": "2023-02-01", "value": 11780.12, "qtd_growth_pct": 0.867}
+            ]
+          },
+          "2022": {
+            "quarter": "Q1",
+            "data": [
+              {"week": 1, "date": "2022-01-05", "value": 11234.56, "qtd_growth_pct": 0},
+              {"week": 2, "date": "2022-01-12", "value": 11256.78, "qtd_growth_pct": 0.198},
+              {"week": 3, "date": "2022-01-19", "value": 11279.90, "qtd_growth_pct": 0.404},
+              {"week": 4, "date": "2022-01-26", "value": 11304.12, "qtd_growth_pct": 0.619},
+              {"week": 5, "date": "2022-02-02", "value": 11330.45, "qtd_growth_pct": 0.854}
+            ]
+          },
+          "2021": {
+            "quarter": "Q1",
+            "data": [
+              {"week": 1, "date": "2021-01-06", "value": 10678.23, "qtd_growth_pct": 0},
+              {"week": 2, "date": "2021-01-13", "value": 10689.45, "qtd_growth_pct": 0.105},
+              {"week": 3, "date": "2021-01-20", "value": 10698.67, "qtd_growth_pct": 0.191},
+              {"week": 4, "date": "2021-01-27", "value": 10712.34, "qtd_growth_pct": 0.319},
+              {"week": 5, "date": "2021-02-03", "value": 10728.56, "qtd_growth_pct": 0.471}
+            ]
+          }
+        }
+      },
+      "TOTCI": {
+        "name": "C&I Loans",
+        "quarters": {
+          "2025": {
+            "quarter": "Q1",
+            "data": [
+              {"week": 1, "date": "2025-01-01", "value": 2776.89, "qtd_growth_pct": 0},
+              {"week": 2, "date": "2025-01-08", "value": 2780.23, "qtd_growth_pct": 0.120},
+              {"week": 3, "date": "2025-01-15", "value": 2784.56, "qtd_growth_pct": 0.276},
+              {"week": 4, "date": "2025-01-22", "value": 2792.67, "qtd_growth_pct": 0.568},
+              {"week": 5, "date": "2025-01-29", "value": 2789.45, "qtd_growth_pct": 0.453}
+            ]
+          },
+          "2024": {
+            "quarter": "Q1",
+            "data": [
+              {"week": 1, "date": "2024-01-03", "value": 2711.11, "qtd_growth_pct": 0},
+              {"week": 2, "date": "2024-01-10", "value": 2718.34, "qtd_growth_pct": 0.267},
+              {"week": 3, "date": "2024-01-17", "value": 2723.56, "qtd_growth_pct": 0.459},
+              {"week": 4, "date": "2024-01-24", "value": 2729.78, "qtd_growth_pct": 0.688},
+              {"week": 5, "date": "2024-01-31", "value": 2736.90, "qtd_growth_pct": 0.951}
+            ]
+          },
+          "2023": {
+            "quarter": "Q1",
+            "data": [
+              {"week": 1, "date": "2023-01-04", "value": 2634.56, "qtd_growth_pct": 0},
+              {"week": 2, "date": "2023-01-11", "value": 2645.78, "qtd_growth_pct": 0.426},
+              {"week": 3, "date": "2023-01-18", "value": 2658.90, "qtd_growth_pct": 0.924},
+              {"week": 4, "date": "2023-01-25", "value": 2672.12, "qtd_growth_pct": 1.426},
+              {"week": 5, "date": "2023-02-01", "value": 2686.34, "qtd_growth_pct": 1.965}
+            ]
+          },
+          "2022": {
+            "quarter": "Q1",
+            "data": [
+              {"week": 1, "date": "2022-01-05", "value": 2512.34, "qtd_growth_pct": 0},
+              {"week": 2, "date": "2022-01-12", "value": 2518.56, "qtd_growth_pct": 0.247},
+              {"week": 3, "date": "2022-01-19", "value": 2525.78, "qtd_growth_pct": 0.535},
+              {"week": 4, "date": "2022-01-26", "value": 2533.90, "qtd_growth_pct": 0.858},
+              {"week": 5, "date": "2022-02-02", "value": 2543.12, "qtd_growth_pct": 1.225}
+            ]
+          },
+          "2021": {
+            "quarter": "Q1",
+            "data": [
+              {"week": 1, "date": "2021-01-06", "value": 2398.67, "qtd_growth_pct": 0},
+              {"week": 2, "date": "2021-01-13", "value": 2392.34, "qtd_growth_pct": -0.264},
+              {"week": 3, "date": "2021-01-20", "value": 2385.67, "qtd_growth_pct": -0.542},
+              {"week": 4, "date": "2021-01-27", "value": 2378.90, "qtd_growth_pct": -0.824},
+              {"week": 5, "date": "2021-02-03", "value": 2372.12, "qtd_growth_pct": -1.107}
+            ]
+          }
+        }
+      },
+      "RELACBW027SBOG": {
+        "name": "Real Estate Loans",
+        "quarters": {
+          "2025": {
+            "quarter": "Q1",
+            "data": [
+              {"week": 1, "date": "2025-01-01", "value": 5189.55, "qtd_growth_pct": 0},
+              {"week": 2, "date": "2025-01-08", "value": 5198.23, "qtd_growth_pct": 0.167},
+              {"week": 3, "date": "2025-01-15", "value": 5210.45, "qtd_growth_pct": 0.403},
+              {"week": 4, "date": "2025-01-22", "value": 5226.22, "qtd_growth_pct": 0.707},
+              {"week": 5, "date": "2025-01-29", "value": 5234.67, "qtd_growth_pct": 0.869}
+            ]
+          },
+          "2024": {
+            "quarter": "Q1",
+            "data": [
+              {"week": 1, "date": "2024-01-03", "value": 5036.44, "qtd_growth_pct": 0},
+              {"week": 2, "date": "2024-01-10", "value": 5048.67, "qtd_growth_pct": 0.243},
+              {"week": 3, "date": "2024-01-17", "value": 5062.89, "qtd_growth_pct": 0.525},
+              {"week": 4, "date": "2024-01-24", "value": 5078.12, "qtd_growth_pct": 0.828},
+              {"week": 5, "date": "2024-01-31", "value": 5094.34, "qtd_growth_pct": 1.150}
+            ]
+          },
+          "2023": {
+            "quarter": "Q1",
+            "data": [
+              {"week": 1, "date": "2023-01-04", "value": 4856.78, "qtd_growth_pct": 0},
+              {"week": 2, "date": "2023-01-11", "value": 4869.90, "qtd_growth_pct": 0.270},
+              {"week": 3, "date": "2023-01-18", "value": 4884.12, "qtd_growth_pct": 0.563},
+              {"week": 4, "date": "2023-01-25", "value": 4899.34, "qtd_growth_pct": 0.876},
+              {"week": 5, "date": "2023-02-01", "value": 4915.56, "qtd_growth_pct": 1.210}
+            ]
+          },
+          "2022": {
+            "quarter": "Q1",
+            "data": [
+              {"week": 1, "date": "2022-01-05", "value": 4623.45, "qtd_growth_pct": 0},
+              {"week": 2, "date": "2022-01-12", "value": 4638.67, "qtd_growth_pct": 0.329},
+              {"week": 3, "date": "2022-01-19", "value": 4655.89, "qtd_growth_pct": 0.701},
+              {"week": 4, "date": "2022-01-26", "value": 4674.12, "qtd_growth_pct": 1.096},
+              {"week": 5, "date": "2022-02-02", "value": 4693.34, "qtd_growth_pct": 1.512}
+            ]
+          },
+          "2021": {
+            "quarter": "Q1",
+            "data": [
+              {"week": 1, "date": "2021-01-06", "value": 4345.67, "qtd_growth_pct": 0},
+              {"week": 2, "date": "2021-01-13", "value": 4352.89, "qtd_growth_pct": 0.166},
+              {"week": 3, "date": "2021-01-20", "value": 4361.12, "qtd_growth_pct": 0.355},
+              {"week": 4, "date": "2021-01-27", "value": 4370.34, "qtd_growth_pct": 0.568},
+              {"week": 5, "date": "2021-02-03", "value": 4380.56, "qtd_growth_pct": 0.803}
+            ]
+          }
+        }
+      },
+      "CLSACBW027SBOG": {
+        "name": "Consumer Loans",
+        "quarters": {
+          "2025": {
+            "quarter": "Q1",
+            "data": [
+              {"week": 1, "date": "2025-01-01", "value": 1858.20, "qtd_growth_pct": 0},
+              {"week": 2, "date": "2025-01-08", "value": 1862.45, "qtd_growth_pct": 0.229},
+              {"week": 3, "date": "2025-01-15", "value": 1868.67, "qtd_growth_pct": 0.563},
+              {"week": 4, "date": "2025-01-22", "value": 1872.31, "qtd_growth_pct": 0.759},
+              {"week": 5, "date": "2025-01-29", "value": 1876.54, "qtd_growth_pct": 0.987}
+            ]
+          },
+          "2024": {
+            "quarter": "Q1",
+            "data": [
+              {"week": 1, "date": "2024-01-03", "value": 1808.65, "qtd_growth_pct": 0},
+              {"week": 2, "date": "2024-01-10", "value": 1812.34, "qtd_growth_pct": 0.204},
+              {"week": 3, "date": "2024-01-17", "value": 1816.78, "qtd_growth_pct": 0.450},
+              {"week": 4, "date": "2024-01-24", "value": 1821.45, "qtd_growth_pct": 0.708},
+              {"week": 5, "date": "2024-01-31", "value": 1826.89, "qtd_growth_pct": 1.009}
+            ]
+          },
+          "2023": {
+            "quarter": "Q1",
+            "data": [
+              {"week": 1, "date": "2023-01-04", "value": 1745.23, "qtd_growth_pct": 0},
+              {"week": 2, "date": "2023-01-11", "value": 1750.67, "qtd_growth_pct": 0.312},
+              {"week": 3, "date": "2023-01-18", "value": 1756.89, "qtd_growth_pct": 0.668},
+              {"week": 4, "date": "2023-01-25", "value": 1763.45, "qtd_growth_pct": 1.044},
+              {"week": 5, "date": "2023-02-01", "value": 1770.12, "qtd_growth_pct": 1.426}
+            ]
+          },
+          "2022": {
+            "quarter": "Q1",
+            "data": [
+              {"week": 1, "date": "2022-01-05", "value": 1656.78, "qtd_growth_pct": 0},
+              {"week": 2, "date": "2022-01-12", "value": 1662.34, "qtd_growth_pct": 0.336},
+              {"week": 3, "date": "2022-01-19", "value": 1668.90, "qtd_growth_pct": 0.732},
+              {"week": 4, "date": "2022-01-26", "value": 1676.45, "qtd_growth_pct": 1.187},
+              {"week": 5, "date": "2022-02-02", "value": 1684.12, "qtd_growth_pct": 1.650}
+            ]
+          },
+          "2021": {
+            "quarter": "Q1",
+            "data": [
+              {"week": 1, "date": "2021-01-06", "value": 1578.90, "qtd_growth_pct": 0},
+              {"week": 2, "date": "2021-01-13", "value": 1580.45, "qtd_growth_pct": 0.098},
+              {"week": 3, "date": "2021-01-20", "value": 1582.67, "qtd_growth_pct": 0.239},
+              {"week": 4, "date": "2021-01-27", "value": 1585.23, "qtd_growth_pct": 0.401},
+              {"week": 5, "date": "2021-02-03", "value": 1588.45, "qtd_growth_pct": 0.605}
+            ]
+          }
+        }
+      }
+    },
+    "deposits": {
+      "DPSACBW027SBOG": {
+        "name": "Total Deposits",
+        "quarters": {
+          "2025": {
+            "quarter": "Q1",
+            "data": [
+              {"week": 1, "date": "2025-01-01", "value": 17666.67, "qtd_growth_pct": 0},
+              {"week": 2, "date": "2025-01-08", "value": 17698.45, "qtd_growth_pct": 0.180},
+              {"week": 3, "date": "2025-01-15", "value": 17745.67, "qtd_growth_pct": 0.447},
+              {"week": 4, "date": "2025-01-22", "value": 17777.78, "qtd_growth_pct": 0.629},
+              {"week": 5, "date": "2025-01-29", "value": 17823.45, "qtd_growth_pct": 0.889}
+            ]
+          },
+          "2024": {
+            "quarter": "Q1",
+            "data": [
+              {"week": 1, "date": "2024-01-03", "value": 17289.33, "qtd_growth_pct": 0},
+              {"week": 2, "date": "2024-01-10", "value": 17312.45, "qtd_growth_pct": 0.134},
+              {"week": 3, "date": "2024-01-17", "value": 17338.67, "qtd_growth_pct": 0.285},
+              {"week": 4, "date": "2024-01-24", "value": 17367.89, "qtd_growth_pct": 0.454},
+              {"week": 5, "date": "2024-01-31", "value": 17398.12, "qtd_growth_pct": 0.629}
+            ]
+          },
+          "2023": {
+            "quarter": "Q1",
+            "data": [
+              {"week": 1, "date": "2023-01-04", "value": 17567.89, "qtd_growth_pct": 0},
+              {"week": 2, "date": "2023-01-11", "value": 17545.67, "qtd_growth_pct": -0.126},
+              {"week": 3, "date": "2023-01-18", "value": 17512.34, "qtd_growth_pct": -0.316},
+              {"week": 4, "date": "2023-01-25", "value": 17478.90, "qtd_growth_pct": -0.507},
+              {"week": 5, "date": "2023-02-01", "value": 17445.67, "qtd_growth_pct": -0.696}
+            ]
+          },
+          "2022": {
+            "quarter": "Q1",
+            "data": [
+              {"week": 1, "date": "2022-01-05", "value": 18234.56, "qtd_growth_pct": 0},
+              {"week": 2, "date": "2022-01-12", "value": 18256.78, "qtd_growth_pct": 0.122},
+              {"week": 3, "date": "2022-01-19", "value": 18278.90, "qtd_growth_pct": 0.243},
+              {"week": 4, "date": "2022-01-26", "value": 18301.12, "qtd_growth_pct": 0.365},
+              {"week": 5, "date": "2022-02-02", "value": 18324.34, "qtd_growth_pct": 0.492}
+            ]
+          },
+          "2021": {
+            "quarter": "Q1",
+            "data": [
+              {"week": 1, "date": "2021-01-06", "value": 16789.12, "qtd_growth_pct": 0},
+              {"week": 2, "date": "2021-01-13", "value": 16834.56, "qtd_growth_pct": 0.271},
+              {"week": 3, "date": "2021-01-20", "value": 16889.78, "qtd_growth_pct": 0.600},
+              {"week": 4, "date": "2021-01-27", "value": 16945.90, "qtd_growth_pct": 0.934},
+              {"week": 5, "date": "2021-02-03", "value": 17012.34, "qtd_growth_pct": 1.330}
+            ]
+          }
+        }
+      },
+      "LTDACBW027SBOG": {
+        "name": "Large Time Deposits",
+        "quarters": {
+          "2025": {
+            "quarter": "Q1",
+            "data": [
+              {"week": 1, "date": "2025-01-01", "value": 2088.89, "qtd_growth_pct": 0},
+              {"week": 2, "date": "2025-01-08", "value": 2105.45, "qtd_growth_pct": 0.793},
+              {"week": 3, "date": "2025-01-15", "value": 2123.67, "qtd_growth_pct": 1.665},
+              {"week": 4, "date": "2025-01-22", "value": 2141.23, "qtd_growth_pct": 2.505},
+              {"week": 5, "date": "2025-01-29", "value": 2156.78, "qtd_growth_pct": 3.249}
+            ]
+          },
+          "2024": {
+            "quarter": "Q1",
+            "data": [
+              {"week": 1, "date": "2024-01-03", "value": 1922.22, "qtd_growth_pct": 0},
+              {"week": 2, "date": "2024-01-10", "value": 1938.45, "qtd_growth_pct": 0.844},
+              {"week": 3, "date": "2024-01-17", "value": 1956.67, "qtd_growth_pct": 1.792},
+              {"week": 4, "date": "2024-01-24", "value": 1975.89, "qtd_growth_pct": 2.792},
+              {"week": 5, "date": "2024-01-31", "value": 1996.12, "qtd_growth_pct": 3.844}
+            ]
+          },
+          "2023": {
+            "quarter": "Q1",
+            "data": [
+              {"week": 1, "date": "2023-01-04", "value": 1734.56, "qtd_growth_pct": 0},
+              {"week": 2, "date": "2023-01-11", "value": 1756.78, "qtd_growth_pct": 1.281},
+              {"week": 3, "date": "2023-01-18", "value": 1778.90, "qtd_growth_pct": 2.556},
+              {"week": 4, "date": "2023-01-25", "value": 1802.12, "qtd_growth_pct": 3.895},
+              {"week": 5, "date": "2023-02-01", "value": 1826.34, "qtd_growth_pct": 5.291}
+            ]
+          },
+          "2022": {
+            "quarter": "Q1",
+            "data": [
+              {"week": 1, "date": "2022-01-05", "value": 1523.45, "qtd_growth_pct": 0},
+              {"week": 2, "date": "2022-01-12", "value": 1528.67, "qtd_growth_pct": 0.343},
+              {"week": 3, "date": "2022-01-19", "value": 1534.89, "qtd_growth_pct": 0.751},
+              {"week": 4, "date": "2022-01-26", "value": 1541.12, "qtd_growth_pct": 1.160},
+              {"week": 5, "date": "2022-02-02", "value": 1548.34, "qtd_growth_pct": 1.634}
+            ]
+          },
+          "2021": {
+            "quarter": "Q1",
+            "data": [
+              {"week": 1, "date": "2021-01-06", "value": 1612.34, "qtd_growth_pct": 0},
+              {"week": 2, "date": "2021-01-13", "value": 1605.67, "qtd_growth_pct": -0.414},
+              {"week": 3, "date": "2021-01-20", "value": 1598.90, "qtd_growth_pct": -0.834},
+              {"week": 4, "date": "2021-01-27", "value": 1592.12, "qtd_growth_pct": -1.254},
+              {"week": 5, "date": "2021-02-03", "value": 1585.34, "qtd_growth_pct": -1.675}
+            ]
+          }
+        }
+      }
+    }
+  },
+  "yoy_trends": {
+    "TOTLL": {
+      "name": "Total Loans & Leases",
+      "category": "loans",
+      "data": [
+        {"date": "2023-02-01", "value": 11780.12, "yoy_pct": 4.25},
+        {"date": "2023-03-01", "value": 11856.34, "yoy_pct": 4.52},
+        {"date": "2023-04-05", "value": 11923.45, "yoy_pct": 4.78},
+        {"date": "2023-05-03", "value": 11978.67, "yoy_pct": 4.92},
+        {"date": "2023-06-07", "value": 12012.34, "yoy_pct": 4.65},
+        {"date": "2023-07-05", "value": 12034.56, "yoy_pct": 4.23},
+        {"date": "2023-08-02", "value": 12045.78, "yoy_pct": 3.89},
+        {"date": "2023-09-06", "value": 12056.90, "yoy_pct": 3.56},
+        {"date": "2023-10-04", "value": 12067.12, "yoy_pct": 3.34},
+        {"date": "2023-11-01", "value": 12078.34, "yoy_pct": 3.12},
+        {"date": "2023-12-06", "value": 12089.56, "yoy_pct": 2.98},
+        {"date": "2024-01-03", "value": 12044.22, "yoy_pct": 2.34},
+        {"date": "2024-02-07", "value": 12118.45, "yoy_pct": 2.87},
+        {"date": "2024-03-06", "value": 12156.78, "yoy_pct": 2.53},
+        {"date": "2024-04-03", "value": 12189.90, "yoy_pct": 2.24},
+        {"date": "2024-05-01", "value": 12223.12, "yoy_pct": 2.04},
+        {"date": "2024-06-05", "value": 12256.34, "yoy_pct": 2.03},
+        {"date": "2024-07-03", "value": 12289.56, "yoy_pct": 2.12},
+        {"date": "2024-08-07", "value": 12322.78, "yoy_pct": 2.30},
+        {"date": "2024-09-04", "value": 12355.90, "yoy_pct": 2.48},
+        {"date": "2024-10-02", "value": 12389.12, "yoy_pct": 2.67},
+        {"date": "2024-11-06", "value": 12422.34, "yoy_pct": 2.85},
+        {"date": "2024-12-04", "value": 12455.56, "yoy_pct": 3.03},
+        {"date": "2025-01-29", "value": 12456.78, "yoy_pct": 3.42}
+      ]
+    },
+    "DPSACBW027SBOG": {
+      "name": "Total Deposits",
+      "category": "deposits",
+      "data": [
+        {"date": "2023-02-01", "value": 17445.67, "yoy_pct": 3.91},
+        {"date": "2023-03-01", "value": 17234.56, "yoy_pct": 2.34},
+        {"date": "2023-04-05", "value": 17123.45, "yoy_pct": -0.45},
+        {"date": "2023-05-03", "value": 17089.67, "yoy_pct": -1.23},
+        {"date": "2023-06-07", "value": 17056.78, "yoy_pct": -1.89},
+        {"date": "2023-07-05", "value": 17078.90, "yoy_pct": -1.56},
+        {"date": "2023-08-02", "value": 17112.34, "yoy_pct": -1.12},
+        {"date": "2023-09-06", "value": 17145.67, "yoy_pct": -0.78},
+        {"date": "2023-10-04", "value": 17178.90, "yoy_pct": -0.45},
+        {"date": "2023-11-01", "value": 17212.34, "yoy_pct": -0.12},
+        {"date": "2023-12-06", "value": 17256.78, "yoy_pct": 0.23},
+        {"date": "2024-01-03", "value": 17289.33, "yoy_pct": -0.89},
+        {"date": "2024-02-07", "value": 17398.12, "yoy_pct": -0.27},
+        {"date": "2024-03-06", "value": 17456.78, "yoy_pct": 1.29},
+        {"date": "2024-04-03", "value": 17512.34, "yoy_pct": 2.27},
+        {"date": "2024-05-01", "value": 17556.78, "yoy_pct": 2.73},
+        {"date": "2024-06-05", "value": 17589.12, "yoy_pct": 3.12},
+        {"date": "2024-07-03", "value": 17612.34, "yoy_pct": 3.12},
+        {"date": "2024-08-07", "value": 17645.67, "yoy_pct": 3.12},
+        {"date": "2024-09-04", "value": 17678.90, "yoy_pct": 3.11},
+        {"date": "2024-10-02", "value": 17712.34, "yoy_pct": 3.10},
+        {"date": "2024-11-06", "value": 17745.67, "yoy_pct": 3.10},
+        {"date": "2024-12-04", "value": 17789.12, "yoy_pct": 3.09},
+        {"date": "2025-01-29", "value": 17823.45, "yoy_pct": 3.09}
+      ]
+    },
+    "TOTCI": {
+      "name": "C&I Loans",
+      "category": "loans",
+      "data": [
+        {"date": "2023-02-01", "value": 2686.34, "yoy_pct": 6.93},
+        {"date": "2023-03-01", "value": 2712.45, "yoy_pct": 7.23},
+        {"date": "2023-04-05", "value": 2734.56, "yoy_pct": 6.87},
+        {"date": "2023-05-03", "value": 2745.67, "yoy_pct": 6.12},
+        {"date": "2023-06-07", "value": 2756.78, "yoy_pct": 5.45},
+        {"date": "2023-07-05", "value": 2767.89, "yoy_pct": 4.78},
+        {"date": "2023-08-02", "value": 2778.90, "yoy_pct": 4.12},
+        {"date": "2023-09-06", "value": 2789.12, "yoy_pct": 3.56},
+        {"date": "2023-10-04", "value": 2799.34, "yoy_pct": 3.12},
+        {"date": "2023-11-01", "value": 2808.56, "yoy_pct": 2.78},
+        {"date": "2023-12-06", "value": 2817.78, "yoy_pct": 2.45},
+        {"date": "2024-01-03", "value": 2711.11, "yoy_pct": 0.93},
+        {"date": "2024-02-07", "value": 2736.90, "yoy_pct": 1.88},
+        {"date": "2024-03-06", "value": 2745.12, "yoy_pct": 1.20},
+        {"date": "2024-04-03", "value": 2753.34, "yoy_pct": 0.69},
+        {"date": "2024-05-01", "value": 2761.56, "yoy_pct": 0.58},
+        {"date": "2024-06-05", "value": 2769.78, "yoy_pct": 0.47},
+        {"date": "2024-07-03", "value": 2777.90, "yoy_pct": 0.36},
+        {"date": "2024-08-07", "value": 2785.12, "yoy_pct": 0.22},
+        {"date": "2024-09-04", "value": 2792.34, "yoy_pct": 0.12},
+        {"date": "2024-10-02", "value": 2799.56, "yoy_pct": 0.01},
+        {"date": "2024-11-06", "value": 2806.78, "yoy_pct": -0.06},
+        {"date": "2024-12-04", "value": 2813.90, "yoy_pct": -0.14},
+        {"date": "2025-01-29", "value": 2789.45, "yoy_pct": 2.89}
+      ]
+    }
+  }
+}

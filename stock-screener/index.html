@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Screener | Guide Bot - AI Equity Research</title>
+    <meta name="description" content="Build custom stock screens with flexible filters. Combine fundamentals, technicals, and sentiment with AND/OR logic.">
+    
+    <style>
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #111827;
+            --bg-card: #1a2234;
+            --bg-card-hover: #1f2942;
+            --text-primary: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --accent-blue: #3b82f6;
+            --accent-yellow: #f59e0b;
+            --accent-purple: #8b5cf6;
+            --accent-orange: #f97316;
+            --border-color: #374151;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* Header */
+        header {
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-card) 100%);
+            border-bottom: 1px solid var(--border-color);
+            padding: 20px 0;
+            margin-bottom: 24px;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .back-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+        
+        .back-link:hover {
+            color: var(--accent-green);
+        }
+        
+        .header-title h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fff 0%, var(--accent-purple) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .header-title p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        /* Main Layout */
+        .main-layout {
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            gap: 24px;
+        }
+        
+        @media (max-width: 1200px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Screener Panel */
+        .screener-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            overflow: hidden;
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+        }
+        
+        .panel-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .panel-header h2 {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        .panel-body {
+            padding: 20px;
+        }
+        
+        /* Templates Section */
+        .templates-section {
+            margin-bottom: 20px;
+        }
+        
+        .templates-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-top: 12px;
+        }
+        
+        .template-btn {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px 12px;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+        }
+        
+        .template-btn:hover {
+            border-color: var(--accent-purple);
+            color: var(--text-primary);
+        }
+        
+        .template-btn.active {
+            border-color: var(--accent-purple);
+            background: rgba(139, 92, 246, 0.1);
+            color: var(--accent-purple);
+        }
+        
+        .template-icon {
+            margin-right: 6px;
+        }
+        
+        /* Filter Builder */
+        .filter-builder {
+            margin-bottom: 20px;
+        }
+        
+        .section-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .filter-group {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 10px;
+        }
+        
+        .filter-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .filter-select {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 8px 10px;
+            color: var(--text-primary);
+            font-size: 0.85rem;
+            flex: 1;
+            min-width: 100px;
+        }
+        
+        .filter-input {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 8px 10px;
+            color: var(--text-primary);
+            font-size: 0.85rem;
+            width: 80px;
+        }
+        
+        .filter-remove {
+            background: transparent;
+            border: none;
+            color: var(--accent-red);
+            cursor: pointer;
+            padding: 4px;
+            font-size: 1.1rem;
+            line-height: 1;
+        }
+        
+        .logic-toggle {
+            display: flex;
+            gap: 4px;
+            margin: 8px 0;
+        }
+        
+        .logic-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 4px 12px;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .logic-btn.active {
+            background: var(--accent-purple);
+            border-color: var(--accent-purple);
+            color: white;
+        }
+        
+        .add-filter-btn {
+            background: transparent;
+            border: 1px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 10px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.2s;
+        }
+        
+        .add-filter-btn:hover {
+            border-color: var(--accent-purple);
+            color: var(--accent-purple);
+        }
+        
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            border: none;
+            border-radius: 10px;
+            padding: 12px 20px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+            justify-content: center;
+        }
+        
+        .btn-primary {
+            background: var(--accent-purple);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        
+        .btn-secondary {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+        
+        .btn-secondary:hover {
+            border-color: var(--accent-purple);
+            color: var(--text-primary);
+        }
+        
+        /* Results Panel */
+        .results-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        
+        .results-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        
+        .results-count {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        
+        .results-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn-small {
+            padding: 8px 14px;
+            font-size: 0.85rem;
+        }
+        
+        /* Results Table */
+        .table-wrapper {
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 900px;
+        }
+        
+        th, td {
+            padding: 14px 16px;
+            text-align: right;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        th {
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            user-select: none;
+            white-space: nowrap;
+        }
+        
+        th:hover {
+            color: var(--text-primary);
+        }
+        
+        th.sorted-asc::after {
+            content: ' ▲';
+        }
+        
+        th.sorted-desc::after {
+            content: ' ▼';
+        }
+        
+        th:first-child,
+        td:first-child {
+            text-align: left;
+            position: sticky;
+            left: 0;
+            background: var(--bg-card);
+        }
+        
+        th:first-child {
+            background: var(--bg-secondary);
+        }
+        
+        tr:hover {
+            background: var(--bg-card-hover);
+        }
+        
+        tr:hover td:first-child {
+            background: var(--bg-card-hover);
+        }
+        
+        .ticker-cell {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .ticker {
+            font-weight: 700;
+            color: var(--accent-blue);
+            min-width: 50px;
+        }
+        
+        .company-name {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            max-width: 120px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .value-positive {
+            color: var(--accent-green);
+        }
+        
+        .value-negative {
+            color: var(--accent-red);
+        }
+        
+        .pass-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+        
+        .pass-indicator.pass {
+            background: var(--accent-green);
+        }
+        
+        .pass-indicator.fail {
+            background: var(--accent-red);
+        }
+        
+        /* Score Badge */
+        .score-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+        
+        .score-badge.high {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--accent-green);
+        }
+        
+        .score-badge.medium {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--accent-yellow);
+        }
+        
+        .score-badge.low {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--accent-red);
+        }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+        }
+        
+        .empty-state h3 {
+            font-size: 1.2rem;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+        }
+        
+        /* Save Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-overlay.visible {
+            display: flex;
+        }
+        
+        .modal {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            width: 90%;
+            max-width: 450px;
+        }
+        
+        .modal h3 {
+            margin-bottom: 16px;
+        }
+        
+        .modal-input {
+            width: 100%;
+            padding: 12px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            margin-bottom: 16px;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+        
+        /* Saved Screens */
+        .saved-screens {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .saved-screen-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 12px;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .saved-screen-item:hover {
+            background: var(--bg-card-hover);
+        }
+        
+        .saved-screen-name {
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        
+        .saved-screen-count {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        
+        .delete-screen {
+            background: transparent;
+            border: none;
+            color: var(--accent-red);
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        
+        .saved-screen-item:hover .delete-screen {
+            opacity: 1;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .templates-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .filter-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .filter-select,
+            .filter-input {
+                width: 100%;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container header-content">
+            <div class="header-left">
+                <a href="../index.html" class="back-link">
+                    ← Back to Guide Bot
+                </a>
+                <div class="header-title">
+                    <h1>🔍 Stock Screener</h1>
+                    <p>Build custom screens with AND/OR logic</p>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <main class="container">
+        <div class="main-layout">
+            <!-- Screener Panel -->
+            <div class="screener-panel">
+                <div class="panel-header">
+                    <h2>📋 Screen Builder</h2>
+                    <button class="btn-small btn-secondary" onclick="clearFilters()">Clear All</button>
+                </div>
+                <div class="panel-body">
+                    <!-- Quick Templates -->
+                    <div class="templates-section">
+                        <div class="section-label">Quick Templates</div>
+                        <div class="templates-grid">
+                            <button class="template-btn" onclick="loadTemplate('value')">
+                                <span class="template-icon">💎</span>Value Stocks
+                            </button>
+                            <button class="template-btn" onclick="loadTemplate('growth')">
+                                <span class="template-icon">🚀</span>High Growth
+                            </button>
+                            <button class="template-btn" onclick="loadTemplate('dividend')">
+                                <span class="template-icon">💰</span>Dividend Payers
+                            </button>
+                            <button class="template-btn" onclick="loadTemplate('momentum')">
+                                <span class="template-icon">📈</span>Momentum
+                            </button>
+                            <button class="template-btn" onclick="loadTemplate('quality')">
+                                <span class="template-icon">⭐</span>Quality
+                            </button>
+                            <button class="template-btn" onclick="loadTemplate('smallcap')">
+                                <span class="template-icon">🔬</span>Small Cap Value
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Filter Builder -->
+                    <div class="filter-builder">
+                        <div class="section-label">
+                            <span>Filters</span>
+                            <div class="logic-toggle">
+                                <button class="logic-btn active" data-logic="AND" onclick="setLogic('AND')">AND</button>
+                                <button class="logic-btn" data-logic="OR" onclick="setLogic('OR')">OR</button>
+                            </div>
+                        </div>
+                        
+                        <div id="filtersContainer">
+                            <!-- Filters added dynamically -->
+                        </div>
+                        
+                        <button class="add-filter-btn" onclick="addFilter()">
+                            + Add Filter
+                        </button>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="runScreen()">
+                            🔍 Run Screen
+                        </button>
+                        <button class="btn btn-secondary" onclick="openSaveModal()">
+                            💾 Save
+                        </button>
+                    </div>
+                    
+                    <!-- Saved Screens -->
+                    <div class="saved-screens" id="savedScreensSection">
+                        <div class="section-label">Saved Screens</div>
+                        <div id="savedScreensList">
+                            <!-- Loaded dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Results Panel -->
+            <div class="results-panel">
+                <div class="results-header">
+                    <div>
+                        <h2>📊 Results</h2>
+                        <span class="results-count" id="resultsCount">Run a screen to see results</span>
+                    </div>
+                    <div class="results-actions">
+                        <button class="btn btn-secondary btn-small" onclick="exportResults()">
+                            📥 Export CSV
+                        </button>
+                    </div>
+                </div>
+                <div class="table-wrapper">
+                    <table id="resultsTable">
+                        <thead>
+                            <tr>
+                                <th data-sort="ticker">Company</th>
+                                <th data-sort="score">Score</th>
+                                <th data-sort="price">Price</th>
+                                <th data-sort="marketCap">Mkt Cap</th>
+                                <th data-sort="pe">P/E</th>
+                                <th data-sort="revenueGrowth">Rev Growth</th>
+                                <th data-sort="netMargin">Net Margin</th>
+                                <th data-sort="roe">ROE</th>
+                                <th data-sort="dividendYield">Div Yield</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultsBody">
+                            <tr>
+                                <td colspan="9" class="empty-state">
+                                    <h3>🔍 Build your screen</h3>
+                                    <p>Add filters and click "Run Screen" to find matching stocks</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Save Modal -->
+    <div class="modal-overlay" id="saveModal">
+        <div class="modal">
+            <h3>💾 Save Screen</h3>
+            <input type="text" class="modal-input" id="screenName" placeholder="Screen name (e.g., My Value Screen)">
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" onclick="closeSaveModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveScreen()">Save</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Sample stock data - in production from Python fetcher
+        const stockUniverse = [
+            { ticker: 'AAPL', name: 'Apple Inc.', sector: 'Technology', price: 178.50, marketCap: 2800000000000, pe: 28.5, forwardPE: 26.2, revenueGrowth: 8.5, epsGrowth: 12.3, netMargin: 25.3, grossMargin: 43.5, roe: 147.2, roic: 48.5, dividendYield: 0.5, debtToEquity: 1.8, currentRatio: 1.0, rsi: 55 },
+            { ticker: 'MSFT', name: 'Microsoft', sector: 'Technology', price: 378.90, marketCap: 2810000000000, pe: 35.2, forwardPE: 31.5, revenueGrowth: 15.8, epsGrowth: 18.2, netMargin: 36.5, grossMargin: 69.8, roe: 38.5, roic: 25.2, dividendYield: 0.8, debtToEquity: 0.4, currentRatio: 1.8, rsi: 62 },
+            { ticker: 'GOOG', name: 'Alphabet', sector: 'Technology', price: 141.80, marketCap: 1780000000000, pe: 24.8, forwardPE: 21.2, revenueGrowth: 12.5, epsGrowth: 28.5, netMargin: 23.8, grossMargin: 56.2, roe: 28.2, roic: 22.5, dividendYield: 0, debtToEquity: 0.1, currentRatio: 2.9, rsi: 48 },
+            { ticker: 'META', name: 'Meta Platforms', sector: 'Technology', price: 505.20, marketCap: 1290000000000, pe: 27.5, forwardPE: 22.8, revenueGrowth: 22.5, epsGrowth: 45.2, netMargin: 28.2, grossMargin: 80.5, roe: 32.5, roic: 28.8, dividendYield: 0.4, debtToEquity: 0.2, currentRatio: 2.7, rsi: 71 },
+            { ticker: 'NVDA', name: 'NVIDIA', sector: 'Technology', price: 495.50, marketCap: 1220000000000, pe: 62.5, forwardPE: 35.2, revenueGrowth: 122.5, epsGrowth: 285.2, netMargin: 48.5, grossMargin: 72.8, roe: 82.5, roic: 65.2, dividendYield: 0.04, debtToEquity: 0.4, currentRatio: 4.2, rsi: 68 },
+            { ticker: 'JPM', name: 'JPMorgan Chase', sector: 'Financial', price: 195.80, marketCap: 565000000000, pe: 11.2, forwardPE: 10.5, revenueGrowth: 8.2, epsGrowth: 15.5, netMargin: 32.5, grossMargin: 0, roe: 15.2, roic: 0, dividendYield: 2.4, debtToEquity: 1.2, currentRatio: 0, rsi: 58 },
+            { ticker: 'JNJ', name: 'Johnson & Johnson', sector: 'Healthcare', price: 156.20, marketCap: 376000000000, pe: 15.8, forwardPE: 14.2, revenueGrowth: 5.2, epsGrowth: 8.5, netMargin: 18.5, grossMargin: 68.2, roe: 22.5, roic: 15.8, dividendYield: 3.0, debtToEquity: 0.4, currentRatio: 1.2, rsi: 42 },
+            { ticker: 'PG', name: 'Procter & Gamble', sector: 'Consumer', price: 162.50, marketCap: 382000000000, pe: 26.5, forwardPE: 24.2, revenueGrowth: 4.5, epsGrowth: 6.2, netMargin: 18.2, grossMargin: 51.5, roe: 32.5, roic: 18.5, dividendYield: 2.4, debtToEquity: 0.6, currentRatio: 0.7, rsi: 51 },
+            { ticker: 'XOM', name: 'Exxon Mobil', sector: 'Energy', price: 105.80, marketCap: 420000000000, pe: 12.5, forwardPE: 11.8, revenueGrowth: -5.2, epsGrowth: -12.5, netMargin: 10.5, grossMargin: 32.5, roe: 18.2, roic: 12.5, dividendYield: 3.5, debtToEquity: 0.2, currentRatio: 1.4, rsi: 45 },
+            { ticker: 'BRK.B', name: 'Berkshire Hathaway', sector: 'Financial', price: 408.50, marketCap: 890000000000, pe: 8.5, forwardPE: 0, revenueGrowth: 12.5, epsGrowth: 25.2, netMargin: 15.2, grossMargin: 0, roe: 12.5, roic: 0, dividendYield: 0, debtToEquity: 0.2, currentRatio: 0, rsi: 55 },
+            { ticker: 'V', name: 'Visa Inc.', sector: 'Financial', price: 278.50, marketCap: 560000000000, pe: 30.2, forwardPE: 26.5, revenueGrowth: 10.5, epsGrowth: 15.2, netMargin: 52.5, grossMargin: 0, roe: 45.2, roic: 28.5, dividendYield: 0.8, debtToEquity: 0.5, currentRatio: 1.5, rsi: 60 },
+            { ticker: 'HD', name: 'Home Depot', sector: 'Consumer', price: 345.20, marketCap: 342000000000, pe: 22.5, forwardPE: 20.8, revenueGrowth: 3.2, epsGrowth: 5.5, netMargin: 10.2, grossMargin: 33.5, roe: 0, roic: 35.2, dividendYield: 2.5, debtToEquity: 0, currentRatio: 1.3, rsi: 52 },
+            { ticker: 'KO', name: 'Coca-Cola', sector: 'Consumer', price: 62.50, marketCap: 270000000000, pe: 24.5, forwardPE: 22.2, revenueGrowth: 6.5, epsGrowth: 8.2, netMargin: 22.5, grossMargin: 60.2, roe: 42.5, roic: 12.5, dividendYield: 3.0, debtToEquity: 1.8, currentRatio: 1.1, rsi: 48 },
+            { ticker: 'PEP', name: 'PepsiCo', sector: 'Consumer', price: 172.80, marketCap: 238000000000, pe: 26.2, forwardPE: 23.5, revenueGrowth: 5.8, epsGrowth: 7.5, netMargin: 12.5, grossMargin: 54.8, roe: 52.5, roic: 15.2, dividendYield: 2.8, debtToEquity: 2.2, currentRatio: 0.8, rsi: 46 },
+            { ticker: 'COST', name: 'Costco', sector: 'Consumer', price: 725.50, marketCap: 322000000000, pe: 48.5, forwardPE: 42.2, revenueGrowth: 8.5, epsGrowth: 12.5, netMargin: 2.8, grossMargin: 12.5, roe: 28.5, roic: 18.5, dividendYield: 0.6, debtToEquity: 0.3, currentRatio: 1.0, rsi: 65 },
+            { ticker: 'MRK', name: 'Merck', sector: 'Healthcare', price: 125.80, marketCap: 318000000000, pe: 18.5, forwardPE: 14.2, revenueGrowth: 12.5, epsGrowth: 45.2, netMargin: 22.5, grossMargin: 72.5, roe: 35.2, roic: 18.5, dividendYield: 2.4, debtToEquity: 0.8, currentRatio: 1.4, rsi: 58 },
+            { ticker: 'ABBV', name: 'AbbVie', sector: 'Healthcare', price: 168.50, marketCap: 297000000000, pe: 22.5, forwardPE: 15.2, revenueGrowth: -5.5, epsGrowth: 8.2, netMargin: 18.5, grossMargin: 68.5, roe: 0, roic: 12.5, dividendYield: 3.6, debtToEquity: 5.2, currentRatio: 0.9, rsi: 62 },
+            { ticker: 'CVX', name: 'Chevron', sector: 'Energy', price: 148.20, marketCap: 275000000000, pe: 11.8, forwardPE: 12.5, revenueGrowth: -8.5, epsGrowth: -15.2, netMargin: 12.5, grossMargin: 42.5, roe: 14.5, roic: 10.2, dividendYield: 4.2, debtToEquity: 0.1, currentRatio: 1.5, rsi: 38 },
+            { ticker: 'INTC', name: 'Intel', sector: 'Technology', price: 45.20, marketCap: 192000000000, pe: 0, forwardPE: 28.5, revenueGrowth: -15.2, epsGrowth: 0, netMargin: -2.5, grossMargin: 42.5, roe: -5.2, roic: -2.5, dividendYield: 1.1, debtToEquity: 0.5, currentRatio: 1.6, rsi: 35 },
+            { ticker: 'CSCO', name: 'Cisco', sector: 'Technology', price: 52.80, marketCap: 215000000000, pe: 15.2, forwardPE: 13.5, revenueGrowth: -5.8, epsGrowth: 2.5, netMargin: 22.5, grossMargin: 62.5, roe: 28.5, roic: 15.2, dividendYield: 2.9, debtToEquity: 0.2, currentRatio: 1.4, rsi: 52 },
+        ];
+        
+        // Filter definitions
+        const filterDefinitions = {
+            // Valuation
+            pe: { label: 'P/E Ratio', category: 'Valuation' },
+            forwardPE: { label: 'Forward P/E', category: 'Valuation' },
+            // Growth
+            revenueGrowth: { label: 'Revenue Growth %', category: 'Growth' },
+            epsGrowth: { label: 'EPS Growth %', category: 'Growth' },
+            // Profitability
+            netMargin: { label: 'Net Margin %', category: 'Profitability' },
+            grossMargin: { label: 'Gross Margin %', category: 'Profitability' },
+            // Returns
+            roe: { label: 'ROE %', category: 'Returns' },
+            roic: { label: 'ROIC %', category: 'Returns' },
+            // Income
+            dividendYield: { label: 'Dividend Yield %', category: 'Income' },
+            // Size
+            marketCap: { label: 'Market Cap ($B)', category: 'Size', scale: 1e9 },
+            // Technical
+            rsi: { label: 'RSI (14)', category: 'Technical' },
+            // Balance Sheet
+            debtToEquity: { label: 'Debt/Equity', category: 'Balance Sheet' },
+            currentRatio: { label: 'Current Ratio', category: 'Balance Sheet' },
+        };
+        
+        const operators = [
+            { value: 'gt', label: '>' },
+            { value: 'gte', label: '>=' },
+            { value: 'lt', label: '<' },
+            { value: 'lte', label: '<=' },
+            { value: 'eq', label: '=' },
+        ];
+        
+        // Templates
+        const templates = {
+            value: [
+                { metric: 'pe', operator: 'lt', value: 15 },
+                { metric: 'dividendYield', operator: 'gt', value: 2 },
+                { metric: 'roe', operator: 'gt', value: 10 },
+            ],
+            growth: [
+                { metric: 'revenueGrowth', operator: 'gt', value: 15 },
+                { metric: 'epsGrowth', operator: 'gt', value: 20 },
+                { metric: 'grossMargin', operator: 'gt', value: 40 },
+            ],
+            dividend: [
+                { metric: 'dividendYield', operator: 'gt', value: 2.5 },
+                { metric: 'pe', operator: 'lt', value: 25 },
+                { metric: 'netMargin', operator: 'gt', value: 10 },
+            ],
+            momentum: [
+                { metric: 'rsi', operator: 'gt', value: 50 },
+                { metric: 'revenueGrowth', operator: 'gt', value: 10 },
+                { metric: 'epsGrowth', operator: 'gt', value: 15 },
+            ],
+            quality: [
+                { metric: 'roe', operator: 'gt', value: 15 },
+                { metric: 'netMargin', operator: 'gt', value: 15 },
+                { metric: 'debtToEquity', operator: 'lt', value: 1 },
+            ],
+            smallcap: [
+                { metric: 'marketCap', operator: 'lt', value: 10 },
+                { metric: 'pe', operator: 'lt', value: 15 },
+                { metric: 'revenueGrowth', operator: 'gt', value: 10 },
+            ],
+        };
+        
+        let filters = [];
+        let logic = 'AND';
+        let sortColumn = 'score';
+        let sortDirection = 'desc';
+        let results = [];
+        let savedScreens = JSON.parse(localStorage.getItem('savedScreens') || '[]');
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            renderSavedScreens();
+            addFilter(); // Start with one filter
+            
+            // Table sorting
+            document.querySelectorAll('th[data-sort]').forEach(th => {
+                th.addEventListener('click', function() {
+                    const column = this.dataset.sort;
+                    if (sortColumn === column) {
+                        sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+                    } else {
+                        sortColumn = column;
+                        sortDirection = 'desc';
+                    }
+                    renderResults();
+                });
+            });
+        });
+        
+        function addFilter() {
+            const id = Date.now();
+            filters.push({ id, metric: 'pe', operator: 'lt', value: 20 });
+            renderFilters();
+        }
+        
+        function removeFilter(id) {
+            filters = filters.filter(f => f.id !== id);
+            renderFilters();
+        }
+        
+        function updateFilter(id, field, value) {
+            const filter = filters.find(f => f.id === id);
+            if (filter) {
+                filter[field] = field === 'value' ? parseFloat(value) || 0 : value;
+            }
+        }
+        
+        function renderFilters() {
+            const container = document.getElementById('filtersContainer');
+            
+            container.innerHTML = filters.map((f, i) => `
+                <div class="filter-group" data-id="${f.id}">
+                    <div class="filter-row">
+                        <select class="filter-select" onchange="updateFilter(${f.id}, 'metric', this.value)">
+                            ${Object.entries(filterDefinitions).map(([key, def]) => 
+                                `<option value="${key}" ${f.metric === key ? 'selected' : ''}>${def.label}</option>`
+                            ).join('')}
+                        </select>
+                        <select class="filter-select" style="width: 70px; flex: 0;" onchange="updateFilter(${f.id}, 'operator', this.value)">
+                            ${operators.map(op => 
+                                `<option value="${op.value}" ${f.operator === op.value ? 'selected' : ''}>${op.label}</option>`
+                            ).join('')}
+                        </select>
+                        <input type="number" class="filter-input" value="${f.value}" 
+                            onchange="updateFilter(${f.id}, 'value', this.value)" step="any">
+                        <button class="filter-remove" onclick="removeFilter(${f.id})">×</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function setLogic(newLogic) {
+            logic = newLogic;
+            document.querySelectorAll('.logic-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.logic === newLogic);
+            });
+        }
+        
+        function loadTemplate(name) {
+            filters = templates[name].map((f, i) => ({ ...f, id: Date.now() + i }));
+            renderFilters();
+            
+            document.querySelectorAll('.template-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.closest('.template-btn').classList.add('active');
+        }
+        
+        function clearFilters() {
+            filters = [];
+            addFilter();
+            document.querySelectorAll('.template-btn').forEach(btn => btn.classList.remove('active'));
+        }
+        
+        function runScreen() {
+            results = stockUniverse.filter(stock => {
+                const passes = filters.map(f => {
+                    let value = stock[f.metric];
+                    const def = filterDefinitions[f.metric];
+                    
+                    // Scale market cap to billions
+                    if (def.scale) {
+                        value = value / def.scale;
+                    }
+                    
+                    switch (f.operator) {
+                        case 'gt': return value > f.value;
+                        case 'gte': return value >= f.value;
+                        case 'lt': return value < f.value;
+                        case 'lte': return value <= f.value;
+                        case 'eq': return value === f.value;
+                        default: return true;
+                    }
+                });
+                
+                return logic === 'AND' ? passes.every(p => p) : passes.some(p => p);
+            });
+            
+            // Calculate score (% of filters passed)
+            results = results.map(stock => {
+                const passes = filters.filter(f => {
+                    let value = stock[f.metric];
+                    const def = filterDefinitions[f.metric];
+                    if (def.scale) value = value / def.scale;
+                    
+                    switch (f.operator) {
+                        case 'gt': return value > f.value;
+                        case 'gte': return value >= f.value;
+                        case 'lt': return value < f.value;
+                        case 'lte': return value <= f.value;
+                        case 'eq': return value === f.value;
+                        default: return true;
+                    }
+                });
+                
+                return {
+                    ...stock,
+                    score: Math.round((passes.length / filters.length) * 100),
+                    filtersPassed: passes.length,
+                    filtersTotal: filters.length,
+                };
+            });
+            
+            renderResults();
+        }
+        
+        function renderResults() {
+            // Sort
+            results.sort((a, b) => {
+                let valA = a[sortColumn];
+                let valB = b[sortColumn];
+                
+                if (typeof valA === 'string') {
+                    valA = valA.toLowerCase();
+                    valB = valB.toLowerCase();
+                }
+                
+                if (sortDirection === 'asc') {
+                    return valA > valB ? 1 : -1;
+                } else {
+                    return valA < valB ? 1 : -1;
+                }
+            });
+            
+            // Update sort indicators
+            document.querySelectorAll('th[data-sort]').forEach(th => {
+                th.classList.remove('sorted-asc', 'sorted-desc');
+                if (th.dataset.sort === sortColumn) {
+                    th.classList.add(sortDirection === 'asc' ? 'sorted-asc' : 'sorted-desc');
+                }
+            });
+            
+            document.getElementById('resultsCount').textContent = 
+                `${results.length} stocks match your criteria`;
+            
+            const tbody = document.getElementById('resultsBody');
+            
+            if (results.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="9" class="empty-state">
+                            <h3>No stocks match</h3>
+                            <p>Try adjusting your filters or using different criteria</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = results.map(stock => `
+                <tr>
+                    <td>
+                        <div class="ticker-cell">
+                            <span class="ticker">${stock.ticker}</span>
+                            <span class="company-name">${stock.name}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="score-badge ${stock.score >= 80 ? 'high' : stock.score >= 50 ? 'medium' : 'low'}">
+                            ${stock.score}
+                        </span>
+                    </td>
+                    <td>$${stock.price.toFixed(2)}</td>
+                    <td>${formatLargeNumber(stock.marketCap)}</td>
+                    <td>${stock.pe > 0 ? stock.pe.toFixed(1) + 'x' : 'N/A'}</td>
+                    <td class="${stock.revenueGrowth >= 0 ? 'value-positive' : 'value-negative'}">
+                        ${stock.revenueGrowth >= 0 ? '+' : ''}${stock.revenueGrowth.toFixed(1)}%
+                    </td>
+                    <td>${stock.netMargin.toFixed(1)}%</td>
+                    <td>${stock.roe > 0 ? stock.roe.toFixed(1) + '%' : 'N/A'}</td>
+                    <td>${stock.dividendYield > 0 ? stock.dividendYield.toFixed(1) + '%' : '-'}</td>
+                </tr>
+            `).join('');
+        }
+        
+        function formatLargeNumber(num) {
+            if (num >= 1e12) return `$${(num / 1e12).toFixed(1)}T`;
+            if (num >= 1e9) return `$${(num / 1e9).toFixed(0)}B`;
+            if (num >= 1e6) return `$${(num / 1e6).toFixed(0)}M`;
+            return num.toLocaleString();
+        }
+        
+        function openSaveModal() {
+            document.getElementById('saveModal').classList.add('visible');
+            document.getElementById('screenName').focus();
+        }
+        
+        function closeSaveModal() {
+            document.getElementById('saveModal').classList.remove('visible');
+            document.getElementById('screenName').value = '';
+        }
+        
+        function saveScreen() {
+            const name = document.getElementById('screenName').value.trim();
+            if (!name) {
+                alert('Please enter a name');
+                return;
+            }
+            
+            savedScreens.push({
+                id: Date.now(),
+                name,
+                filters: [...filters],
+                logic,
+                createdAt: new Date().toISOString(),
+            });
+            
+            localStorage.setItem('savedScreens', JSON.stringify(savedScreens));
+            renderSavedScreens();
+            closeSaveModal();
+        }
+        
+        function loadSavedScreen(id) {
+            const screen = savedScreens.find(s => s.id === id);
+            if (screen) {
+                filters = screen.filters.map((f, i) => ({ ...f, id: Date.now() + i }));
+                logic = screen.logic || 'AND';
+                renderFilters();
+                setLogic(logic);
+            }
+        }
+        
+        function deleteSavedScreen(id, event) {
+            event.stopPropagation();
+            if (confirm('Delete this saved screen?')) {
+                savedScreens = savedScreens.filter(s => s.id !== id);
+                localStorage.setItem('savedScreens', JSON.stringify(savedScreens));
+                renderSavedScreens();
+            }
+        }
+        
+        function renderSavedScreens() {
+            const container = document.getElementById('savedScreensList');
+            
+            if (savedScreens.length === 0) {
+                container.innerHTML = '<div style="color: var(--text-muted); font-size: 0.85rem;">No saved screens yet</div>';
+                return;
+            }
+            
+            container.innerHTML = savedScreens.map(screen => `
+                <div class="saved-screen-item" onclick="loadSavedScreen(${screen.id})">
+                    <div>
+                        <div class="saved-screen-name">${screen.name}</div>
+                        <div class="saved-screen-count">${screen.filters.length} filters</div>
+                    </div>
+                    <button class="delete-screen" onclick="deleteSavedScreen(${screen.id}, event)">🗑️</button>
+                </div>
+            `).join('');
+        }
+        
+        function exportResults() {
+            if (results.length === 0) {
+                alert('Run a screen first!');
+                return;
+            }
+            
+            const headers = ['Ticker', 'Company', 'Sector', 'Score', 'Price', 'Market Cap', 'P/E', 'Revenue Growth', 'EPS Growth', 'Net Margin', 'ROE', 'Dividend Yield'];
+            const csv = [
+                headers.join(','),
+                ...results.map(s => [
+                    s.ticker,
+                    `"${s.name}"`,
+                    s.sector,
+                    s.score,
+                    s.price,
+                    s.marketCap,
+                    s.pe,
+                    s.revenueGrowth,
+                    s.epsGrowth,
+                    s.netMargin,
+                    s.roe,
+                    s.dividendYield,
+                ].join(','))
+            ].join('\n');
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `screen_results_${new Date().toISOString().slice(0,10)}.csv`;
+            a.click();
+        }
+        
+        // Close modal on escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeSaveModal();
+        });
+        
+        // Close modal on outside click
+        document.getElementById('saveModal').addEventListener('click', function(e) {
+            if (e.target === this) closeSaveModal();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Research Tools Hub | Guide Bot - AI Equity Research</title>
+    <meta name="description" content="All Guide Bot research tools in one place. Screeners, trackers, dashboards, and more.">
+    
+    <style>
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #111827;
+            --bg-card: #1a2234;
+            --bg-card-hover: #1f2942;
+            --text-primary: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --accent-blue: #3b82f6;
+            --accent-yellow: #f59e0b;
+            --accent-purple: #8b5cf6;
+            --accent-orange: #f97316;
+            --accent-cyan: #06b6d4;
+            --border-color: #374151;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        
+        header {
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-card) 100%);
+            border-bottom: 1px solid var(--border-color);
+            padding: 40px 0;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+        
+        .header-content h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #fff 0%, var(--accent-green) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .header-content p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .back-link {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        
+        .back-link:hover { color: var(--accent-green); }
+        
+        /* Tool Categories */
+        .category {
+            margin-bottom: 40px;
+        }
+        
+        .category-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .category-header h2 {
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+        
+        .category-badge {
+            background: var(--accent-blue);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        /* Tool Cards Grid */
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+        
+        .tool-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        
+        .tool-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent-green);
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.1);
+        }
+        
+        .tool-icon {
+            font-size: 2.5rem;
+            margin-bottom: 16px;
+        }
+        
+        .tool-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        
+        .tool-description {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 16px;
+            line-height: 1.5;
+        }
+        
+        .tool-features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .feature-tag {
+            background: var(--bg-secondary);
+            color: var(--text-muted);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+        }
+        
+        .tool-card:hover .feature-tag {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--accent-green);
+        }
+        
+        /* New Badge */
+        .new-badge {
+            background: var(--accent-orange);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+        
+        /* Stats Section */
+        .stats-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 40px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 30px;
+            text-align: center;
+        }
+        
+        .stat-item .value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent-green), var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .stat-item .label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border-color);
+            margin-top: 60px;
+        }
+        
+        footer a {
+            color: var(--accent-green);
+            text-decoration: none;
+        }
+        
+        @media (max-width: 768px) {
+            .header-content h1 { font-size: 1.8rem; }
+            .tools-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="../index.html" class="back-link">← Back to Guide Bot</a>
+        <div class="container header-content">
+            <h1>🛠️ Research Tools Hub</h1>
+            <p>All your equity research tools in one place. Screeners, trackers, dashboards, and analytics.</p>
+        </div>
+    </header>
+    
+    <main class="container">
+        <!-- Stats -->
+        <div class="stats-section">
+            <div class="stat-item">
+                <div class="value">10+</div>
+                <div class="label">Research Tools</div>
+            </div>
+            <div class="stat-item">
+                <div class="value">100+</div>
+                <div class="label">Data Points</div>
+            </div>
+            <div class="stat-item">
+                <div class="value">11</div>
+                <div class="label">Sectors Tracked</div>
+            </div>
+            <div class="stat-item">
+                <div class="value">Free</div>
+                <div class="label">Always</div>
+            </div>
+        </div>
+        
+        <!-- Screening & Analysis -->
+        <div class="category">
+            <div class="category-header">
+                <h2>📊 Screening & Analysis</h2>
+                <span class="category-badge">Core Tools</span>
+            </div>
+            <div class="tools-grid">
+                <a href="../stock-screener/" class="tool-card">
+                    <div class="tool-icon">🔍</div>
+                    <div class="tool-name">Stock Screener <span class="new-badge">NEW</span></div>
+                    <div class="tool-description">Build custom screens with 15+ filters. AND/OR logic, save templates, score matching stocks.</div>
+                    <div class="tool-features">
+                        <span class="feature-tag">15+ Filters</span>
+                        <span class="feature-tag">Templates</span>
+                        <span class="feature-tag">CSV Export</span>
+                    </div>
+                </a>
+                
+                <a href="../peer-comp/" class="tool-card">
+                    <div class="tool-icon">📊</div>
+                    <div class="tool-name">Peer Comparison <span class="new-badge">NEW</span></div>
+                    <div class="tool-description">Auto-generate comp tables with sector peers. Valuation, growth, and return metrics with rankings.</div>
+                    <div class="tool-features">
+                        <span class="feature-tag">Auto Peers</span>
+                        <span class="feature-tag">Rankings</span>
+                        <span class="feature-tag">Excel Export</span>
+                    </div>
+                </a>
+                
+                <a href="../analyst-ratings/" class="tool-card">
+                    <div class="tool-icon">📈</div>
+                    <div class="tool-name">Analyst Ratings <span class="new-badge">NEW</span></div>
+                    <div class="tool-description">Track upgrades, downgrades, and price target changes. Consensus meter and contrarian signals.</div>
+                    <div class="tool-features">
+                        <span class="feature-tag">Real-time</span>
+                        <span class="feature-tag">PT History</span>
+                        <span class="feature-tag">Contrarian</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Market Intelligence -->
+        <div class="category">
+            <div class="category-header">
+                <h2>🎯 Market Intelligence</h2>
+                <span class="category-badge">Alpha Signals</span>
+            </div>
+            <div class="tools-grid">
+                <a href="../short-interest/" class="tool-card">
+                    <div class="tool-icon">📉</div>
+                    <div class="tool-name">Short Interest Tracker <span class="new-badge">NEW</span></div>
+                    <div class="tool-description">Monitor SI%, days to cover, and squeeze potential. Alerts for threshold list and SI spikes.</div>
+                    <div class="tool-features">
+                        <span class="feature-tag">Squeeze Score</span>
+                        <span class="feature-tag">Alerts</span>
+                        <span class="feature-tag">Threshold List</span>
+                    </div>
+                </a>
+                
+                <a href="../sector-rotation/" class="tool-card">
+                    <div class="tool-icon">🔄</div>
+                    <div class="tool-name">Sector Rotation <span class="new-badge">NEW</span></div>
+                    <div class="tool-description">Visualize money flow across sectors. Relative strength, momentum heatmap, pair trade ideas.</div>
+                    <div class="tool-features">
+                        <span class="feature-tag">11 Sectors</span>
+                        <span class="feature-tag">Heatmap</span>
+                        <span class="feature-tag">Pair Trades</span>
+                    </div>
+                </a>
+                
+                <a href="../h8-dashboard/" class="tool-card">
+                    <div class="tool-icon">🏦</div>
+                    <div class="tool-name">H.8 Banking Dashboard</div>
+                    <div class="tool-description">Federal Reserve H.8 data visualization. Track bank deposits, loans, and securities holdings.</div>
+                    <div class="tool-features">
+                        <span class="feature-tag">Fed Data</span>
+                        <span class="feature-tag">QTD Growth</span>
+                        <span class="feature-tag">YoY Trends</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Calendars & Events -->
+        <div class="category">
+            <div class="category-header">
+                <h2>📅 Calendars & Events</h2>
+                <span class="category-badge">Planning</span>
+            </div>
+            <div class="tools-grid">
+                <a href="../earnings-calendar/" class="tool-card">
+                    <div class="tool-icon">📅</div>
+                    <div class="tool-name">Earnings Calendar</div>
+                    <div class="tool-description">Interactive earnings calendar with beat/miss history. Filter by sector, time, and watchlist.</div>
+                    <div class="tool-features">
+                        <span class="feature-tag">Beat Rates</span>
+                        <span class="feature-tag">Filters</span>
+                        <span class="feature-tag">Alerts</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </main>
+    
+    <footer>
+        <p>Built with ❤️ by the Guide Bot Team</p>
+        <p><a href="../index.html">Back to Guide Bot</a></p>
+    </footer>
+</body>
+</html>

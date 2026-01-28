@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analyst Ratings Monitor | Guide Bot - AI Equity Research</title>
+    <meta name="description" content="Track analyst upgrades, downgrades, price target changes, and consensus estimates.">
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0"></script>
+    
+    <style>
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #111827;
+            --bg-card: #1a2234;
+            --bg-card-hover: #1f2942;
+            --text-primary: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --accent-blue: #3b82f6;
+            --accent-yellow: #f59e0b;
+            --accent-purple: #8b5cf6;
+            --accent-orange: #f97316;
+            --border-color: #374151;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        .container { max-width: 1600px; margin: 0 auto; padding: 20px; }
+        
+        header {
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-card) 100%);
+            border-bottom: 1px solid var(--border-color);
+            padding: 20px 0;
+            margin-bottom: 24px;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        
+        .header-left { display: flex; align-items: center; gap: 16px; }
+        
+        .back-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        
+        .back-link:hover { color: var(--accent-green); }
+        
+        .header-title h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fff 0%, var(--accent-orange) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .header-title p { color: var(--text-secondary); font-size: 0.9rem; }
+        
+        /* Stats Row */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        
+        .stat-card .label {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+        
+        .stat-upgrade .value { color: var(--accent-green); }
+        .stat-downgrade .value { color: var(--accent-red); }
+        .stat-pt-raise .value { color: var(--accent-blue); }
+        .stat-initiate .value { color: var(--accent-purple); }
+        
+        /* Main Grid */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 24px;
+        }
+        
+        @media (max-width: 1200px) {
+            .main-grid { grid-template-columns: 1fr; }
+        }
+        
+        /* Card */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        
+        .card-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .card-header h2 { font-size: 1rem; font-weight: 600; }
+        
+        /* Filter Tabs */
+        .filter-tabs {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .filter-tab {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .filter-tab:hover { border-color: var(--accent-orange); color: var(--text-primary); }
+        .filter-tab.active { background: var(--accent-orange); border-color: var(--accent-orange); color: white; }
+        
+        /* Rating Changes Table */
+        .table-wrapper { overflow-x: auto; }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 700px;
+        }
+        
+        th, td {
+            padding: 14px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        th {
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+        }
+        
+        tr:hover { background: var(--bg-card-hover); }
+        
+        .ticker { font-weight: 700; color: var(--accent-blue); }
+        
+        .analyst-name {
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        
+        .analyst-firm {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+        
+        /* Rating Badges */
+        .rating-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .rating-upgrade {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--accent-green);
+        }
+        
+        .rating-downgrade {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--accent-red);
+        }
+        
+        .rating-initiate {
+            background: rgba(139, 92, 246, 0.2);
+            color: var(--accent-purple);
+        }
+        
+        .rating-reiterate {
+            background: rgba(107, 114, 128, 0.2);
+            color: var(--text-secondary);
+        }
+        
+        /* PT Change */
+        .pt-change {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+        
+        .pt-new { font-weight: 700; }
+        .pt-old { color: var(--text-muted); font-size: 0.8rem; text-decoration: line-through; }
+        .pt-delta { font-size: 0.8rem; }
+        .pt-up { color: var(--accent-green); }
+        .pt-down { color: var(--accent-red); }
+        
+        /* Sidebar */
+        .sidebar { display: flex; flex-direction: column; gap: 20px; }
+        
+        .sidebar-card { padding: 20px; }
+        
+        /* Consensus Meter */
+        .consensus-meter {
+            margin: 16px 0;
+        }
+        
+        .meter-bar {
+            height: 24px;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            display: flex;
+            overflow: hidden;
+        }
+        
+        .meter-segment {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .meter-buy { background: var(--accent-green); }
+        .meter-hold { background: var(--accent-yellow); }
+        .meter-sell { background: var(--accent-red); }
+        
+        .meter-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+        
+        /* Contrarian Alert */
+        .contrarian-alert {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid var(--accent-yellow);
+            border-radius: 10px;
+            padding: 14px;
+            margin-top: 16px;
+        }
+        
+        .contrarian-alert h4 {
+            color: var(--accent-yellow);
+            font-size: 0.9rem;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .contrarian-alert p {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+        
+        /* PT History Chart */
+        .chart-container { height: 200px; padding: 10px 0; }
+        
+        /* Recent Activity List */
+        .activity-item {
+            display: flex;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .activity-item:last-child { border-bottom: none; }
+        
+        .activity-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+        }
+        
+        .activity-icon.up { background: rgba(16, 185, 129, 0.2); }
+        .activity-icon.down { background: rgba(239, 68, 68, 0.2); }
+        .activity-icon.new { background: rgba(139, 92, 246, 0.2); }
+        
+        .activity-content { flex: 1; }
+        .activity-title { font-weight: 600; font-size: 0.9rem; }
+        .activity-meta { color: var(--text-muted); font-size: 0.8rem; }
+        
+        /* Search */
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .search-input {
+            flex: 1;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px 16px;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent-orange);
+        }
+        
+        .search-btn {
+            background: var(--accent-orange);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 20px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .search-btn:hover { opacity: 0.9; }
+        
+        /* Time badges */
+        .time-badge {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+        
+        .time-badge.recent {
+            color: var(--accent-orange);
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container header-content">
+            <div class="header-left">
+                <a href="../index.html" class="back-link">← Back to Guide Bot</a>
+                <div class="header-title">
+                    <h1>📊 Analyst Ratings Monitor</h1>
+                    <p>Track upgrades, downgrades, and price target changes</p>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <main class="container">
+        <!-- Search -->
+        <div class="search-box">
+            <input type="text" class="search-input" id="searchInput" placeholder="Search ticker (e.g., AAPL, NVDA)...">
+            <button class="search-btn" onclick="searchTicker()">🔍 Search</button>
+        </div>
+        
+        <!-- Stats Row -->
+        <div class="stats-row">
+            <div class="stat-card stat-upgrade">
+                <div class="value" id="statUpgrades">12</div>
+                <div class="label">Upgrades Today</div>
+            </div>
+            <div class="stat-card stat-downgrade">
+                <div class="value" id="statDowngrades">5</div>
+                <div class="label">Downgrades Today</div>
+            </div>
+            <div class="stat-card stat-pt-raise">
+                <div class="value" id="statPTRaises">28</div>
+                <div class="label">PT Increases</div>
+            </div>
+            <div class="stat-card stat-initiate">
+                <div class="value" id="statInitiations">8</div>
+                <div class="label">New Coverage</div>
+            </div>
+        </div>
+        
+        <div class="main-grid">
+            <!-- Main Table -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>📋 Recent Rating Changes</h2>
+                    <div class="filter-tabs">
+                        <button class="filter-tab active" data-filter="all">All</button>
+                        <button class="filter-tab" data-filter="upgrade">Upgrades</button>
+                        <button class="filter-tab" data-filter="downgrade">Downgrades</button>
+                        <button class="filter-tab" data-filter="initiate">Initiations</button>
+                    </div>
+                </div>
+                <div class="table-wrapper">
+                    <table id="ratingsTable">
+                        <thead>
+                            <tr>
+                                <th>Ticker</th>
+                                <th>Analyst / Firm</th>
+                                <th>Action</th>
+                                <th>Rating</th>
+                                <th>Price Target</th>
+                                <th>Time</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ratingsBody">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <!-- Consensus Overview -->
+                <div class="card sidebar-card">
+                    <h3 style="margin-bottom: 16px;">📈 Market Consensus</h3>
+                    <div class="consensus-meter">
+                        <div class="meter-bar">
+                            <div class="meter-segment meter-buy" style="width: 55%">55%</div>
+                            <div class="meter-segment meter-hold" style="width: 35%">35%</div>
+                            <div class="meter-segment meter-sell" style="width: 10%">10%</div>
+                        </div>
+                        <div class="meter-labels">
+                            <span>Strong Buy</span>
+                            <span>Hold</span>
+                            <span>Sell</span>
+                        </div>
+                    </div>
+                    
+                    <div class="contrarian-alert">
+                        <h4>⚠️ Contrarian Signal</h4>
+                        <p>NVDA has 95% Buy ratings - extreme bullishness may signal crowded trade</p>
+                    </div>
+                </div>
+                
+                <!-- PT History Chart -->
+                <div class="card sidebar-card">
+                    <h3 style="margin-bottom: 8px;">📉 AAPL Price Target History</h3>
+                    <div class="chart-container">
+                        <canvas id="ptChart"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Recent Activity -->
+                <div class="card sidebar-card">
+                    <h3 style="margin-bottom: 16px;">⚡ Live Feed</h3>
+                    <div id="activityFeed">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <script>
+        // Sample rating changes data
+        const ratingChanges = [
+            { ticker: 'NVDA', company: 'NVIDIA', analyst: 'Vivek Arya', firm: 'Bank of America', action: 'upgrade', oldRating: 'Neutral', newRating: 'Buy', oldPT: 650, newPT: 800, time: '2 hours ago', recent: true },
+            { ticker: 'AAPL', company: 'Apple', analyst: 'Samik Chatterjee', firm: 'JPMorgan', action: 'reiterate', oldRating: 'Overweight', newRating: 'Overweight', oldPT: 210, newPT: 230, time: '3 hours ago', recent: true },
+            { ticker: 'MSFT', company: 'Microsoft', analyst: 'Keith Weiss', firm: 'Morgan Stanley', action: 'upgrade', oldRating: 'Equal Weight', newRating: 'Overweight', oldPT: 400, newPT: 450, time: '4 hours ago', recent: false },
+            { ticker: 'TSLA', company: 'Tesla', analyst: 'Adam Jonas', firm: 'Morgan Stanley', action: 'downgrade', oldRating: 'Overweight', newRating: 'Equal Weight', oldPT: 310, newPT: 250, time: '5 hours ago', recent: false },
+            { ticker: 'META', company: 'Meta', analyst: 'Doug Anmuth', firm: 'JPMorgan', action: 'initiate', oldRating: null, newRating: 'Overweight', oldPT: null, newPT: 600, time: '6 hours ago', recent: false },
+            { ticker: 'GOOG', company: 'Alphabet', analyst: 'Eric Sheridan', firm: 'Goldman Sachs', action: 'reiterate', oldRating: 'Buy', newRating: 'Buy', oldPT: 155, newPT: 175, time: '7 hours ago', recent: false },
+            { ticker: 'AMZN', company: 'Amazon', analyst: 'Brian Nowak', firm: 'Morgan Stanley', action: 'upgrade', oldRating: 'Hold', newRating: 'Buy', oldPT: 175, newPT: 210, time: '8 hours ago', recent: false },
+            { ticker: 'AMD', company: 'AMD', analyst: 'Stacy Rasgon', firm: 'Bernstein', action: 'downgrade', oldRating: 'Outperform', newRating: 'Market Perform', oldPT: 185, newPT: 150, time: '9 hours ago', recent: false },
+            { ticker: 'CRM', company: 'Salesforce', analyst: 'Brent Thill', firm: 'Jefferies', action: 'initiate', oldRating: null, newRating: 'Buy', oldPT: null, newPT: 320, time: '10 hours ago', recent: false },
+            { ticker: 'COIN', company: 'Coinbase', analyst: 'Devin Ryan', firm: 'JMP Securities', action: 'upgrade', oldRating: 'Neutral', newRating: 'Outperform', oldPT: 200, newPT: 280, time: 'Yesterday', recent: false },
+        ];
+        
+        let currentFilter = 'all';
+        let ptChart = null;
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            renderTable();
+            renderActivityFeed();
+            initPTChart();
+            
+            // Filter tabs
+            document.querySelectorAll('.filter-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    currentFilter = this.dataset.filter;
+                    renderTable();
+                });
+            });
+            
+            // Enter key search
+            document.getElementById('searchInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') searchTicker();
+            });
+        });
+        
+        function renderTable() {
+            let data = [...ratingChanges];
+            
+            // Apply filter
+            if (currentFilter !== 'all') {
+                data = data.filter(r => r.action === currentFilter);
+            }
+            
+            // Apply search
+            const search = document.getElementById('searchInput').value.toUpperCase();
+            if (search) {
+                data = data.filter(r => r.ticker.includes(search) || r.company.toUpperCase().includes(search));
+            }
+            
+            const tbody = document.getElementById('ratingsBody');
+            
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:40px; color:var(--text-muted);">No rating changes found</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = data.map(r => `
+                <tr>
+                    <td>
+                        <span class="ticker">${r.ticker}</span>
+                        <div style="color: var(--text-muted); font-size: 0.8rem;">${r.company}</div>
+                    </td>
+                    <td>
+                        <div class="analyst-name">${r.analyst}</div>
+                        <div class="analyst-firm">${r.firm}</div>
+                    </td>
+                    <td>
+                        <span class="rating-badge rating-${r.action}">
+                            ${getActionIcon(r.action)} ${getActionLabel(r.action)}
+                        </span>
+                    </td>
+                    <td>
+                        ${r.oldRating ? `<span style="color:var(--text-muted); text-decoration:line-through; font-size:0.8rem;">${r.oldRating}</span> → ` : ''}
+                        <strong>${r.newRating}</strong>
+                    </td>
+                    <td>
+                        <div class="pt-change">
+                            <span class="pt-new">$${r.newPT}</span>
+                            ${r.oldPT ? `
+                                <span class="pt-old">$${r.oldPT}</span>
+                                <span class="pt-delta ${r.newPT > r.oldPT ? 'pt-up' : 'pt-down'}">
+                                    ${r.newPT > r.oldPT ? '↑' : '↓'} ${Math.abs(((r.newPT - r.oldPT) / r.oldPT) * 100).toFixed(1)}%
+                                </span>
+                            ` : '<span class="pt-delta" style="color:var(--accent-purple);">New</span>'}
+                        </div>
+                    </td>
+                    <td>
+                        <span class="time-badge ${r.recent ? 'recent' : ''}">${r.time}</span>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        function getActionIcon(action) {
+            const icons = { upgrade: '↑', downgrade: '↓', initiate: '★', reiterate: '◉' };
+            return icons[action] || '';
+        }
+        
+        function getActionLabel(action) {
+            const labels = { upgrade: 'Upgrade', downgrade: 'Downgrade', initiate: 'Initiate', reiterate: 'Reiterate' };
+            return labels[action] || action;
+        }
+        
+        function searchTicker() {
+            renderTable();
+        }
+        
+        function renderActivityFeed() {
+            const feed = document.getElementById('activityFeed');
+            
+            const activities = ratingChanges.slice(0, 5).map(r => ({
+                icon: r.action === 'upgrade' ? '↑' : r.action === 'downgrade' ? '↓' : '★',
+                iconClass: r.action === 'upgrade' ? 'up' : r.action === 'downgrade' ? 'down' : 'new',
+                title: `${r.ticker} ${getActionLabel(r.action)}`,
+                meta: `${r.firm} • PT $${r.newPT}`,
+            }));
+            
+            feed.innerHTML = activities.map(a => `
+                <div class="activity-item">
+                    <div class="activity-icon ${a.iconClass}">${a.icon}</div>
+                    <div class="activity-content">
+                        <div class="activity-title">${a.title}</div>
+                        <div class="activity-meta">${a.meta}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function initPTChart() {
+            const ctx = document.getElementById('ptChart').getContext('2d');
+            
+            // Generate sample PT history for AAPL
+            const labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const consensusPT = [185, 190, 195, 200, 205, 210, 208, 215, 220, 225, 228, 230];
+            const actualPrice = [175, 178, 172, 180, 185, 190, 192, 195, 200, 205, 210, 220];
+            
+            ptChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [
+                        {
+                            label: 'Consensus PT',
+                            data: consensusPT,
+                            borderColor: '#f97316',
+                            backgroundColor: 'rgba(249, 115, 22, 0.1)',
+                            fill: true,
+                            tension: 0.3,
+                        },
+                        {
+                            label: 'Stock Price',
+                            data: actualPrice,
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'transparent',
+                            borderDash: [5, 5],
+                            tension: 0.3,
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { color: '#9ca3af', boxWidth: 12, padding: 10 }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: '#374151' },
+                            ticks: { color: '#9ca3af', font: { size: 10 } }
+                        },
+                        y: {
+                            grid: { color: '#374151' },
+                            ticks: { color: '#9ca3af', font: { size: 10 } }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
